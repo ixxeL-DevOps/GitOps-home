@@ -495,7 +495,7 @@ argocd-apps:
         version: v3
       repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
       targetRevision: main
-      path: rke2/instal
+      path: rke2/install
     destination:
       server: https://kubernetes.default.svc
       namespace: argocd
