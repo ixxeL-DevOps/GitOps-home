@@ -1,0 +1,29 @@
+# apiVersion: kyverno.io/v1
+# kind: ClusterPolicy
+# metadata:
+#   name: grant-cluster-admin
+# spec:
+#   rules:
+#   - name: grant-admin-if-annotation-present
+#     match:
+#       resources:
+#         kinds:
+#           - ServiceAccount
+#     preconditions:
+#       all:
+#         - key: "{{request.object.metadata.annotations.\"grant-privileges\"}}"
+#           operator: Equals
+#           value: "admin-cluster"
+#     generate:
+#       apiVersion: rbac.authorization.k8s.io/v1
+#       kind: ClusterRoleBinding
+#       name: "{{request.object.metadata.namespace}}-{{request.object.metadata.name}}-admin-binding"
+#       data:
+#         subjects:
+#           - kind: ServiceAccount
+#             name: "{{request.object.metadata.name}}"
+#             namespace: "{{request.object.metadata.namespace}}"
+#         roleRef:
+#           kind: ClusterRole
+#           name: cluster-admin
+#           apiGroup: rbac.authorization.k8s.io

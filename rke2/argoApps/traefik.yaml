@@ -1,0 +1,77 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: traefik-system
+  template:
+    metadata:
+      name: 'traefik-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-network
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://traefik.github.io/charts
+        targetRevision: 23.*.*
+        chart: traefik
+        helm:
+          releaseName: 'traefik-{{env}}'
+          valuesObject:
+            deployment:
+              enabled: true
+              kind: Deployment
+            ingressClass:
+              enabled: true
+              isDefaultClass: false
+            experimental:
+              v3:
+                enabled: false
+              plugins:
+                enabled: false
+              kubernetesGateway:
+                enabled: false
+                gateway:
+                  enabled: true
+            ingressRoute:
+              dashboard:
+                enabled: true
+                matchRule: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
+                entryPoints: ["traefik"]
+            providers:
+              kubernetesCRD:
+                enabled: true
+                allowCrossNamespace: false
+                allowExternalNameServices: false
+                allowEmptyServices: false
+              kubernetesIngress:
+                enabled: true
+                allowExternalNameServices: false
+                allowEmptyServices: false
+                publishedService:
+                  enabled: false
+            logs:
+              general:
+                level: ERROR
+              access:
+                enabled: false
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

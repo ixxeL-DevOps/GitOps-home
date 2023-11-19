@@ -1,0 +1,55 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nfs-provisioner
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: nfs
+  template:
+    metadata:
+      name: 'nfs-provisioner-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+        targetRevision: 4.*.*
+        chart: nfs-subdir-external-provisioner
+        helm:
+          releaseName: 'nfs-provisioner-{{env}}'
+          valuesObject:
+            nfs:
+              server: 192.168.1.250
+              path: /volatile
+              mountOptions:
+              volumeName: nfs-qnap
+              reclaimPolicy: Delete
+            storageClass:
+              create: true
+              defaultClass: true
+              name: nfs-qnap-delete
+              allowVolumeExpansion: true
+              reclaimPolicy: Delete
+              archiveOnDelete: true
+              accessModes: ReadWriteOnce
+              volumeBindingMode: Immediate
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

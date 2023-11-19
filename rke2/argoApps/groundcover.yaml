@@ -1,0 +1,47 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: groundcover
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements: []
+      # - env: rke2
+      #   cluster-url: https://kubernetes.default.svc
+      #   cluster-name: in-cluster
+      #   namespace: groundcover
+  template:
+    metadata:
+      name: 'groundcover-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-monitoring
+      destination:
+        server: '{{cluster-url}}'
+        # name: '{{cluster-name}}'
+        namespace: '{{namespace}}'
+      sources:
+        - repoURL: https://helm.groundcover.com
+          targetRevision: 0.65.*
+          chart: groundcover
+          helm:
+            releaseName: 'groundcover-{{env}}'
+            valueFiles: 
+              - $main-gitops-repo/groundcover/values-override.yaml
+        - repoURL: https://gitlab.com/gitops31/k8s-cluster/infra-tools.git
+          targetRevision: rke2
+          ref: main-gitops-repo
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

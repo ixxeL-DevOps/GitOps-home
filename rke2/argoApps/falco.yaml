@@ -1,0 +1,54 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: falco
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements: []
+      # - env: rke2
+      #   cluster-url: https://kubernetes.default.svc
+      #   cluster-name: in-cluster
+      #   namespace: falco
+  template:
+    metadata:
+      name: 'falco-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-security
+      destination:
+        server: '{{cluster-url}}'
+        # name: '{{cluster-name}}'
+        namespace: '{{namespace}}'
+      sources:
+        - repoURL: https://falcosecurity.github.io/charts
+          targetRevision: 3.1.*
+          chart: falco
+          helm:
+            releaseName: 'falco-{{env}}'
+            valueFiles: 
+              - $main-gitops-repo/falco/main/values-override.yaml
+        # - repoURL: https://falcosecurity.github.io/charts
+        #   targetRevision: 0.6.1
+        #   chart: falcosidekick
+        #   helm:
+        #     releaseName: 'falcosidekick-{{env}}'
+        #     valueFiles: 
+        #       - $main-gitops-repo/falco/sidekick/values-override.yaml
+        - repoURL: https://gitlab.com/gitops31/k8s-cluster/infra-tools.git
+          targetRevision: rke2
+          ref: main-gitops-repo
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

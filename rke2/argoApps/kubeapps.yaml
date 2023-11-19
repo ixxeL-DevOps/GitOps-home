@@ -1,0 +1,53 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kubeapps
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements: []
+      # - env: rke2
+      #   namespace: kubeapps
+  template:
+    metadata:
+      name: 'kubeapps-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.bitnami.com/bitnami
+        targetRevision: 14.*.*
+        chart: kubeapps
+        helm:
+          releaseName: 'kubeapps-{{env}}'
+          valuesObject:
+            ingress:
+              enabled: true
+              hostname: kubeapps.k8s-app.fredcorp.com
+              path: /
+              pathType: ImplementationSpecific
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: kubeapps.k8s-app.fredcorp.com
+              tls: true
+              selfSigned: false
+              # secrets:
+              # - name: kubeapps-tls-cert
+              ingressClassName: "nginx"              
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

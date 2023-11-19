@@ -1,0 +1,54 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nginx-ingress-ctrl
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: nginx
+  template:
+    metadata:
+      name: 'nginx-ingress-ctrl-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-network
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://kubernetes.github.io/ingress-nginx
+        targetRevision: 4.*.*
+        chart: ingress-nginx
+        helm:
+          releaseName: 'nginx-ingress-ctrl-{{env}}'
+          valuesObject:
+            fullnameOverride: nginx-{{env}}
+            controller:
+              service:
+                enabled: true
+                appProtocol: true
+                ipFamilies:
+                  - IPv4
+                ports:
+                  http: 80
+                  https: 443
+                targetPorts:
+                  http: http
+                  https: https
+                type: LoadBalancer
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

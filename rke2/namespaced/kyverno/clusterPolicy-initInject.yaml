@@ -1,0 +1,39 @@
+# apiVersion: kyverno.io/v1
+# kind: ClusterPolicy
+# metadata:
+#   name: initcontainer-update-ca-cert
+# spec:
+#   rules:
+#     - name: inject-init-container
+#       match:
+#         resources:
+#           kinds:
+#             - Pod
+#           namespaces:
+#             - chartmuseum
+#           selector:
+#             matchLabels:
+#               app.kubernetes.io/instance: helm-dashboard-rke2
+#               app.kubernetes.io/name: helm-dashboard
+#       mutate:
+#         patchStrategicMerge:
+#           spec:
+#             initContainers:
+#               - name: ca-cert-injector
+#                 image: alpine:3.18
+#                 command:
+#                   - sh
+#                   - -c
+#                   - >
+#                     apk add ca-certificates
+#                     cp /etc/ssl/certs/vault-pki-certs.pem /usr/local/share/ca-certificates/ &&
+#                     update-ca-certificates
+#                 volumeMounts:
+#                   - name: fredcorp-pki-certs
+#                     mountPath: /etc/ssl/certs
+#                     readOnly: true
+#                     subPath: vault-pki-certs.pem
+#             volumes:
+#               - name: fredcorp-pki-certs
+#                 configMap:
+#                   name: fredcorp-pki-certs

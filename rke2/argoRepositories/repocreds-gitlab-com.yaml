@@ -1,0 +1,17 @@
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   annotations:
+#     managed-by: argocd.argoproj.io
+#   labels:
+#     argocd.argoproj.io/secret-type: repo-creds
+#   name: gitlab-repos
+#   namespace: argocd
+# type: Opaque
+# stringData:
+#   name: gitlab-repos
+#   password: glpat-U-hkZyQztUYKpuKqsZEG
+#   project: argocd
+#   type: git
+#   url: https://gitlab.com
+#   username: ixxel

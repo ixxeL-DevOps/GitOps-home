@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    managed-by: argocd.argoproj.io
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+  name: jfrog-helm-repos
+  namespace: argocd
+type: Opaque
+stringData:
+  name: jfrog-helm-repos
+  password: Coucou2097
+  project: ci-cd
+  type: helm
+  url: https://jfrog.fredcorp.com
+  username: admin

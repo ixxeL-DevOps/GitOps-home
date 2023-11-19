@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gha-runner-ctrl
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: github-runner
+  template:
+    metadata:
+      name: 'gha-runner-ctrl-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-pipelines
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://actions-runner-controller.github.io/actions-runner-controller
+        targetRevision: 0.*.*
+        chart: actions-runner-controller
+        helm:
+          releaseName: 'gha-runner-ctrl-{{env}}'
+          valuesObject:
+            serviceAccount:
+              create: true
+            authSecret:
+              enabled: true
+              create: false
+              name: "github-creds"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

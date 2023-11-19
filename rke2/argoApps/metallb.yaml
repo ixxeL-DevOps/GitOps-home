@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: metallb
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: metallb-system
+  template:
+    metadata:
+      name: 'metallb-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-network
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://metallb.github.io/metallb
+        targetRevision: 0.*.*
+        chart: metallb
+        helm:
+          releaseName: 'metallb-{{env}}'
+          valuesObject:
+            fullnameOverride: "metallb"
+            rbac:
+              create: true
+            crds:
+              enabled: true
+              validationFailurePolicy: Fail
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

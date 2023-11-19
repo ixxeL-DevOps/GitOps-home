@@ -1,0 +1,67 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: helm-dashboard
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements: []
+      # - env: rke2
+      #   namespace: chartmuseum
+      # - env: rke2-vk-dev
+      #   namespace: cert-manager
+      # - env: rke2-vk-prod
+      #   namespace: cert-manager
+  template:
+    metadata:
+      name: 'helm-dashboard-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://helm-charts.komodor.io
+        targetRevision: 0.*.*
+        chart: helm-dashboard
+        helm:
+          releaseName: 'helm-dashboard-{{env}}'
+          valuesObject:
+            fullnameOverride: helm-dashboard-{{env}}
+            dashboard:
+              persistence:
+                enabled: true
+                storageClass: nfs-qnap-delete
+                accessModes:
+                  - ReadWriteOnce
+                size: 1Gi
+            ingress:
+              enabled: true
+              className: "nginx"
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: helm-dashboard.k8s-app.fredcorp.com
+              hosts:
+                - host: helm-dashboard.k8s-app.fredcorp.com
+                  paths:
+                    - path: /
+                      pathType: ImplementationSpecific
+              tls:
+              - hosts: 
+                - helm-dashboard.k8s-app.fredcorp.com
+                secretName: helm-dashboard-tls-cert
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
