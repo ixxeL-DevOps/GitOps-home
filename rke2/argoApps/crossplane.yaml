@@ -17,7 +17,8 @@ spec:
       valuesObject:
         provider:
           packages:
-          - coopnorge/provider-github:v0.3.2
+          - xpkg.upbound.io/coopnorge/provider-github:v0.3.2
+          - xpkg.upbound.io/crossplane-contrib/provider-gitlab:v0.5.0
         configuration:
           packages: []
   syncPolicy:
