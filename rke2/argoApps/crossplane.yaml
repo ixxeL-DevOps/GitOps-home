@@ -16,7 +16,8 @@ spec:
       releaseName: crossplane
       valuesObject:
         provider:
-          packages: []
+          packages:
+          - coopnorge/provider-github:v0.3.2
         configuration:
           packages: []
   syncPolicy:
