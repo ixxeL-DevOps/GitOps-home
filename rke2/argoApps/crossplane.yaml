@@ -53,6 +53,21 @@ spec:
                     key: gitlab
                     property: crossplane-token
                     metadataPolicy: None
+          - apiVersion: projects.gitlab.crossplane.io/v1alpha1
+            kind: Project
+            metadata:
+              name: cxp-project
+            spec:
+              forProvider:
+                name: "cxp Project"
+                namespaceIdRef:
+                  name: gitops31
+                description: "cxp project description"
+              providerConfigRef:
+                name: gitlab-provider
+              writeConnectionSecretToRef:
+                name: gitlab-project-example-project
+                namespace: crossplane
   syncPolicy:
     automated:
       prune: true
