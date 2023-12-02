@@ -41,6 +41,32 @@ spec:
                     key: gitlab
                     property: crossplane-token
                     metadataPolicy: None
+          - apiVersion: external-secrets.io/v1beta1
+            kind: ExternalSecret
+            metadata:
+              name: crossplane-github-creds
+            spec:
+              refreshInterval: "600s"
+              secretStoreRef:
+                name: admin
+                kind: ClusterSecretStore
+              target:
+                name: crossplane-github-creds
+                template: 
+                  data:
+                    creds: |
+                      {
+                        "token": "{{ `{{ .pat }}` }}",
+                        "owner": "ixxeL-DevOps"
+                      }
+              data:
+                - secretKey: pat
+                  remoteRef:                  
+                    key: github/rke2
+                    property: DEVOPS_ORG_PAT
+                    conversionStrategy: Default	
+                    decodingStrategy: None
+                    metadataPolicy: None
           - apiVersion: pkg.crossplane.io/v1
             kind: Provider
             metadata:
@@ -69,6 +95,17 @@ spec:
                   namespace: crossplane
                   name: crossplane-gitlab-creds
                   key: token
+          - apiVersion: github.upbound.io/v1beta1
+            kind: ProviderConfig
+            metadata:
+              name: github
+            spec:
+              credentials:
+                source: Secret
+                secretRef:
+                  name: crossplane-github-creds
+                  namespace: crossplane
+                  key: creds
           - apiVersion: pkg.crossplane.io/v1alpha1
             kind: ControllerConfig
             metadata:
