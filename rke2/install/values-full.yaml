@@ -17,7 +17,7 @@ argo-cd:
     image:
       imagePullPolicy: IfNotPresent
       repository: quay.io/argoproj/argocd
-      tag: v2.9.1
+      tag: v2.9.3
     logging:
       format: text
       level: info
@@ -239,7 +239,7 @@ argo-cd:
     extraContainers:
       - name: avp-helm
         command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.1
+        image: quay.io/argoproj/argocd:v2.9.3
         securityContext:
           runAsNonRoot: true
           runAsUser: 999
@@ -261,7 +261,7 @@ argo-cd:
             mountPath: /usr/local/bin/argocd-vault-plugin
       - name: avp-kustomize
         command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.1
+        image: quay.io/argoproj/argocd:v2.9.3
         securityContext:
           runAsNonRoot: true
           runAsUser: 999
@@ -283,7 +283,7 @@ argo-cd:
             mountPath: /usr/local/bin/argocd-vault-plugin
       - name: avp-plain-yaml
         command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.1
+        image: quay.io/argoproj/argocd:v2.9.3
         securityContext:
           runAsNonRoot: true
           runAsUser: 999
