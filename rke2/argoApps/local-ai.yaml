@@ -1,0 +1,67 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: local-ai
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: rke2
+        namespace: local-ai
+  template:
+    metadata:
+      name: 'local-ai-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://go-skynet.github.io/helm-charts
+        targetRevision: 2.*.*
+        chart: local-ai
+        helm:
+          releaseName: 'local-ai-{{env}}'
+          valuesObject:
+            models:
+              forceDownload: false
+              list:
+              - url: "https://gpt4all.io/models/ggml-gpt4all-j.bin"
+            persistence:
+              pvc:
+                enabled: false
+                size: 6Gi
+                accessModes:
+                  - ReadWriteOnce
+                annotations: {}
+                storageClass:
+            ingress:
+              enabled: true
+              className: nginx
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: local-ai.k8s-app.fredcorp.com
+              hosts:
+                - host: local-ai.k8s-app.fredcorp.com
+                  paths: 
+                  - path: /
+                    pathType: "ImplementationSpecific"
+              tls:
+               - secretName: local-ai-tls-cert
+                 hosts:
+                   - local-ai.k8s-app.fredcorp.com
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
