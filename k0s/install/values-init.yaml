@@ -1,0 +1,489 @@
+argocd:
+  enabled: true
+apps:
+  enabled: true
+
+argo-cd:
+  fullnameOverride: "argocd"
+  apiVersionOverrides:
+    certmanager: "cert-manager.io/v1" # cert-manager.io/v1
+    ingress: "networking.k8s.io/v1" # networking.k8s.io/v1beta1
+  crds:
+    install: true
+    keep: true
+  global:
+    image:
+      imagePullPolicy: IfNotPresent
+      repository: quay.io/argoproj/argocd
+      tag: v2.6.1
+    logging:
+      format: text
+      level: info
+    securityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+
+  server:
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: argocd-server
+      automountServiceAccountToken: true
+    clusterAdminAccess:
+      enabled: true
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+        additionalLabels:
+          release: prom-stack
+
+    extensions:
+      enabled: true
+      image:
+        repository: "ghcr.io/argoproj-labs/argocd-extensions"
+        tag: "v0.2.1"
+        imagePullPolicy: IfNotPresent
+      resources: 
+       limits:
+         cpu: 50m
+         memory: 128Mi
+       requests:
+         cpu: 10m
+         memory: 64Mi
+      contents:
+        - name: argo-rollouts
+          url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.0/extension.tar
+
+  controller:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+        additionalLabels:
+          release: prom-stack
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: argocd-application-controller
+      automountServiceAccountToken: true
+    clusterAdminAccess:
+      enabled: true
+
+  applicationSet:
+    enabled: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    args:
+      metricsAddr: :8080
+      probeBindAddr: :8081
+      enableLeaderElection: false
+      policy: sync
+      debug: false
+      dryRun: false
+    serviceAccount:
+      create: true
+      name: "argocd-applicationset-controller"
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+        additionalLabels:
+          release: prom-stack
+
+  dex:
+    enabled: false
+    name: dex-server
+
+  notifications:
+    enabled: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: "argocd-notifications-controller"
+
+  redis:
+    enabled: true
+    name: redis
+
+  repoServer:
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: false
+        additionalLabels:
+          release: prom-stack
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      automountServiceAccountToken: true
+      name: argocd-repo-server
+    rbac:
+      - verbs:
+          - get
+          - list
+          - watch
+        apiGroups:
+          - ''
+        resources:
+          - secrets
+          - configmaps
+    extraContainers:
+      - name: avp-helm
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.6.1
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        env:
+          - name: AVP_SECRET_CONFIG
+            value: argocd-repo-creds-vault-auth
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: avp-helm.yaml
+            name: cmp-plugin
+          - name: custom-tools
+            subPath: argocd-vault-plugin
+            mountPath: /usr/local/bin/argocd-vault-plugin
+      - name: avp-kustomize
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.6.1
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        env:
+          - name: AVP_SECRET_CONFIG
+            value: argocd-repo-creds-vault-auth
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: avp-kustomize.yaml
+            name: cmp-plugin
+          - name: custom-tools
+            subPath: argocd-vault-plugin
+            mountPath: /usr/local/bin/argocd-vault-plugin
+      - name: avp
+        command: [/var/run/argocd/argocd-cmp-server]
+        image: quay.io/argoproj/argocd:v2.6.1
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 999
+        env:
+          - name: AVP_SECRET_CONFIG
+            value: argocd-repo-creds-vault-auth
+        volumeMounts:
+          - mountPath: /var/run/argocd
+            name: var-files
+          - mountPath: /home/argocd/cmp-server/plugins
+            name: plugins
+          - mountPath: /tmp
+            name: tmp
+          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+            subPath: avp.yaml
+            name: cmp-plugin
+          - name: custom-tools
+            subPath: argocd-vault-plugin
+            mountPath: /usr/local/bin/argocd-vault-plugin
+
+    # envFrom:
+    #   - secretRef:
+    #       name: argocd-repo-creds-vault-auth
+
+    initContainers:
+      - args:
+          - >-
+            wget -O argocd-vault-plugin
+            https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64
+            && chmod +x argocd-vault-plugin && mv argocd-vault-plugin
+            /custom-tools/
+        command:
+          - sh
+          - '-c'
+        env:
+          - name: AVP_VERSION
+            value: 1.13.1
+        image: 'alpine:3.8'
+        name: download-tools
+        securityContext:
+          runAsNonRoot: false
+        volumeMounts:
+          - mountPath: /custom-tools
+            name: custom-tools
+
+    volumes:
+      - emptyDir: {}
+        name: custom-tools
+      - configMap:
+          name: cmp-plugin
+        name: cmp-plugin
+
+  configs:
+    secret:
+      # -- Bcrypt hashed admin password
+      ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+      ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+      argocdServerAdminPassword: "$2a$10$EKno1mbVegvSeibj3UeYguY3NS6sb9JVWj9B5m8/baoQIv2mQBkSS"
+      # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+      # @default -- `""` (defaults to current time)
+      argocdServerAdminPasswordMtime: "2022-03-03T23:02:00Z"
+    credentialTemplates:
+      vault-auth:
+        AVP_AUTH_TYPE: approle
+        AVP_ROLE_ID: 4dab94e9-3d06-eded-c235-267c2a75a800
+        AVP_SECRET_ID: eb6392f3-64de-c635-1824-309e4fbd3ddc
+        AVP_TYPE: vault
+        VAULT_ADDR: 'https://vault.fredcorp.com'
+        VAULT_SKIP_VERIFY: true
+      gitlab-com:
+        url: https://gitlab.com
+        password: glpat-U-hkZyQztUYKpuKqsZEG
+        username: ixxel
+    cm:
+      create: true
+      accounts.fred: "apiKey, login"
+      accounts.pipeline: "apiKey"
+      # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
+      # url: ""
+      application.instanceLabelKey: argocd.argoproj.io/instance
+      server.rbac.log.enforce.enable: false
+      exec.enabled: true
+      admin.enabled: true
+      timeout.reconciliation: 180s
+      timeout.hard.reconciliation: 0
+      application.resourceTrackingMethod: annotation
+      resource.customizations.ignoreDifferences.apps_StatefulSet: |
+        jqPathExpressions:
+        - .spec.volumeClaimTemplates[]?
+      resource.customizations.ignoreDifferences.admissionregistration.k8s.io_MutatingWebhookConfiguration: |
+        jqPathExpressions:
+        - .webhooks[]?.clientConfig.caBundle
+        - .webhooks[].namespaceSelector.matchExpressions[] | select(.key == "control-plane")
+        - .webhooks[].failurePolicy
+      resource.customizations.ignoreDifferences.apiregistration.k8s.io_APIService: |
+        jqPathExpressions:
+        - .spec.insecureSkipTLSVerify
+    rbac:
+      create: true
+      policy.csv: |
+        g, fred, role:admin
+        g, pipeline, role:admin
+    params:
+      otlp.address: ''
+      controller.status.processors: 20
+      controller.operation.processors: 10
+      controller.self.heal.timeout.seconds: 5
+      controller.repo.server.timeout.seconds: 60
+      server.insecure: true
+      server.basehref: /
+      server.rootpath: ''
+      server.staticassets: /shared/app
+      server.disable.auth: false
+      server.enable.gzip: false
+      server.x.frame.options: sameorigin
+      reposerver.parallelism.limit: 0
+
+argocd-apps:
+  applications:
+  - name: argocd
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    project: argocd
+    source:
+      helm:
+        valueFiles:
+          - values.yaml
+        version: v3
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: rke2/install
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: false
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+  - name: argocd-repositories
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: rke2/argoRepositories
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+  - name: argocd-appprojects
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: rke2/argoProjects
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+  - name: argocd-applications
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: rke2/argoApps
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+# -- Deploy Argo CD Projects within this helm release
+# @default -- `[]` (See [values.yaml])
+## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/
+  projects:
+  - name: argocd
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers:
+    - resources-finalizer.argocd.argoproj.io
+    description: Argocd Project
+    sourceRepos:
+    - '*'
+    destinations:
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+    clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

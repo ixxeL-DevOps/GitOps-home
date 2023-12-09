@@ -1,0 +1,51 @@
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: utils
+#   namespace: argocd
+# spec:
+#   generators:
+#   - list:
+#       elements:
+#       - env: k0s
+#         cluster-url: https://kubernetes.default.svc
+#         cluster-name: in-cluster
+#         namespace: external-secrets
+#       - env: k0s
+#         cluster-url: https://kubernetes.default.svc
+#         cluster-name: in-cluster
+#         namespace: chartmuseum
+#       - env: k0s
+#         cluster-url: https://kubernetes.default.svc
+#         cluster-name: in-cluster
+#         namespace: argocd
+#       # - env: k0s
+#       #   cluster-url: https://kubernetes.default.svc
+#       #   cluster-name: in-cluster
+#       #   namespace: github-runner
+#   template:
+#     metadata:
+#       name: 'utils-{{namespace}}-{{env}}'
+#       finalizers: []
+#     spec:
+#       project: utils
+#       destination:
+#         server: '{{cluster-url}}'
+#         namespace: '{{namespace}}'
+#       source:
+#         path: src/{{env}}/{{namespace}}
+#         repoURL: https://gitlab.com/gitops31/k8s-cluster/argocd.git
+#         targetRevision: '{{env}}'
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true

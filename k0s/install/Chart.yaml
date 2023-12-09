@@ -1,0 +1,16 @@
+apiVersion: v2
+name: argo-cd
+version: 1.0.0                                                           
+dependencies:
+- name: argo-cd
+  version: 5.51.6
+  repository: https://argoproj.github.io/argo-helm
+  condition: argocd.enabled
+- name: argocd-apps
+  version: 1.4.1
+  repository: https://argoproj.github.io/argo-helm
+  condition: apps.enabled
+- name: argocd-image-updater
+  version: 0.9.1
+  repository: https://argoproj.github.io/argo-helm
+  condition: updater.enabled

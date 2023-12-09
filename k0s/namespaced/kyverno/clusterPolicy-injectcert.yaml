@@ -1,0 +1,44 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-vault-root-cert
+spec:
+  rules:
+    - name: add-vault-root-cert
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaces:
+            - chartmuseum
+          selector:
+            matchLabels:
+              app.kubernetes.io/instance: helm-dashboard-k0s
+              app.kubernetes.io/name: helm-dashboard
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              cert-injection.fredcorp.com/injected: "true"
+          spec:
+            volumes:
+              - name: fredcorp-pki-certs
+                configMap:
+                  name: fredcorp-pki-certs
+                  items:
+                  - key: vault-pki-certs.pem
+                    path: vault-pki-certs.pem
+            containers:
+              - (name): "*"
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    cp /tmp/vault-pki-certs.pem /etc/ssl/certs
+                    update-ca-certificates &&
+                    /bin/helm-dashboard --no-browser --bind=0.0.0.0
+                volumeMounts:
+                  - name: fredcorp-pki-certs
+                    mountPath: /tmp
+                    readOnly: true
+                    # subPath: vault-pki-certs.pem

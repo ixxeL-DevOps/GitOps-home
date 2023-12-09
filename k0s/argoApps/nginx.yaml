@@ -1,0 +1,53 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: nginx
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: nginx
+  template:
+    metadata:
+      name: 'nginx-{{env}}'
+      finalizers: []
+      annotations:
+        argocd-image-updater.argoproj.io/write-back-method: git
+        argocd-image-updater.argoproj.io/git-branch: k0s
+        argocd-image-updater.argoproj.io/image-list: nginx=docker.io/bitnami/nginx:1.25.x
+        argocd-image-updater.argoproj.io/nginx.update-strategy: semver
+        # argocd-image-updater.argoproj.io/image-list: nginx=docker.io/nginx:1.24
+        # argocd-image-updater.argoproj.io/app.update-strategy: semver
+        # argocd-image-updater.argoproj.io/nginx.pull-secret: argocd/dockerhub-creds
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.bitnami.com/bitnami
+        targetRevision: 13.1.2
+        chart: nginx
+        helm:
+          releaseName: 'nginx-{{env}}'
+          values: | 
+            fullnameOverride: nginx-{{env}}
+            image:
+              registry: docker.io
+              repository: bitnami/nginx
+              tag: 1.25.0
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

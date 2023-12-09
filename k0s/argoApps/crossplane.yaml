@@ -1,0 +1,204 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane
+  namespace: argocd
+spec:
+  destination:
+    namespace: crossplane
+    name: k0s
+  project: infra-core
+  source:
+    repoURL: https://charts.crossplane.io/stable
+    targetRevision: 1.*.*
+    chart: crossplane
+    helm:
+      releaseName: crossplane
+      valuesObject:
+        # provider:
+        #   packages:
+        #   - xpkg.upbound.io/coopnorge/provider-github:v0.3.2
+        #   - xpkg.upbound.io/crossplane-contrib/provider-gitlab:v0.5.0
+        # configuration:
+        #   packages: []
+        extraObjects:
+          - apiVersion: external-secrets.io/v1beta1
+            kind: ExternalSecret
+            metadata:
+              name: crossplane-gitlab-creds
+            spec:
+              refreshInterval: "600s"
+              secretStoreRef:
+                name: admin
+                kind: ClusterSecretStore
+              target:
+                name: crossplane-gitlab-creds
+              data:
+                - secretKey: token
+                  remoteRef:
+                    conversionStrategy: Default	
+                    decodingStrategy: None
+                    key: gitlab
+                    property: crossplane-token
+                    metadataPolicy: None
+          - apiVersion: external-secrets.io/v1beta1
+            kind: ExternalSecret
+            metadata:
+              name: crossplane-github-creds
+            spec:
+              refreshInterval: "600s"
+              secretStoreRef:
+                name: admin
+                kind: ClusterSecretStore
+              target:
+                name: crossplane-github-creds
+                template: 
+                  data:
+                    creds: |
+                      {
+                        "token": "{{ `{{ .pat }}` }}",
+                        "owner": "ixxeL-DevOps"
+                      }
+              data:
+                - secretKey: pat
+                  remoteRef:                  
+                    key: github/k0s
+                    property: DEVOPS_ORG_PAT
+                    conversionStrategy: Default	
+                    decodingStrategy: None
+                    metadataPolicy: None
+          - apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: provider-gitlab
+            spec:
+              package: xpkg.upbound.io/crossplane-contrib/provider-gitlab:v0.5.0
+              controllerConfigRef:
+                name: debug
+          - apiVersion: pkg.crossplane.io/v1
+            kind: Provider
+            metadata:
+              name: github
+            spec:
+              package: xpkg.upbound.io/coopnorge/provider-github:v0.3.2
+              controllerConfigRef:
+                name: debug
+          - apiVersion: gitlab.crossplane.io/v1beta1
+            kind: ProviderConfig
+            metadata:
+              name: provider-gitlab
+            spec:
+              baseURL: https://gitlab.com/
+              credentials:
+                source: Secret
+                secretRef:
+                  namespace: crossplane
+                  name: crossplane-gitlab-creds
+                  key: token
+          - apiVersion: github.upbound.io/v1beta1
+            kind: ProviderConfig
+            metadata:
+              name: github
+            spec:
+              credentials:
+                source: Secret
+                secretRef:
+                  name: crossplane-github-creds
+                  namespace: crossplane
+                  key: creds
+          - apiVersion: pkg.crossplane.io/v1alpha1
+            kind: ControllerConfig
+            metadata:
+              name: debug
+            spec:
+              args: 
+                # - --enable-management-policies
+                - --debug
+          # - apiVersion: pkg.crossplane.io/v1alpha1
+          #   kind: DeploymentRuntimeConfig
+          #   metadata:
+          #     name: gitlab-provider
+          #   spec:
+          #     deploymentTemplate:
+          #       spec:
+          #         template:
+          #           containers:
+          #             # The container used to run the Provider or Function must be named
+          #             # 'package-runtime'. The package manager will overlay the package's
+          #             # runtime image, pull policy, etc into this container.
+          #           - name: package-runtime
+          #             args:
+          #               - --enable-management-policies
+          #       # A DeploymentRuntimeConfig can also be used to configure the Service and
+          #       # ServiceAccount the package manager creates to support the Deployment.
+          #       serviceTemplate:
+          #         metadata: {}
+          #       serviceAccountTemplate:
+          #         metadata: {}
+          - apiVersion: groups.gitlab.crossplane.io/v1alpha1
+            kind: Group
+            metadata:
+              name: cxp-ext-gitops-gitlab-grp
+              annotations:
+                crossplane.io/external-name: gitops31
+            spec:
+              forProvider:
+                parentId: 0
+                path: gitops31
+              providerConfigRef:
+                name: provider-gitlab
+            # spec:
+            #   managementPolicies: ["Observe"]
+          # - apiVersion: projects.gitlab.crossplane.io/v1alpha1
+          #   kind: Project
+          #   metadata:
+          #     name: cxp-project
+          #   spec:
+          #     forProvider:
+          #       name: "cxp Project"
+          #       namespaceIdRef:
+          #         name: test
+          #     providerConfigRef:
+          #       name: provider-gitlab
+          #     writeConnectionSecretToRef:
+          #       name: gitlab-project-example-project
+          #       namespace: crossplane
+          # - apiVersion: groups.gitlab.crossplane.io/v1alpha1
+          #   kind: Group
+          #   metadata:
+          #     name: test
+          #   spec:
+          #     forProvider:
+          #       name: test
+          #       parentId: 54224709
+          #       # parentIdRef:
+          #       #   name: example-parent-group
+          #       path: test
+          #       # sharedWithGroups:
+          #       #   - groupAccessLevel: example access level 1
+          #       #     groupId: example group id 1
+          #       #   - groupAccessLevel: example access level 2
+          #       #     groupId: example group id 2
+          #     providerConfigRef:
+          #       name: provider-gitlab
+          #     writeConnectionSecretToRef:
+          #       name: gitlab-test-group
+          #       namespace: crossplane
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
+      - PruneLast=false
+      - RespectIgnoreDifferences=true
+      - Replace=false
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true
+      - ServerSideApply=true
+  ignoreDifferences:
+  - group: apps
+    kind: Deployment
+    jqPathExpressions: 
+      - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
+      - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor

@@ -1,0 +1,157 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kyverno
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: kyverno
+  template:
+    metadata:
+      name: 'kyverno-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-security
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://kyverno.github.io/kyverno/
+        targetRevision: 3.*.*
+        chart: kyverno
+        helm:
+          releaseName: 'kyverno-{{env}}'
+          valuesObject:
+            fullnameOverride: 'kyverno-{{env}}'
+            # backgroundController:
+            #   rbac:
+            #     coreClusterRole:
+            #       extraResources:
+            #         - apiGroups:
+            #             - '*'
+            #           resources:
+            #             - '*'
+            #           verbs:
+            #             - get
+            #             - list
+            #             - watch
+            #         - apiGroups:
+            #             - networking.k8s.io
+            #           resources:
+            #             - ingresses
+            #             - ingressclasses
+            #             - networkpolicies
+            #           verbs:
+            #             - create
+            #             - update
+            #             - patch
+            #             - delete
+            #         - apiGroups:
+            #             - rbac.authorization.k8s.io
+            #           resources:
+            #             - rolebindings
+            #             - roles
+            #             - clusterrolebindings
+            #           verbs:
+            #             - create
+            #             - update
+            #             - patch
+            #             - delete
+            #         - apiGroups:
+            #             - ''
+            #           resources:
+            #             - configmaps
+            #             - secrets
+            #             - resourcequotas
+            #             - limitranges
+            #           verbs:
+            #             - create
+            #             - update
+            #             - patch
+            #             - delete
+            #   # rbac:
+            #   #   create: true
+            #   #   clusterRole:
+            #   #     extraResources:
+            #   #     - apiGroups:
+            #   #         - rbac.authorization.k8s.io
+            #   #       resources:
+            #   #         - clusterroles
+            #   #         - clusterrolebindings
+            #   #       verbs:
+            #   #         - create
+            #   #         - update
+            #   #         - delete
+            #   #         - patch
+            cleanupController:
+              featuresOverride: {}
+              enabled: true
+            reportsController:
+              featuresOverride: {}
+              enabled: true
+            crds:
+              install: true
+            features:
+              admissionReports:
+                enabled: true
+              aggregateReports:
+                enabled: true
+              policyReports:
+                enabled: true
+              validatingAdmissionPolicyReports:
+                enabled: false
+              autoUpdateWebhooks:
+                enabled: true
+              backgroundScan:
+                enabled: true
+                backgroundScanWorkers: 2
+                backgroundScanInterval: 24h
+                skipResourceFilters: true
+              configMapCaching:
+                enabled: true
+              deferredLoading:
+                enabled: true
+              dumpPayload:
+                enabled: false
+              forceFailurePolicyIgnore:
+                enabled: false
+              generateValidatingAdmissionPolicy:
+                enabled: false
+              logging:
+                format: text
+                verbosity: 2
+              omitEvents:
+                eventTypes: []
+              policyExceptions:
+                enabled: true
+                namespace: ''
+              protectManagedResources:
+                enabled: false
+              registryClient:
+                allowInsecure: true
+                credentialHelpers:
+                - default
+                - google
+                - amazon
+                - azure
+                - github
+              reports:
+                chunkSize: 1000
+              ttlController:
+                reconciliationInterval: 1m
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

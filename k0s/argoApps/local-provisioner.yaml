@@ -1,0 +1,41 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: local-provisioner
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements: []
+      # - env: k0s
+      #   namespace: local
+  template:
+    metadata:
+      name: 'local-provisioner-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.containeroo.ch
+        targetRevision: 0.*.*
+        chart: local-path-provisioner
+        helm:
+          releaseName: 'local-provisioner-{{env}}'
+          valuesObject:
+            fullnameOverride: local-provisioner-{{env}}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

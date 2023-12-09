@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: utils
+spec:
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  description: project dedicated to tools elements
+  destinations:
+    - name: '*'
+      namespace: '*'
+      server: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  sourceRepos:
+    - '*'
+status: {}
