@@ -71,3 +71,5 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
+          - AutoCreateFluxResources=true
+          - FluxSubsystem=true
