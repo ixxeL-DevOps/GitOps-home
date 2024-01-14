@@ -15,9 +15,12 @@ argo-cd:
     keep: false
   global:
     image:
+      # imagePullPolicy: IfNotPresent
+      # repository: quay.io/argoproj/argocd
+      # tag: v2.9.3
       imagePullPolicy: IfNotPresent
-      repository: quay.io/argoproj/argocd
-      tag: v2.9.3
+      repository: ghcr.io/flux-subsystem-argo/fsa/argocd
+      tag: v2.9.3-fl.21-main-a6eaf3af
     logging:
       format: text
       level: info
