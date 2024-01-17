@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: k0smotron
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: k0smotron
+  template:
+    metadata:
+      name: 'k0smotron-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://docs.k0smotron.io/v0.8.0/install.yaml
+        targetRevision: main
+        path: /
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
