@@ -51,18 +51,17 @@ argo-cd:
         # traefik.ingress.kubernetes.io/router.tls: true
       labels: {}
       ingressClassName: "nginx"
-      hosts:
-        - argocd.k8s-app.fredcorp.com
-      paths:
-        - /
+      hostname: argocd.k8s-app.fredcorp.com
+      # hosts:
+      #   - argocd.k8s-app.fredcorp.com
+      path: /
       pathType: Prefix
-      extraPaths:
-        []
-      tls:
-      - secretName: argocd-tls-cert
-        hosts:
-          - argocd.k8s-app.fredcorp.com
-      https: true
+      tls: true
+      # tls:
+      # - secretName: argocd-tls-cert
+      #   hosts:
+      #     - argocd.k8s-app.fredcorp.com
+      # https: true
 
     # ingressGrpc:
     #   enabled: true
