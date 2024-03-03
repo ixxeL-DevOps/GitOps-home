@@ -1,0 +1,27 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: chartmuseum-creds
+spec:
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: chartmuseum-creds
+  data:
+    - secretKey: user
+      remoteRef:
+        conversionStrategy: Default	
+        decodingStrategy: None
+        key: chartmuseum/k0s
+        property: USER
+        metadataPolicy: None
+    - secretKey: password
+      remoteRef:
+        conversionStrategy: Default	
+        decodingStrategy: None
+        key: chartmuseum/k0s
+        property: PWD
+        metadataPolicy: None
