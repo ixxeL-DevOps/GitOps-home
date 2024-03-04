@@ -1,0 +1,202 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-cluster-admin
+  namespace: github-runner
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["rbac.authorization.k8s.io"]
+  resources: ["clusterroles", "clusterrolebindings"]
+  verbs: ["get", "list", "watch", "create", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gh-runner-clusterrole-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: custom-cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: gh-runner-admin
+  namespace: github-runner
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gh-runner-admin
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: gh-runner-admin
+  annotations:
+    kubernetes.io/service-account.name: "gh-runner-admin"
+---
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: ixxel-devops-gha-runner
+spec:
+  replicas: 1
+  template:
+    # metadata:
+    #   annotations:
+    #     cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+    spec:
+      serviceAccountName: gh-runner-admin
+      organization: ixxeL-DevOps
+      labels:
+        - fredcorp-k0s
+        - k0s
+        - fredcorp
+      # priorityClassName: "high"
+
+      # securityContext:
+        #All level/role/type/user values will vary based on your SELinux policies.
+        #See https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux_atomic_host/7/html/container_security_guide/docker_selinux_security_policy for information about SELinux with containers
+        # seLinuxOptions:
+        #   level: "s0"
+        #   role: "system_r"
+        #   type: "super_t"
+        #   user: "system_u"
+
+
+      # repository: mumoshu/actions-runner-controller-ci
+      # The default "summerwind/actions-runner" images are available at DockerHub:
+      # https://hub.docker.com/r/summerwind/actions-runner
+      # You can also build your own and specify it like the below:
+      image: ixxel/arc-runner:v0
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: "4"
+          memory: "8Gi"
+        requests:
+          cpu: "2"
+          memory: "4Gi"
+      # true (default) = The runner restarts after running jobs, to ensure a clean and reproducible build environment
+      # false = The runner is persistent across jobs and doesn't automatically restart
+      # This directly controls the behaviour of `--once` flag provided to the github runner
+      ephemeral: false
+      # true (default) = A privileged docker sidecar container is included in the runner pod.
+      # false = A docker sidecar container is not included in the runner pod and you can't use docker.
+      # If set to false, there are no privileged container and you cannot use docker.
+      dockerEnabled: true
+      # Optional Docker containers network MTU
+      # If your network card MTU is smaller than Docker's default 1500, you might encounter Docker networking issues.
+      # To fix these issues, you should setup Docker MTU smaller than or equal to that on the outgoing network card.
+      # More information:
+      # - https://mlohr.com/docker-mtu/
+      dockerMTU: 1500
+      # Optional Docker registry mirror
+      # Docker Hub has an aggressive rate-limit configuration for free plans.
+      # To avoid disruptions in your CI/CD pipelines, you might want to setup an external or on-premises Docker registry mirror.
+      # More information:
+      # - https://docs.docker.com/docker-hub/download-rate-limit/
+      # - https://cloud.google.com/container-registry/docs/pulling-cached-images
+      # dockerRegistryMirror: https://mirror.gcr.io/
+      # false (default) = Docker support is provided by a sidecar container deployed in the runner pod.
+      # true = No docker sidecar container is deployed in the runner pod but docker can be used within the runner container instead. The image summerwind/actions-runner-dind is used by default.
+      dockerdWithinRunnerContainer: false
+      #Optional environment variables for docker container
+      # Valid only when dockerdWithinRunnerContainer=false
+      # dockerEnv:
+      #   - name: HTTP_PROXY
+      #     value: http://example.com
+      # Docker sidecar container image tweaks examples below, only applicable if dockerdWithinRunnerContainer = false
+      dockerdContainerResources:
+        limits:
+          cpu: "2"
+          memory: "6Gi"
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+      # Additional N number of sidecar containers
+      # sidecarContainers:
+      #   - name: mysql
+      #     image: mysql:5.7
+      #     env:
+      #       - name: MYSQL_ROOT_PASSWORD
+      #         value: abcd1234
+      #     securityContext:
+      #       runAsUser: 0
+      # workDir if not specified (default = /runner/_work)
+      # You can customise this setting allowing you to change the default working directory location
+      # for example, the below setting is the same as on the ubuntu-18.04 image
+      # workDir: /home/runner/work
+      # You can mount some of the shared volumes to the dind container using dockerVolumeMounts, like any other volume mounting.
+      # NOTE: in case you want to use an hostPath like the following example, make sure that Kubernetes doesn't schedule more than one runner
+      # per physical host. You can achieve that by setting pod anti-affinity rules and/or resource requests/limits.
+      # volumes:
+      #   - name: docker-extra
+      #     hostPath:
+      #       path: /mnt/docker-extra
+      #       type: DirectoryOrCreate
+      #   - name: repo
+      #     hostPath:
+      #       path: /mnt/repo
+      #       type: DirectoryOrCreate
+      # dockerVolumeMounts:
+      #   - mountPath: /var/lib/docker
+      #     name: docker-extra
+      # You can mount some of the shared volumes to the runner container using volumeMounts.
+      # NOTE: Do not try to mount the volume onto the runner workdir itself as it will not work. You could mount it however on a subdirectory in the runner workdir
+      # Please see https://github.com/actions/actions-runner-controller/issues/630#issuecomment-862087323 for more information.
+      # volumeMounts:
+      #   - mountPath: /home/runner/work/repo
+      #     name: repo
+      # Optional storage medium type of runner volume mount.
+      # More info: https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
+      # "" (default) = Node's default medium
+      # Memory = RAM-backed filesystem (tmpfs)
+      # NOTE: Using RAM-backed filesystem gives you fastest possible storage on your host nodes.
+      # volumeStorageMedium: ""
+      # Total amount of local storage resources required for runner volume mount.
+      # The default limit is undefined.
+      # NOTE: You can make sure that nodes' resources are never exceeded by limiting used storage size per runner pod.
+      # You can even disable the runner mount completely by setting limit to zero if dockerdWithinRunnerContainer = true.
+      # Please see https://github.com/actions/actions-runner-controller/pull/674 for more information.
+      # volumeSizeLimit: 4Gi
+      # Optional name of the container runtime configuration that should be used for pods.
+      # This must match the name of a RuntimeClass resource available on the cluster.
+      # More info: https://kubernetes.io/docs/concepts/containers/runtime-class
+      # runtimeClassName: "runc"
+      # This is an advanced configuration. Don't touch it unless you know what you're doing.
+      containers:
+      - name: runner
+        resources: {}
+        # Usually, the runner container's privileged field is derived from dockerdWithinRunnerContainer.
+        # But in the case where you need to run privileged job steps even if you don't use docker/don't need dockerd within the runner container,
+        # just specified `privileged: true` like this.
+        # See https://github.com/actions/actions-runner-controller/issues/1282
+        # Do note that specifying `privileged: false` while using dind is very likely to fail, even if you use some vm-based container runtimes
+        # like firecracker and kata. Basically they run containers within dedicated micro vms and so
+        # it's more like you can use `privileged: true` safer with those runtimes.
+        #
+        # privileged: true
+
+
+# ---
+# apiVersion: actions.summerwind.dev/v1alpha1
+# kind: HorizontalRunnerAutoscaler
+# metadata:
+#   name: ixxel-devops-gha-runner
+# spec:
+#   scaleTargetRef:
+#     name: ixxel-devops-gha-runner
+#     kind: RunnerDeployment
+#   minReplicas: 1
+#   maxReplicas: 3
+#   metrics:
+#   - type: PercentageRunnersBusy
+#     scaleUpThreshold: '0.75'
+#     scaleDownThreshold: '0.25'
+#     scaleUpFactor: '2'
+#     scaleDownFactor: '0.5'

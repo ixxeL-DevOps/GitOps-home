@@ -1,38 +1,38 @@
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: namespaced-appset
-  namespace: argocd
-spec:
-  generators:
-    - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
-        revision: main
-        directories:
-          - path: 'k0s/namespaced/*'
-  template:
-    metadata:
-      name: gitops-{{path.basenameNormalized}}-{{path[0]}}
-      finalizers: []
-    spec:
-      project: utils
-      source:
-        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
-        targetRevision: main
-        path: '{{path}}'
-      destination:
-        name: '{{path[0]}}'
-        namespace: '{{path.basenameNormalized}}'
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - Validate=true
-          - PruneLast=false
-          - RespectIgnoreDifferences=true
-          - Replace=false
-          - ApplyOutOfSyncOnly=true
-          - CreateNamespace=true
-          - ServerSideApply=true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: namespaced-appset
+#   namespace: argocd
+# spec:
+#   generators:
+#     - git:
+#         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+#         revision: main
+#         directories:
+#           - path: 'k0s/namespaced/*'
+#   template:
+#     metadata:
+#       name: gitops-{{path.basenameNormalized}}-{{path[0]}}
+#       finalizers: []
+#     spec:
+#       project: utils
+#       source:
+#         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+#         targetRevision: main
+#         path: '{{path}}'
+#       destination:
+#         name: '{{path[0]}}'
+#         namespace: '{{path.basenameNormalized}}'
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true

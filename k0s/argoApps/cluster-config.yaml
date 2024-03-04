@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-config
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+  template:
+    metadata:
+      name: 'cluster-config-{{env}}'
+      finalizers: []
+    spec:
+      project: utils
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        targetRevision: main
+        path: k0s
+        directory:
+          recurse: true
+          include: 'config/*'
+      destination:
+        name: '{{env}}'
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
