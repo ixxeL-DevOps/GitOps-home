@@ -15,7 +15,11 @@ spec:
     metadata:
       name: '{{path.basenameNormalized}}'
       annotations:
-        'test/quanti-querymgr-{{path}}': latest
+        argocd-image-updater.argoproj.io/app.update-strategy: latest
+        argocd-image-updater.argoproj.io/app.allow-tags: regexp:^dev-.*
+        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/registry/test/{{path.basenameNormalized}}'
+        argocd-image-updater.argoproj.io/write-back-method: git
       finalizers: []
     spec:
       project: utils
