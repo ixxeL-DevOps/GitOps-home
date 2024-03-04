@@ -1,0 +1,45 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: test-sources
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        revision: main
+        directories:
+          - path: 'k0s/test-sources/*'
+  template:
+    metadata:
+      name: '{{path.basenameNormalized}}'
+      finalizers: []
+    spec:
+      project: utils
+      destination:
+        name: '{{path[0]}}'
+        namespace: '{{path[2]}}'
+    source:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      path: '{{path}}'
+      targetRevision: main
+      helm:
+        releaseName: '{{path.basenameNormalized}}'
+        valueFiles:
+        - values.yaml
+      # - repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      #   path: '{{path}}'
+      #   targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

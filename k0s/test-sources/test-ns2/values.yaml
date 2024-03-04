@@ -1,0 +1,3 @@
+argo-rollouts:
+  installCRDs: true
+  keepCRDs: false
