@@ -10,7 +10,7 @@ spec:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
         revision: main
         directories:
-          - path: 'k0s/test-sources/*'
+          - path: 'k0s/test-sources/*/*'
   template:
     metadata:
       name: '{{path.basenameNormalized}}'
