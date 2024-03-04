@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Secret
-metadata:
-  name: secretstore-vault-approle-secretid
-type: Opaque
-stringData:
-  secret-id-avplugin: eb6392f3-64de-c635-1824-309e4fbd3ddc
-  secret-id-global: 420c862b-eef3-a2b1-ea06-e570fb032322
