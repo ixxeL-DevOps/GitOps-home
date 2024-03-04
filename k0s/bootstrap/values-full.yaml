@@ -478,6 +478,119 @@ argo-cd:
               - |
                 argocd-vault-plugin generate . --verbose-sensitive-output --secret-name $AVP_SECRET_CONFIG
 
+  extraObjects:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: repo-creds-github
+      namespace: argocd
+    spec:
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: admin
+      target:
+        name: repo-creds-github
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+      data:
+      - secretKey: username
+        remoteRef:
+          key: github/k0s
+          property: DEVOPS_ORG_PAT
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+      - secretKey: password
+        remoteRef:
+          key: github/k0s
+          property: GITHUB_USERNAME
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+      - secretKey: url
+        remoteRef:
+          key: github/k0s
+          property: GITHUB_URL
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: repo-creds-gitlab
+      namespace: argocd
+    spec:
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: admin
+      target:
+        name: repo-creds-gitlab
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          engineVersion: v2
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          data:
+            username: ixxel
+            password: "{{ `{{ .token }}` }}"
+            url: https://gitlab.com
+      data:
+      - secretKey: token
+        remoteRef:
+          key: gitlab/k0s
+          property: TOKEN
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+      # - secretKey: password
+      #   remoteRef:
+      #     key: gitlab/k0s
+      #     property: GITLAB_USERNAME
+      #     conversionStrategy: Default
+      #     decodingStrategy: None
+      #     metadataPolicy: None
+      # - secretKey: url
+      #   remoteRef:
+      #     key: gitlab/k0s
+      #     property: GITLAB_URL
+      #     conversionStrategy: Default
+      #     decodingStrategy: None
+      #     metadataPolicy: None
+
+    # - apiVersion: secrets-store.csi.x-k8s.io/v1
+    #   kind: SecretProviderClass
+    #   metadata:
+    #     name: argocd-secrets-store
+    #   spec:
+    #     provider: aws
+    #     parameters:
+    #       objects: |
+    #         - objectName: "argocd"
+    #           objectType: "secretsmanager"
+    #           jmesPath:
+    #               - path: "client_id"
+    #                 objectAlias: "client_id"
+    #               - path: "client_secret"
+    #                 objectAlias: "client_secret"
+    #     secretObjects:
+    #     - data:
+    #       - key: client_id
+    #         objectName: client_id
+    #       - key: client_secret
+    #         objectName: client_secret
+    #       secretName: argocd-secrets-store
+    #       type: Opaque
+    #       labels:
+    #         app.kubernetes.io/part-of: argocd
+
+
 argocd-apps:
   extensions: 
     - name: argo-rollouts
