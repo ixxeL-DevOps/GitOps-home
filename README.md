@@ -20,7 +20,7 @@ argocd cluster add vcluster_vcluster-dev_vk-dev_rke2-fredcorp --server argocd.k8
 
 ```bash
 kubectl config view --raw -o jsonpath='{.clusters[?(@.name == "'"$(kubectl config current-context)"'")].cluster.certificate-authority-data}' | base64 --decode > ca.crt
-token=$(kubectl get secret vault-auth -ojson | jq -r '.data.token' | base64 -d)
+token=$(kubectl get secret vault-auth -n cert-manager -ojson | jq -r '.data.token' | base64 -d)
 vault login -tls-skip-verify -address=https://vault.fredcorp.com
-vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/config token_reviewer_jwt=$token kubernetes_host=https://192.168.1.100:6443 kubernetes_ca_cert=@ca.crt
+vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/config token_reviewer_jwt=$token kubernetes_host=https://192.168.1.110:6443 kubernetes_ca_cert=@ca.crt
 ```

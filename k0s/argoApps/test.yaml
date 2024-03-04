@@ -14,6 +14,8 @@ spec:
   template:
     metadata:
       name: '{{path.basenameNormalized}}'
+      annotations:
+        'test/quanti-querymgr-{{path}}': latest
       finalizers: []
     spec:
       project: utils
