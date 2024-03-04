@@ -20,14 +20,14 @@ spec:
       destination:
         name: '{{path[0]}}'
         namespace: '{{path[2]}}'
-    source:
-      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
-      path: '{{path}}'
-      targetRevision: main
-      helm:
-        releaseName: '{{path.basenameNormalized}}'
-        valueFiles:
-        - values.yaml
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{path}}'
+        targetRevision: main
+        helm:
+          releaseName: '{{path.basenameNormalized}}'
+          valueFiles:
+          - values.yaml
       # - repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
       #   path: '{{path}}'
       #   targetRevision: main
