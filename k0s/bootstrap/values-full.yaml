@@ -501,7 +501,7 @@ argocd-apps:
         version: v3
       repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
       targetRevision: main
-      path: k0s/install
+      path: k0s/bootstrap
     destination:
       server: https://kubernetes.default.svc
       namespace: argocd
