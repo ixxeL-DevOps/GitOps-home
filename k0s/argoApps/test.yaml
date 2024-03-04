@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: test-sources
+  name: dev-apps
   namespace: argocd
 spec:
   generators:
@@ -10,10 +10,14 @@ spec:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
         revision: main
         directories:
-          - path: 'k0s/test-sources/*/*'
+          - path: 'k0s/test-sources/dev/*/*'
+          - path: 'k0s/test-sources/preprod/*/*'
+            exclude: true
+          - path: 'k0s/test-sources/prod/*/*'
+            exclude: true
   template:
     metadata:
-      name: '{{path.basenameNormalized}}'
+      name: '{{path.basenameNormalized}}-{{path[2]}}'
       annotations:
         argocd-image-updater.argoproj.io/app.update-strategy: latest
         argocd-image-updater.argoproj.io/app.allow-tags: regexp:^dev-.*
@@ -25,18 +29,22 @@ spec:
       project: utils
       destination:
         name: '{{path[0]}}'
-        namespace: '{{path[2]}}'
+        namespace: '{{path[3]}}'
       source:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
         path: '{{path}}'
         targetRevision: main
-        helm:
-          releaseName: '{{path.basenameNormalized}}'
-          valueFiles:
-          - values.yaml
+        # directory:
+        #   recurse: true
+        # helm:
+        #   releaseName: '{{path.basenameNormalized}}-{{path[2]}}'
+        #   valueFiles:
+        #   - values.yaml
       # - repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
       #   path: '{{path}}'
       #   targetRevision: main
+      #   directory:
+      #     recurse: true
       syncPolicy:
         automated:
           prune: true
