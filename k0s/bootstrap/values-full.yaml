@@ -366,14 +366,6 @@ argo-cd:
         AVP_TYPE: vault
         VAULT_ADDR: 'https://vault.fredcorp.com'
         VAULT_SKIP_VERIFY: true
-      gitlab-com:
-        url: https://gitlab.com
-        password: glpat-U-hkZyQztUYKpuKqsZEG
-        username: ixxel
-      github-com:
-        url: https://github.com
-        password: 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
-        username: ixxel      
     cm:
       create: true
       accounts.fred: "apiKey, login"
@@ -493,28 +485,20 @@ argo-cd:
         creationPolicy: Owner
         deletionPolicy: Retain
         template:
+          engineVersion: v2
           metadata:
             labels:
               argocd.argoproj.io/secret-type: repo-creds
+          data:
+            username: ixxel
+            password: "{{ `{{ .token }}` }}"
+            url: https://github.com
       data:
-      - secretKey: username
+      data:
+      - secretKey: token
         remoteRef:
           key: github/k0s
           property: DEVOPS_ORG_PAT
-          conversionStrategy: Default
-          decodingStrategy: None
-          metadataPolicy: None
-      - secretKey: password
-        remoteRef:
-          key: github/k0s
-          property: GITHUB_USERNAME
-          conversionStrategy: Default
-          decodingStrategy: None
-          metadataPolicy: None
-      - secretKey: url
-        remoteRef:
-          key: github/k0s
-          property: GITHUB_URL
           conversionStrategy: Default
           decodingStrategy: None
           metadataPolicy: None
@@ -549,47 +533,6 @@ argo-cd:
           conversionStrategy: Default
           decodingStrategy: None
           metadataPolicy: None
-      # - secretKey: password
-      #   remoteRef:
-      #     key: gitlab/k0s
-      #     property: GITLAB_USERNAME
-      #     conversionStrategy: Default
-      #     decodingStrategy: None
-      #     metadataPolicy: None
-      # - secretKey: url
-      #   remoteRef:
-      #     key: gitlab/k0s
-      #     property: GITLAB_URL
-      #     conversionStrategy: Default
-      #     decodingStrategy: None
-      #     metadataPolicy: None
-
-    # - apiVersion: secrets-store.csi.x-k8s.io/v1
-    #   kind: SecretProviderClass
-    #   metadata:
-    #     name: argocd-secrets-store
-    #   spec:
-    #     provider: aws
-    #     parameters:
-    #       objects: |
-    #         - objectName: "argocd"
-    #           objectType: "secretsmanager"
-    #           jmesPath:
-    #               - path: "client_id"
-    #                 objectAlias: "client_id"
-    #               - path: "client_secret"
-    #                 objectAlias: "client_secret"
-    #     secretObjects:
-    #     - data:
-    #       - key: client_id
-    #         objectName: client_id
-    #       - key: client_secret
-    #         objectName: client_secret
-    #       secretName: argocd-secrets-store
-    #       type: Opaque
-    #       labels:
-    #         app.kubernetes.io/part-of: argocd
-
 
 argocd-apps:
   extensions: 
