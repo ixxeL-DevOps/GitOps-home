@@ -442,15 +442,14 @@ spec:
   generators:
   - list:
       elements:
-      - cluster: in-cluster
-        env: stg
+      - cluster: stg
         namespace: ingress-nginx
-        ip: 34.163.16.98
+        ip: 14.156.3.95
         minReplicas: 2
         maxReplicas: 10
   template:
     metadata:
-      name: 'ingress-nginx-controller-{{.env}}'
+      name: 'ingress-nginx-controller-{{.cluster}}'
       finalizers: []
     spec:
       project: infra-network
@@ -462,7 +461,7 @@ spec:
         targetRevision: 4.7.*
         chart: ingress-nginx
         helm:
-          releaseName: 'ingress-nginx-controller-{{.env}}'
+          releaseName: 'ingress-nginx-controller-{{.cluster}}'
       syncPolicy:
         automated:
           prune: true
@@ -475,11 +474,6 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
-      ignoreDifferences:
-        - group: ""
-          kind: Service
-          jsonPointers:
-            - /metadata/annotations
   templatePatch: |
     spec:
       source:
