@@ -424,7 +424,91 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
 ```
+## Tooling apps
 
+For applications managed by administrators, its is recommended to host then inside this repository. You cna use complex structure for `ApplicationSet` to handle multiple clusters values:
+
+Example with nginx:
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ingress-nginx-controller
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - list:
+      elements:
+      - cluster: in-cluster
+        env: stg
+        namespace: ingress-nginx
+        ip: 34.163.16.98
+        minReplicas: 2
+        maxReplicas: 10
+  template:
+    metadata:
+      name: 'ingress-nginx-controller-{{.env}}'
+      finalizers: []
+    spec:
+      project: infra-network
+      destination:
+        name: '{{.cluster}}'
+        namespace: '{{.namespace}}'
+      source:
+        repoURL: https://kubernetes.github.io/ingress-nginx
+        targetRevision: 4.7.*
+        chart: ingress-nginx
+        helm:
+          releaseName: 'ingress-nginx-controller-{{.env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+        - group: ""
+          kind: Service
+          jsonPointers:
+            - /metadata/annotations
+  templatePatch: |
+    spec:
+      source:
+        helm:
+          valuesObject:
+            controller:
+              podAnnotations: 
+                prometheus.io/scrape: "true"
+                prometheus.io/port: "10254"
+              metrics:
+                enabled: true
+              publishService:
+                enabled: true
+              autoscaling:
+                apiVersion: autoscaling/v2
+                enabled: true
+                targetCPUUtilizationPercentage: 75
+                targetMemoryUtilizationPercentage: 75
+                minReplicas: {{.minReplicas }}
+                maxReplicas: {{.maxReplicas }}
+              service:
+                externalTrafficPolicy: Local
+                enabled: true
+                loadBalancerIP: {{.ip | toString }}
+              resources:
+                requests:
+                  cpu: 150m
+                  memory: 256Mi
+```
 
 ## Vcluster
 
