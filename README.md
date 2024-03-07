@@ -60,12 +60,13 @@ argo-cd:
       argocdServerAdminPassword: "<hashed-value>"
 ```
 
-You can also get default password :
-
-```bash
-kubectl get secret -n argocd argocd-initial-admin-secret -ojson | jq -r '.data.password' | base64 -d
-kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
+> [!NOTE]
+> You can also get default password :
+> 
+> ```bash
+> kubectl get secret -n argocd argocd-initial-admin-secret -ojson | jq -r '.data.password' | base64 -d
+>kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+> ```
 
 The first installation of ArgoCD is the one and only time (except in extreme/special cases of recovery or specific maintenance) where the helm CLI is used to carry out the installation. All subsequent updates are made via git.
 
