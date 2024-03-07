@@ -1,5 +1,8 @@
 # GitOps-core
 
+> [!CAUTION]
+> This structure is opinionated and result from multiple experiences using ArgoCD in Enterprise grade environments
+
 ## Structure
 
 This git repository is the main ArgoCD repo. It contains the definition of the ArgoCD deployment itself as well as the definitions of the different ArgoCD objects (`Application`, `ApplicationSet`, `AppProject`...etc).
