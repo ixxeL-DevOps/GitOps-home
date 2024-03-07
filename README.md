@@ -1,10 +1,16 @@
-# GitOps-core
+# GitOps-home
+Home GitOps repository for infrastructure, clusters, stacks and so on and so forth
+
+> [!TIP]
+> 
+> Our project follows Domain-Driven Design (DDD) principles, organizing code into distinct domains for clarity and easier updates.
+
 
 ## Structure
 
-This git repository is the main ArgoCD repo. It contains the definition of the ArgoCD deployment itself as well as the definitions of the different ArgoCD objects (`Application`, `ApplicationSet`, `AppProject`...etc).
+Ce repository git est le repo principal ArgoCD. Il contient la definition du deploiement ArgoCD lui meme ainsi que les definitions des differents objets ArgoCD (`Application`, `ApplicationSet`, `AppProject`...etc).
 
-The structure of the repository is as follows:
+La structure du repository est la suivante :
 
 ```bash
 .
@@ -32,27 +38,29 @@ The structure of the repository is as follows:
 └── README.md
 ```
 
-The installation of ArgoCD respects the app of apps pattern recommended by ArgoCD
+L'installation d'ArgoCD respecte le pattern app of apps recommande par ArgoCD 
 - https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern
 
-Each directory is intended for a specific use:
+Ce pattern est legerement ameliore pour des conditions de maintenance et d'evolution ideales.
 
-- `argoApps`: contains the definition of all applications (the `Application` and `ApplicationSet` objects)
-- `argoClusters`: contains connection information to the different kubernetes clusters to which ArgoCD has access (Use `ExternalSecret` when necessary)
-- `argoProjects`: contains the definition of Argocd projects (the `AppProject` objects)
-- `argoRepositories`: contains connection information to the different repositories or registries to which ArgoCD can connect (Use `ExternalSecret` when necessary)
-- `bootstrap`: contains the ArgoCD instance deployment manifests in `Helm` format here.
-- `config`: contains the specific configuration of each cluster
+Chaque dossier est destine a un usage specifique :
 
-### Bootstrap : first install
+- `argoApps` : contient la definition de toutes les applications (les objets `Application` et `ApplicationSet`)
+- `argoClusters` : contient les informations de connexion aux differents clusters kubernetes auquels ArgoCD a acces (Utiliser des `ExternalSecret` quand c'est necessaire)
+- `argoProjects` : contient la definition des projets Argocd (les objets `AppProject`)
+- `argoRepositories` : contient les informations de connexion aux differents repositories ou registries auquels ArgoCD peut se connecter (Utiliser des `ExternalSecret` quand c'est necessaire)
+- `bootstrap` : contient les manifests de deploiement de l'instance ArgoCD au format `Helm` ici.
+- `config` : contient la configuration specifique de chaque cluster
 
-You can create custom password if you want:
+### Bootstrap : premiere installation
+
+Avant de proceder a l'installation, il est possible de creer un mot de passe personnalise via cette commande :
 
 ```bash
 htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'
 ```
 
-Add it to `values-bootstrap.yaml` :
+Puis de specifier sa valeur hashee dans le fichier `values-bootstrap.yaml` :
 ```yaml
 argo-cd:
   configs:
@@ -60,211 +68,91 @@ argo-cd:
       argocdServerAdminPassword: "<hashed-value>"
 ```
 
-You can also get default password :
+La premiere installation d'ArgoCD est la seule et unique fois (sauf cas extremes/speciaux de recovery ou maintenance specifique) ou la CLI helm est utilisee pour proceder a l'installation. Toutes les mises a jour suivantes sont faites via git.
 
 ```bash
-kubectl get secret -n argocd argocd-initial-admin-secret -ojson | jq -r '.data.password' | base64 -d
-kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+helm upgrade -i argocd bootstrap/ -n argocd --create-namespace -f boostrap/values-bootstrap.yaml --set apps.enabled=false --set updater.enabled=false
 ```
 
-The first installation of ArgoCD is the one and only time (except in extreme/special cases of recovery or specific maintenance) where the helm CLI is used to carry out the installation. All subsequent updates are made via git.
-
+Cette commande permets d'installer uniquement ArgoCD, puis executer ensuite :
 ```bash
-helm upgrade -i argocd bootstrap/ -n argocd --create-namespace -f bootstrap/values-bootstrap.yaml --set apps.enabled=false --set updater.enabled=false
+helm upgrade -i argocd bootstrap/ -n argocd --create-namespace -f boostrap/values-bootstrap.yaml --set apps.enabled=true --set updater.enabled=true
 ```
 
-Then install applications:
-```bash
-helm upgrade -i argocd bootstrap/ -n argocd --create-namespace -f bootstrap/values-bootstrap.yaml --set apps.enabled=true --set updater.enabled=true
-```
-
-This command build app of apps pattern.
+Cette commande permets de mettre en place le pattern App of Apps et d'installer egalement image updater.
 
 
-### ArgoCD configuration 
+### Configuration ArgoCD
 
-ArgoCD is installed with community Helm chart:
+ArgoCD est installe via le Helm chart communautaire :
 - https://github.com/argoproj/argo-helm.git
 
-To update the ArgoCD configuration, simply modify the values in the `values-bootstrap.yaml` file then push the changes to the git repo and wait for ArgoCD synchronization (or force it to go faster).
+Le dossier `bootstrap` est tres important, c'est dans ce dossier qu'on modifie la configuration de ArgoCD lui-meme via le fichier `values-bootstrap.yaml`.
 
-### Update Helm chart
+Pour mettre a jour la configuration de ArgoCD, simplement modifier les valeurs dans le fichier `values-bootstrap.yaml` puis push les modifications sur le repo git et attendre la synchronisation ArgoCD (ou bien la forcer pour aller plus vite).
 
-The `Chart.yaml` file is also important for updating the version of the ArgoCD Helm chart as well as other charts used.
+### Mise a jour Helm chart ArgoCD
 
-To update the helm chart, execute the following commands after updating the version in the `Chart.yaml` file:
+Le fichier `Chart.yaml` est egalement important pour mettre a jour la version du Helm chart de ArgoCD ainsi que des autres charts utilisees. 
+
+Pour mettre a jour le helm chart, executer les commandes suivantes apres avoir mis a jour la version dans le fichier `Chart.yaml` :
 
 ```bash
 helm dep update
 ```
 
-### Create new app
+### Configuration cluster
 
-To create a new application, simply add an `Application` or `ApplicationSet` file in the `argoApps` folder then synchronize the application brick in question in ArgoCD (or wait, it's automatic).
+Vous pouvez ajouter de la config cluster dans le dossier `config`. Ce dossier est destine a recevoir des objets qui ne sont pas lies a ArgoCD mais qui peuvent etre utiles dans votre cluster comme des `Secret` ou `ConfigMap`.
 
+Il faut override le namespace dans ces manifest en specifiant en dur le namespace cible :
 
-### Auth OCI registry Helm
-
-To authenticate ArgoCD to the registry, you must use a ServiceAccount with appropriate permissions. Create the Google SA and assign permissions:
-```bash
-gcloud iam service-accounts create argocd
-gcloud projects add-iam-policy-binding quanti --member="serviceAccount:argocd@quanti.iam.gserviceaccount.com" --role="roles/artifactregistry.reader"
-```
-
-Check:
-```bash
-gcloud projects get-iam-policy quanti --flatten="bindings[].members" --format='table(bindings.role)' --filter="bindings.members:argocd@quanti.iam.gserviceaccount.com"
-```
-
-Create JSONKEY:
-```bash
-gcloud iam service-accounts keys create ./argocd.json --iam-account argocd@quanti.iam.gserviceaccount.com
-```
-Create secret:
-```yaml
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: gar-oci-helm
-  namespace: argocd
-  labels:
-    argocd.argoproj.io/secret-type: repository
-  annotations:
-    managed-by: argocd.argoproj.io
-stringData:
-  enableOCI: "true"
-  name: gar-oci-helm
-  type: helm
-  url: europe-west9-docker.pkg.dev/example/charts
-  username: _json_key
-data:
-  password: BASE64_FROM_SERVICE_ACCOUNT_KEY_JSON
-```
-
-Using ExternalSecret:
 ```yaml
 ---
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: gar-oci-helm
+  name: dockerhub-creds
   namespace: argocd
-spec:
-  secretStoreRef:
-    kind: ClusterSecretStore
-    name: gcp-store
-  target:
-    name: gar-oci-helm
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    template:
-      engineVersion: v2
-      metadata:
-        labels:
-          argocd.argoproj.io/secret-type: repository
-      data:
-        enableOCI: "true"
-        name: gar-oci-helm
-        type: helm
-        url: europe-west9-docker.pkg.dev/example/charts
-        username: _json_key
-        password: "{{ .token }}"
-  data:
-  - secretKey: token
-    remoteRef:
-      key: argocd-sa-jsonkey
-      conversionStrategy: Default
-      decodingStrategy: None
-      metadataPolicy: None
 ```
 
-### Image Updater annotations
+### Creation d'une nouvelle application
 
-The updater image annotations allow you to automatically update applications based on an image push into a target Docker registry. The `write-back: git` method is preferred to obtain a declarative and not imperative update.
+Pour creer une nouvelle application, simplement ajouter un fichier de type `Application` ou `ApplicationSet` dans le dossier `argoApps` puis synchroniser la brique application en question dans ArgoCD (ou attendre c'est automatique).
 
-Example:
+### Creation automatique et dynamique
 
-```yaml
-    metadata:
-      annotations:
-        argocd-image-updater.argoproj.io/app.update-strategy: semver
-        argocd-image-updater.argoproj.io/git-branch: main
-        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/example/docker/{{path.basenameNormalized}}v1.x.x'
-        argocd-image-updater.argoproj.io/write-back-method: git
-        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: infra-deploiements
+Cette section explique comment rendre dynamique vos creations d'applications metier sans pour autant laisser la main entierement aux developpeurs. Voici une structure de depart que vous pouvez utiliser pour organiser correctement votre repo applicatif:
+
+Le pattern structurel des dossiers est le suivant :
+
+<CSP>/<cluster>/<namespace>/<application-name>
+
+```bash
+.
+├── gke
+│   ├── dev
+│   │   ├── namespace-a
+│   │   │   ├── app-a
+│   │   │   └── app-b
+│   │   └── namespace-b
+│   │       ├── app-a
+│   │       └── app-b
+│   ├── prd
+│   │   └── namespace-a
+│   │       ├── app-a
+│   │       └── app-b
+│   └── stg
+│       ├── namespace-a
+│       │   ├── app-a
+│       │   └── app-b
+│       └── namespace-b
+│           ├── app-a
+│           └── app-b
+└── README.md
 ```
 
-P.S: here there is an `app` alias which is determined here: `<alias>=...`. This alias can be reused later.
-
-Annotations must be accompanied by a `.argocd-source-<appName>.yaml` file to work. The `<appName>` part must match the name of the ArgoCD application. Here is an example :
-
-```yaml
-helm:
-  parameters:
-  - name: image.name
-    value: europe-west9-docker.pkg.dev/example/docker/api
-    forcestring: true
-  - name: image.tag
-    value: dev-54f1bb55
-    forcestring: true
-```
-
-This file must be put in the target folder of the application. Here are the official ArgoCD ImageUpdater instructions:
-
-
-Workflow:
-
-- Fetch the remote repository from location specified by `.spec.source.repoURL` in the Argo CD Application manifest, using credentials specified as annotation (see below)
-- Check-out the target branch on the local copy. The target branch is either taken from an annotation (see below), or if no annotation is set, taken from `.spec.source.targetRevision` in the Application manifest
-- Create or update `.argocd-source-<appName>.yaml` in the local repository
-- Commit the changed file to the local repository
-- Push the commit to the remote repository, using credentials specified as annotation (see below)
-
-The classic setup works very well in the case where your Helm chart, your templates folder and vlaues.yaml are in the same repository as the ArgoCD setup. But if you use an Umbrella chart this will not be enough.
-
-The override parameter in this specific case is not `image.tag` but `<chart-name>.image.tag` with chart-name the name of your dependency of your umbrella chart.
-
-You must therefore add the following annotations:
-
-```yaml
-argocd-image-updater.argoproj.io/<alias>.helm.image-name: <chat-name>.image.name
-argocd-image-updater.argoproj.io/<alias>.helm.image-tag: <chat-name>.image.tag
-```
-
-Full example here.
-
-Application :
-```yaml
-    metadata:
-      annotations:
-        argocd-image-updater.argoproj.io/app.helm.image-name: connectors.image.name
-        argocd-image-updater.argoproj.io/app.helm.image-tag: connectors.image.tag
-        argocd-image-updater.argoproj.io/app.update-strategy: latest
-        argocd-image-updater.argoproj.io/app.allow-tags: regexp:^dev-.*
-        argocd-image-updater.argoproj.io/git-branch: main
-        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/example/docker/{{ .path.basenameNormalized }}'
-        argocd-image-updater.argoproj.io/write-back-method: git
-        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: infra-deploiements
-```
-.argocd-source.yaml :
-```yaml
-helm:
-  parameters:
-  - name: connectors.image.name
-    value: europe-west9-docker.pkg.dev/example/docker/api
-    forcestring: true
-  - name: quanti-connector.image.tag
-    value: dev-54f1bb55
-    forcestring: true
-```
-
-### Auto creation
-
-Documentation:
-- https://argo-cd.readthedocs.io/en/stable/user-guide/application-specification/
-
-`ApplicationSet` object for dynamic creation of resources in the staging cluster, quanti-dev namespace (`development` environment):
+Objet `ApplicationSet` pour la creation dynamique de ressources dans le cluster de staging, namespace quanti-dev (environnement `developpement`):
 
 ```yaml
 ---
@@ -274,35 +162,31 @@ metadata:
   name: dev-apps
   namespace: argocd
 spec:
-  goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         directories:
-          - path: 'dev/namespace/*/*'
+          - path: 'gke/dev/*/*'
   template:
     metadata:
-      name: '{{ .path.basenameNormalized }}-{{ index .path.segments 0 }}'
+      name: '{{path.basenameNormalized}}-dev'
       annotations:
-        argocd-image-updater.argoproj.io/app.helm.image-name: '{{ index .path.segments 2 }}.image.name'
-        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 2 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: latest
         argocd-image-updater.argoproj.io/app.allow-tags: regexp:^dev-.*
         argocd-image-updater.argoproj.io/git-branch: main
-        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/example/docker/{{ .path.basenameNormalized }}'
+        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/repo/test/{{path.basenameNormalized}}'
         argocd-image-updater.argoproj.io/write-back-method: git
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: infra-deploiements
       finalizers: []
     spec:
-      project: dev
+      project: dev-apps
       destination:
-        name: '{{ index .path.segments 0 }}'
-        namespace: '{{ index .path.segments 1 }}'
+        name: '{{path[1]}}'
+        namespace: '{{path[2]}}'
       source:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
-        path: '{{.path.path}}'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{path}}'
         targetRevision: main
       syncPolicy:
         automated:
@@ -325,38 +209,34 @@ Objet `ApplicationSet` pour la creation dynamique de ressources dans le cluster 
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: stg-env-apps
+  name: stg-apps
   namespace: argocd
 spec:
-  goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         directories:
-          - path: 'stg/namespace/*/*'
+          - path: 'gke/stg/*/*'
   template:
     metadata:
-      name: '{{ .path.basenameNormalized }}-{{ index .path.segments 0 }}'
+      name: '{{path.basenameNormalized}}-stg'
       annotations:
-        argocd-image-updater.argoproj.io/app.helm.image-name: '{{ index .path.segments 2 }}.image.name'
-        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 2 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: latest
         argocd-image-updater.argoproj.io/app.allow-tags: regexp:^v1.[0-9]+.[0-9]+-rc[0-9]+
         argocd-image-updater.argoproj.io/git-branch: main
-        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/example/docker/{{ .path.basenameNormalized }}'
+        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/repo/test/{{path.basenameNormalized}}'
         argocd-image-updater.argoproj.io/write-back-method: git
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: infra-deploiements
       finalizers: []
     spec:
-      project: stg
+      project: stg-apps
       destination:
-        name: '{{ index .path.segments 0 }}'
-        namespace: '{{ index .path.segments 1 }}'
+        name: '{{path[1]}}'
+        namespace: '{{path[2]}}'
       source:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
-        path: '{{.path.path}}'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{path}}'
         targetRevision: main
       syncPolicy:
         automated:
@@ -379,37 +259,33 @@ Objet `ApplicationSet` pour la creation dynamique de ressources dans le cluster 
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: stg-env-apps
+  name: prd-apps
   namespace: argocd
 spec:
-  goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         directories:
-          - path: 'prd/namespace/*/*'
+          - path: 'gke/prd/*/*'
   template:
     metadata:
-      name: '{{ .path.basenameNormalized }}-{{ index .path.segments 0 }}'
+      name: '{{path.basenameNormalized}}'
       annotations:
-        argocd-image-updater.argoproj.io/app.helm.image-name: '{{ index .path.segments 2 }}.image.name'
-        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 2 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: semver
         argocd-image-updater.argoproj.io/git-branch: main
-        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/example/docker/{{ .path.basenameNormalized }}:v1.x.x'
+        argocd-image-updater.argoproj.io/image-list: 'app=europe-west9-docker.pkg.dev/repo/test/{{path.basenameNormalized}}v1.x.x'
         argocd-image-updater.argoproj.io/write-back-method: git
         notifications.argoproj.io/subscribe.on-sync-succeeded.slack: infra-deploiements
       finalizers: []
     spec:
-      project: prd
+      project: prd-apps
       destination:
-        name: '{{ index .path.segments 0 }}'
-        namespace: '{{ index .path.segments 1 }}'
+        name: '{{path[1]}}'
+        namespace: '{{path[2]}}'
       source:
-        repoURL: 'https://github.com/ixxeL-DevOps/gitops-apps.git'
-        path: '{{.path.path}}'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{path}}'
         targetRevision: main
       syncPolicy:
         automated:
@@ -424,85 +300,7 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
 ```
-## Tooling apps
 
-For applications managed by administrators, its is recommended to host then inside this repository. You cna use complex structure for `ApplicationSet` to handle multiple clusters values:
-
-Example with nginx:
-```yaml
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: ingress-nginx-controller
-  namespace: argocd
-spec:
-  goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
-  generators:
-  - list:
-      elements:
-      - cluster: stg
-        namespace: ingress-nginx
-        ip: 14.156.3.95
-        minReplicas: 2
-        maxReplicas: 10
-  template:
-    metadata:
-      name: 'ingress-nginx-controller-{{.cluster}}'
-      finalizers: []
-    spec:
-      project: infra-network
-      destination:
-        name: '{{.cluster}}'
-        namespace: '{{.namespace}}'
-      source:
-        repoURL: https://kubernetes.github.io/ingress-nginx
-        targetRevision: 4.7.*
-        chart: ingress-nginx
-        helm:
-          releaseName: 'ingress-nginx-controller-{{.cluster}}'
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - Validate=true
-          - PruneLast=false
-          - RespectIgnoreDifferences=true
-          - Replace=false
-          - ApplyOutOfSyncOnly=true
-          - CreateNamespace=true
-          - ServerSideApply=true
-  templatePatch: |
-    spec:
-      source:
-        helm:
-          valuesObject:
-            controller:
-              podAnnotations: 
-                prometheus.io/scrape: "true"
-                prometheus.io/port: "10254"
-              metrics:
-                enabled: true
-              publishService:
-                enabled: true
-              autoscaling:
-                apiVersion: autoscaling/v2
-                enabled: true
-                targetCPUUtilizationPercentage: 75
-                targetMemoryUtilizationPercentage: 75
-                minReplicas: {{.minReplicas }}
-                maxReplicas: {{.maxReplicas }}
-              service:
-                externalTrafficPolicy: Local
-                enabled: true
-                loadBalancerIP: {{.ip | toString }}
-              resources:
-                requests:
-                  cpu: 150m
-                  memory: 256Mi
-```
 
 ## Vcluster
 
