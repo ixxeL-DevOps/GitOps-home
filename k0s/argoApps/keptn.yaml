@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: keptn
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: keptn-system
+  template:
+    metadata:
+      name: 'keptn-{{env}}'
+      finalizers: []
+    spec:
+      project: ci-cd
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.lifecycle.keptn.sh
+        targetRevision: 0.5.*
+        chart: keptn
+        helm:
+          releaseName: 'chartmuseum-{{env}}'
+          # valuesObject:
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
