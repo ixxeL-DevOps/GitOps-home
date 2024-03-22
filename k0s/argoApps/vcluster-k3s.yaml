@@ -69,7 +69,7 @@ spec:
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
             syncer:
               extraArgs:
-              - --tls-san=vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com
+              - --tls-san=vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com,vcluster-k3s-{{vcluster-env}}.{{namespace}}.svc.cluster.local
               kubeConfigContextName: vcluster-k3s-{{vcluster-env}}
             telemetry:
               disabled: true

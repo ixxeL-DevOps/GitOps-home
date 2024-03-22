@@ -43,6 +43,10 @@ spec:
       variable:
         value: "{{ replace_all(namespace, 'vcluster-', '') }}"
         jmesPath: 'to_string(@)'
+    - name: vclusterEnv
+      variable:
+        value: "{{ replace_all(namespace, 'vk-', '') }}"
+        jmesPath: 'to_string(@)'
     generate:
       kind: Secret
       apiVersion: v1
@@ -56,7 +60,7 @@ spec:
             argocd.argoproj.io/secret-type: cluster
         stringData:
           name: "{{ vclusterName }}"
-          server: "https://{{ vclusterName }}.{{ namespace }}:443"
+          server: "https://vcluster-k3s-{{ vclusterEnv }}.{{ namespace }}.svc.cluster.local:443"
           config: |
             {
               "tlsClientConfig": {
