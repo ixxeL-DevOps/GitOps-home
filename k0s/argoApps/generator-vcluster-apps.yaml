@@ -1,0 +1,40 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        files: 
+        - path: 'k0s/ephemeral/*/apps/*/*'
+  template:
+    metadata:
+      name: '{{ index .path.segments 5 }}-vk-{{ index .path.segments 2 }}'
+      finalizers: []
+    spec:
+      project: vcluster
+      destination:
+        name: 'vk-{{ index .path.segments 2 }}'
+        namespace: '{{ index .path.segments 4 }}'
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{.path.path}}'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
