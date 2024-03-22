@@ -8,22 +8,22 @@ spec:
   generators:
   - list:
       elements:
-      - env: k0s
+      - cluster: k0s
   template:
     metadata:
-      name: 'cluster-config-{{env}}'
+      name: 'cluster-config-{{cluster}}'
       finalizers: []
     spec:
-      project: utils
+      project: infra-config
       source:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
         targetRevision: main
         path: k0s
         directory:
           recurse: true
-          include: 'config/*'
+          include: 'config/{{cluster}}/*'
       destination:
-        name: '{{env}}'
+        name: '{{cluster}}'
         namespace: argocd
       syncPolicy:
         automated:

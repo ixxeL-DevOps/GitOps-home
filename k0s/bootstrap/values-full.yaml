@@ -17,7 +17,7 @@ argo-cd:
     image:
       imagePullPolicy: IfNotPresent
       repository: quay.io/argoproj/argocd
-      tag: v2.10.2
+      tag: v2.10.4
       # imagePullPolicy: IfNotPresent
       # repository: ghcr.io/flux-subsystem-argo/fsa/argocd
       # tag: v2.9.3-fl.21-main-a6eaf3af
@@ -687,6 +687,44 @@ argocd-apps:
     info:
     - name: url
       value: https://argoproj.github.io/
+
+  - name: argocd-clusters
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: k0s/argoClusters
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+
 
   projects:
   - name: argocd
