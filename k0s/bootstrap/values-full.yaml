@@ -335,12 +335,23 @@ argo-cd:
     #   - mountPath: /etc/ssl/certs/fredcorp.pem
     #     subPath: fredcorp.pem
     #     name: fredcorp-cert
+    volumeMounts:
+      - mountPath: /etc/ssl/certs/vault-pki-certs.pem
+        subPath: vault-pki-certs.pem
+        name: fredcorp-pki-certs
+
     volumes:
       - emptyDir: {}
         name: custom-tools
       - configMap:
           name: argocd-cmp-cm
         name: argocd-cmp-cm
+      - name: fredcorp-pki-certs
+        configMap:
+          name: fredcorp-pki-certs
+          items:
+          - key: vault-pki-certs.pem
+            path: vault-pki-certs.pem
       # - name: fredcorp-cert
       #   secret:
       #     defaultMode: 420
