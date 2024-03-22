@@ -75,7 +75,8 @@ spec:
       # The default "summerwind/actions-runner" images are available at DockerHub:
       # https://hub.docker.com/r/summerwind/actions-runner
       # You can also build your own and specify it like the below:
-      image: ixxel/arc-runner:v0
+      # image: ixxel/arc-runner:v0
+      image: ixxel/toolbox:arc-v0.1.1
       imagePullPolicy: Always
       resources:
         limits:
