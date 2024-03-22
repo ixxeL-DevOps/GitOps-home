@@ -31,7 +31,7 @@ spec:
         - name: SETUP_SCRIPT
           valueFrom:
             configMapKeyRef:
-              name: rke2-setup-script
+              name: containerd-setup-script
               key: setup.sh
         securityContext:
           privileged: true
