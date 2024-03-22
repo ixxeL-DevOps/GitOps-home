@@ -7,10 +7,10 @@ metadata:
 spec:
   generators:
   - list:
-      elements:
-      - env: k0s
-        namespace: vk-pprod
-        vcluster-env: pprod
+      elements: []
+      # - env: k0s
+      #   namespace: vk-pprod
+      #   vcluster-env: pprod
       # - env: k0s
       #   namespace: vk-prod
       #   vcluster-env: prod

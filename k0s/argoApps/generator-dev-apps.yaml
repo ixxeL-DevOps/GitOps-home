@@ -1,0 +1,43 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dev-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        directories:
+          - path: 'k0s/*/*'
+            exclude: false
+          - path: 'k0s/ephemeral/*'
+            exclude: true
+  template:
+    metadata:
+      name: '{{ .path.basenameNormalized }}-dev'
+      finalizers: []
+    spec:
+      project: dev-apps
+      destination:
+        name: '{{ index .path.segments 0 }}'
+        namespace: '{{ index .path.segments 1 }}'
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{.path.path}}'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
