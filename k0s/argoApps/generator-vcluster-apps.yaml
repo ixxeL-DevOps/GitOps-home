@@ -8,11 +8,11 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
-        revision: main
-        files: 
-        - path: 'k0s/ephemeral/*/apps/*/*'
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+      revision: main
+      directories:
+      - path: 'k0s/ephemeral/*/apps/*/*'
   template:
     metadata:
       name: '{{ index .path.segments 5 }}-vk-{{ index .path.segments 2 }}'
