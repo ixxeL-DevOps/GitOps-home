@@ -1,0 +1,55 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: helm-ephemeral
+  namespace: argocd
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: ixxeL-DevOps
+          repo: helm-charts # (1)
+          tokenRef:
+            key: github_token
+            secretName: github-creds # (2)
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'helm-aio-{{branch}}-{{number}}'
+    spec:
+      destination:
+        namespace: 'preview-{{branch}}'
+        name: 'vk-pprod'
+      project: default
+      source:
+        # (3)
+        repoURL: https://chartmuseum.github.io/charts
+        targetRevision: 3.*.*
+        chart: chartmuseum
+        # helm:
+        #   parameters:
+        #     # (4)
+        #     - name: namespace
+        #       value: 'preview-{{branch}}'
+        #     # (5)
+        #     - name: version
+        #       value: '{{head_sha}}'
+        #     # (6)
+        #     - name: image
+        #       value: sample-kotlin-spring
+        #     - name: name
+        #       value: sample-spring-kotlin
+      # (7)
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
