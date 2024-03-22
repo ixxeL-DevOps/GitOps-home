@@ -513,13 +513,229 @@ spec:
 
 ## Vcluster
 
+There is an `applicationSet` reponsible for auto creating vcluster. It allows dynamic environment creation based on Git path and config file.
+
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        files: 
+        - path: 'k0s/ephemeral/*/cluster/config.json'
+        values:
+          namespace: 'vk-{{ index .path.segments 2 }}'
+          release: 'vk-k3s-{{ index .path.segments 2 }}'
+  template:
+    metadata:
+      name: '{{.values.release}}'
+      finalizers: []
+    spec:
+      project: vcluster
+      destination:
+        name: '{{ index .path.segments 0 }}'
+        namespace: '{{.values.namespace}}'
+      source:
+        repoURL: https://charts.loft.sh
+        targetRevision: 0.*.*
+        chart: vcluster
+        helm:
+          releaseName: '{{.values.release}}'
+          valuesObject:
+            fallbackHostDns: true
+            vcluster:
+              image: '{{.image}}'
+              command:
+                - /binaries/k3s
+              baseArgs:
+                - server
+                - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+                - --data-dir=/data
+                - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+                - --disable-network-policy
+                - --disable-agent
+                - --disable-cloud-controller
+                - --egress-selector-mode=disabled
+                - --flannel-backend=none
+                - --kube-apiserver-arg=bind-address=127.0.0.1
+            storage:
+              persistence: false                                                  
+              size: 5Gi
+            serviceAccount:
+              create: true
+            ingress:
+              enabled: true
+              pathType: ImplementationSpecific
+              apiVersion: networking.k8s.io/v1
+              ingressClassName: "nginx"
+              host: '{{.values.release}}.k8s-app.fredcorp.com'
+              annotations:
+                nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+                nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+                nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            syncer:
+              extraArgs:
+              - --tls-san={{.values.release}}.k8s-app.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
+              kubeConfigContextName: '{{.values.release}}'
+            telemetry:
+              disabled: true
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+```
+
+The vcluster is automatically added to ArgoCD clusters list through a secret provisionned by `Kyverno`. The idea is to create this kind of setup:
+
+<p align="center">
+  <img src="src/pictures/argo-vcluster.png" width="70%" height="70%">
+</p>
+
+```yaml
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: vcluster-sync
+spec:
+  generateExistingOnPolicyUpdate: true
+  rules:
+  - name: sync-secret
+    skipBackgroundRequests: true
+    match:
+      any:
+      - resources:
+          names:
+          - "vc-*"
+          kinds:
+          - Secret
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - default
+          - kube-public
+          - kyverno
+    context:
+    - name: namespace
+      variable:
+        value: "{{ request.object.metadata.namespace }}"
+    - name: name
+      variable:
+        value: "{{ request.object.metadata.name }}"
+    - name: ca
+      variable: 
+        value: "{{ request.object.data.\"certificate-authority\" }}"
+    - name: cert
+      variable: 
+        value: "{{ request.object.data.\"client-certificate\" }}"
+    - name: key
+      variable: 
+        value: "{{ request.object.data.\"client-key\" }}"
+    - name: vclusterName
+      variable:
+        value: "{{ replace_all(namespace, 'vcluster-', '') }}"
+        jmesPath: 'to_string(@)'
+    - name: vclusterEnv
+      variable:
+        value: "{{ replace_all(namespace, 'vk-', '') }}"
+        jmesPath: 'to_string(@)'
+    generate:
+      kind: Secret
+      apiVersion: v1
+      name: "{{ vclusterName }}"
+      namespace: argocd
+      synchronize: true
+      data:
+        kind: Secret
+        metadata:
+          labels:
+            argocd.argoproj.io/secret-type: cluster
+        stringData:
+          name: "{{ vclusterName }}"
+          server: "https://vk-k3s-{{ vclusterEnv }}.{{ namespace }}.svc.cluster.local:443"
+          config: |
+            {
+              "tlsClientConfig": {
+                "insecure": false,
+                "caData": "{{ ca }}",
+                "certData": "{{ cert }}",
+                "keyData": "{{ key }}"
+              }
+            }
+```
+
+This allow for dynamic cluster creation and dynamic cluster add to ArgoCD ready to use.
+
+Last piece of the puzzle is the automated application creation inside vclusters:
+
+```yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+      revision: main
+      directories:
+      - path: 'k0s/ephemeral/*/apps/*/*'
+  template:
+    metadata:
+      name: '{{ index .path.segments 5 }}-vk-{{ index .path.segments 2 }}'
+      finalizers: []
+    spec:
+      project: vcluster
+      destination:
+        name: 'vk-{{ index .path.segments 2 }}'
+        namespace: '{{ index .path.segments 4 }}'
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{.path.path}}'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+```
+
 When vlcuster is deployed, execute this command to update kubeconfig with the vcluster one:
 
 ```bash
 vcluster connect vcluster-dev -n vk-dev --update-current=true --server=https://vcluster-dev.k8s-app.fredcorp.com --service-account admin --cluster-role cluster-admin --insecure --kube-config-context-name rke2-vk-dev
 ```
 
-Then login to ArgoCD and add the cluster:
+If you need to add the cluster manually, login to ArgoCD and add the cluster:
 ```bash
 argocd login argocd.k8s-app.fredcorp.com --insecure
 argocd cluster add vcluster_vcluster-dev_vk-dev_rke2-fredcorp --server argocd.k8s-app.fredcorp.com --insecure --name rke2-vk-dev
