@@ -1,0 +1,43 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: capi
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: capi
+  template:
+    metadata:
+      name: 'capi-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://kubernetes-sigs.github.io/cluster-api-operator
+        targetRevision: 0.*.*
+        chart: cluster-api-operator
+        helm:
+          releaseName: 'capi-{{env}}'
+          valuesObject:
+            cert-manager:
+              enabled: false
+            logLevel: 2
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
