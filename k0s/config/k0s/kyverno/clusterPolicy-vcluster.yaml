@@ -60,7 +60,7 @@ spec:
             argocd.argoproj.io/secret-type: cluster
         stringData:
           name: "{{ vclusterName }}"
-          server: "https://vcluster-k3s-{{ vclusterEnv }}.{{ namespace }}.svc.cluster.local:443"
+          server: "https://vk-k3s-{{ vclusterEnv }}.{{ namespace }}.svc.cluster.local:443"
           config: |
             {
               "tlsClientConfig": {
