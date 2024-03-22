@@ -29,6 +29,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: gh-runner-admin
+  namespace: github-runner
 automountServiceAccountToken: true
 ---
 apiVersion: v1
@@ -36,6 +37,7 @@ kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
   name: gh-runner-admin
+  namespace: github-runner
   annotations:
     kubernetes.io/service-account.name: "gh-runner-admin"
 ---
@@ -43,6 +45,7 @@ apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
   name: ixxel-devops-gha-runner
+  namespace: github-runner
 spec:
   replicas: 1
   template:
@@ -76,11 +79,11 @@ spec:
       imagePullPolicy: Always
       resources:
         limits:
-          cpu: "4"
-          memory: "8Gi"
-        requests:
           cpu: "2"
-          memory: "4Gi"
+          memory: "6Gi"
+        requests:
+          cpu: "1"
+          memory: "2Gi"
       # true (default) = The runner restarts after running jobs, to ensure a clean and reproducible build environment
       # false = The runner is persistent across jobs and doesn't automatically restart
       # This directly controls the behaviour of `--once` flag provided to the github runner
