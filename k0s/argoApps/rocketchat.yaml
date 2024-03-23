@@ -1,0 +1,52 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: rocketchat
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: rocketchat
+  template:
+    metadata:
+      name: 'rocketchat-{{env}}'
+      finalizers: []
+    spec:
+      project: utils
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://rocketchat.github.io/helm-charts
+        targetRevision: 6.*.*
+        chart: rocketchat
+        helm:
+          releaseName: 'rocketchat-{{env}}'
+          valuesObject:
+            ingress:
+              enabled: true
+              pathType: Prefix
+              ingressClassName: "nginx"
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: rocketchat.k8s-app.fredcorp.com
+              path: /
+              tls: 
+               - secretName: rocketchat-tls-cert
+                 hosts:
+                   - rocketchat.k8s-app.fredcorp.com
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
