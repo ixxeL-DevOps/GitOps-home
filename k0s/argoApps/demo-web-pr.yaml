@@ -46,3 +46,6 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
+      info:
+      - name: url
+        value: 'https://demo-web-pr-{{number}}.k8s-app.fredcorp.com/'
