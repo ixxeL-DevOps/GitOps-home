@@ -24,7 +24,7 @@ spec:
       source:
         path: deploy/
         repoURL: 'https://github.com/ixxeL-DevOps/demo-web-py.git'
-        targetRevision: main
+        targetRevision: HEAD
         helm:
           releaseName: 'demo-web-pr-{{number}}'
           parameters:

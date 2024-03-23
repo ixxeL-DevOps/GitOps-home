@@ -207,6 +207,30 @@ argo-cd:
       create: true
       name: "argocd-notifications-controller"
 
+    # notifiers:
+    #   service.webhook.github: |
+    #     url: https://api.github.com
+    #     headers:
+    #     - name: Authorization
+    #       value: token $github-token
+
+    # templates:
+    #   template.github-commit-status: |
+    #     webhook:
+    #       github:
+    #         method: POST
+    #         path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/statuses/{{.app.status.operationState.operation.sync.revision}}
+    #         body: |
+    #           {
+    #             {{if eq .app.status.operationState.phase "Running"}} "state": "pending"{{end}}
+    #             {{if eq .app.status.operationState.phase "Succeeded"}} "state": "success"{{end}}
+    #             {{if eq .app.status.operationState.phase "Error"}} "state": "error"{{end}}
+    #             {{if eq .app.status.operationState.phase "Failed"}} "state": "error"{{end}},
+    #             "description": "Application Ephemeral env deployment",
+    #             "target_url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+    #             "context": "continuous-integration/argocd"
+    #           }
+
   redis:
     enabled: true
     name: redis
