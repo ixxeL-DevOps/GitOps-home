@@ -425,7 +425,7 @@ argo-cd:
       accounts.fred: "apiKey, login"
       accounts.pipeline: "apiKey"
       # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
-      # url: ""
+      url: "https://argocd.k8s-app.fredcorp.com"
       application.instanceLabelKey: argocd.argoproj.io/instance
       server.rbac.log.enforce.enable: false
       exec.enabled: true
