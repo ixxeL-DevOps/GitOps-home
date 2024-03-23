@@ -16,12 +16,12 @@ spec:
         requeueAfterSeconds: 60
   template:
     metadata:
-      name: 'helm-aio-{{branch}}-{{number}}'
+      name: 'helm-aio-pr-{{number}}'
     spec:
       destination:
-        namespace: 'preview-{{branch}}'
+        namespace: 'preview-pr-{{number}}'
         name: 'vk-pprod'
-      project: default
+      project: ephemeral
       source:
         # (3)
         repoURL: https://chartmuseum.github.io/charts
