@@ -1,0 +1,46 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-web-preview
+spec:
+  generators:
+    - pullRequest:
+        github:
+          owner: ixxeL-DevOps
+          repo: demo-web-py
+          tokenRef:
+            key: github_token
+            secretName: github-creds
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: 'demo-web-pr-{{number}}'
+    spec:
+      destination:
+        namespace: 'preview-pr-{{number}}'
+        name: 'vk-pprod'
+      project: ephemeral
+      source:
+        path: deploy/
+        repoURL: 'https://github.com/ixxeL-DevOps/demo-web-py.git'
+        targetRevision: main
+        helm:
+          releaseName: 'demo-web-pr-{{number}}'
+          parameters:
+            - name: tag
+              value: 'pr-{{number}}'
+            - name: name
+              value: 'demo-web-pr-{{number}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
