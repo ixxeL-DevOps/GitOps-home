@@ -211,8 +211,14 @@ argo-cd:
       service.webhook.github: |
         url: https://api.github.com
         headers:
-        - name: Authorization
-          value: token $github-token
+        - name: Accept
+          value: application/vnd.github+json
+
+    subscriptions:
+      - recipients:
+        - github
+        triggers:
+        - on-deployed
 
     triggers:
       trigger.on-deployed: |

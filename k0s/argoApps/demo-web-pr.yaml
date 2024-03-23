@@ -16,6 +16,8 @@ spec:
   template:
     metadata:
       name: 'demo-web-pr-{{number}}'
+      annotations:
+        notifications.argoproj.io/subscribe.on-deployed.github: ""
     spec:
       destination:
         namespace: 'preview-pr-{{number}}'
@@ -24,7 +26,7 @@ spec:
       source:
         path: deploy/
         repoURL: 'https://github.com/ixxeL-DevOps/demo-web-py.git'
-        targetRevision: HEAD
+        targetRevision: '{{branch}}'
         helm:
           releaseName: 'demo-web-pr-{{number}}'
           parameters:
