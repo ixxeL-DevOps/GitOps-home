@@ -26,6 +26,11 @@ spec:
         helm:
           releaseName: 'rocketchat-{{env}}'
           valuesObject:
+            mongodb:
+              auth:
+                passwords:
+                  - rocketchat
+                rootPassword: rocketchatroot
             ingress:
               enabled: true
               pathType: Prefix
