@@ -36,6 +36,8 @@ spec:
               value: 'sha-{{head_sha}}'
             - name: demo-web.name
               value: 'demo-web-pr-{{number}}'
+            - name: demo-web.pr.enabled
+              value: 'true'
       syncPolicy:
         automated:
           prune: true
