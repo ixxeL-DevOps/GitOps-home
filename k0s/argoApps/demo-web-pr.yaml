@@ -32,9 +32,9 @@ spec:
         helm:
           releaseName: 'demo-web-pr-{{number}}'
           parameters:
-            - name: tag
+            - name: demo-web.tag
               value: 'sha-{{head_sha}}'
-            - name: name
+            - name: demo-web.name
               value: 'demo-web-pr-{{number}}'
       syncPolicy:
         automated:
