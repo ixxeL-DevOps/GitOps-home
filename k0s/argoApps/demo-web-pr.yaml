@@ -20,7 +20,7 @@ spec:
         notifications.argoproj.io/subscribe.on-deployed.github: ""
     spec:
       destination:
-        namespace: 'preview-pr-{{number}}'
+        namespace: 'demo-web-pr-{{number}}'
         name: 'vk-pprod'
       project: ephemeral
       source:
@@ -31,7 +31,7 @@ spec:
           releaseName: 'demo-web-pr-{{number}}'
           parameters:
             - name: tag
-              value: 'pr-{{number}}'
+              value: 'sha-{{head_sha}}'
             - name: name
               value: 'demo-web-pr-{{number}}'
       syncPolicy:
