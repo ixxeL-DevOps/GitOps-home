@@ -1,0 +1,30 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-sync-wave-to-jobs
+spec:
+  generateExistingOnPolicyUpdate: true
+  rules:
+  - name: add-sync-wave
+    skipBackgroundRequests: true
+    match:
+      any:
+      - resources:
+          names:
+          - "rocketchat-*"
+          kinds:
+          - Job
+    exclude:
+      any:
+      - resources:
+          namespaces:
+          - kube-system
+          - default
+          - kube-public
+          - kyverno
+    mutate:
+      patchStrategicMerge:
+        metadata:
+          annotations:
+            argocd.argoproj.io/sync-wave: "5"
