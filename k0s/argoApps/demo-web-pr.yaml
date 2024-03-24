@@ -18,6 +18,8 @@ spec:
       name: 'demo-web-pr-{{number}}'
       annotations:
         notifications.argoproj.io/subscribe.on-deployed.github: ""
+        notifications.argoproj.io/subscribe.on-health-degraded.github: ""
+        notifications.argoproj.io/subscribe.on-sync-failed.github: ""
     spec:
       destination:
         namespace: 'demo-web-pr-{{number}}'

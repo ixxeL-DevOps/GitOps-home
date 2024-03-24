@@ -232,6 +232,18 @@ argo-cd:
           send:
           - github-commit-status
           when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+      trigger.on-health-degraded: |
+        - description: Application has degraded
+          oncePer: app.status.operationState.syncResult.revision
+          send:
+          - github-commit-status
+          when: app.status.health.status == 'Degraded'
+      trigger.on-sync-failed: |
+        - description: Application syncing has failed
+          oncePer: app.status.operationState.syncResult.revision
+          send:
+          - github-commit-status
+          when: app.status.operationState.phase in ['Error', 'Failed']
 
     templates:
       template.github-commit-status: |
