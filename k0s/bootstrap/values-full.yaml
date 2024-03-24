@@ -87,24 +87,6 @@ argo-cd:
     #       - argocd-grpc.k8s-app.fredcorp.com
     #   https: true
       
-    # volumeMounts:
-    # - mountPath: /etc/ssl/certs/fredcorp.pem
-    #   subPath: fredcorp.pem
-    #   name: fredcorp-cert
-    # volumes:
-    # - name: fredcorp-cert
-    #   secret:
-    #     defaultMode: 420
-    #     secretName: fredcorp-cert
-    #     items:
-    #     - key: fredcorp.pem
-    #       path: fredcorp.pem
-    # metrics:
-    #   enabled: true
-    #   serviceMonitor:
-    #     enabled: true
-    #     additionalLabels:
-    #       release: prom-stack
     extensions:
       enabled: true
       image:
@@ -226,19 +208,19 @@ argo-cd:
     #     - on-deployed
 
     triggers:
-      trigger.on-deployed: |
+      trigger.on-ephemeral-deployed: |
         - description: Application is synced and healthy. Triggered once per commit.
           oncePer: app.status.operationState.syncResult.revision
           send:
           - github-commit-status
           when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
-      trigger.on-health-degraded: |
+      trigger.on-ephemeral-health-degraded: |
         - description: Application has degraded
           oncePer: app.status.operationState.syncResult.revision
           send:
           - github-commit-status
           when: app.status.health.status == 'Degraded'
-      trigger.on-sync-failed: |
+      trigger.on-ephemeral-sync-failed: |
         - description: Application syncing has failed
           oncePer: app.status.operationState.syncResult.revision
           send:
@@ -260,6 +242,15 @@ argo-cd:
                 "description": "{{.app.metadata.name}} img tag: {{ (call .repo.GetAppDetails).Helm.GetParameterValueByName "tag" }}",
                 "target_url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
                 "context": "continuous-integration/argocd"
+              }
+      template.run-github-pipeline: |
+        webhook:
+          github:
+            method: POST
+            path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/actions/workflows/ci.yml/dispatches
+            body: |
+              {
+                "ref": "main"
               }
 
   redis:
@@ -293,114 +284,110 @@ argo-cd:
     #     enabled: true
     #     additionalLabels:
     #       release: prom-stack
-    extraContainers:
-      - name: avp-helm
-        command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.3
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 999
-        env:
-          - name: AVP_SECRET_CONFIG
-            value: argocd-repo-creds-vault-auth
-        volumeMounts:
-          - mountPath: /var/run/argocd
-            name: var-files
-          - mountPath: /home/argocd/cmp-server/plugins
-            name: plugins
-          - mountPath: /tmp
-            name: tmp
-          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-            subPath: avp-helm.yaml
-            name: argocd-cmp-cm
-          - name: custom-tools
-            subPath: argocd-vault-plugin
-            mountPath: /usr/local/bin/argocd-vault-plugin
-      - name: avp-kustomize
-        command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.3
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 999
-        env:
-          - name: AVP_SECRET_CONFIG
-            value: argocd-repo-creds-vault-auth
-        volumeMounts:
-          - mountPath: /var/run/argocd
-            name: var-files
-          - mountPath: /home/argocd/cmp-server/plugins
-            name: plugins
-          - mountPath: /tmp
-            name: tmp
-          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-            subPath: avp-kustomize.yaml
-            name: argocd-cmp-cm
-          - name: custom-tools
-            subPath: argocd-vault-plugin
-            mountPath: /usr/local/bin/argocd-vault-plugin
-      - name: avp-plain-yaml
-        command: [/var/run/argocd/argocd-cmp-server]
-        image: quay.io/argoproj/argocd:v2.9.3
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 999
-        env:
-          - name: AVP_SECRET_CONFIG
-            value: argocd-repo-creds-vault-auth
-        volumeMounts:
-          - mountPath: /var/run/argocd
-            name: var-files
-          - mountPath: /home/argocd/cmp-server/plugins
-            name: plugins
-          - mountPath: /tmp
-            name: tmp
-          - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-            subPath: avp-plain-yaml.yaml
-            name: argocd-cmp-cm
-          - name: custom-tools
-            subPath: argocd-vault-plugin
-            mountPath: /usr/local/bin/argocd-vault-plugin
+    # extraContainers:
+    #   - name: avp-helm
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-helm.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
+    #   - name: avp-kustomize
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-kustomize.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
+    #   - name: avp-plain-yaml
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-plain-yaml.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
 
     # envFrom:
     #   - secretRef:
     #       name: argocd-repo-creds-vault-auth
 
-    initContainers:
-      - args:
-          - >-
-            echo "Downloading AVP from ==> https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
-            && wget -O argocd-vault-plugin "https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
-            && chmod +x argocd-vault-plugin && mv argocd-vault-plugin
-            /custom-tools/
-        command:
-          - sh
-          - '-c'
-        env:
-          - name: AVP_VERSION
-            value: 1.15.0
-        image: 'alpine:3.18'
-        name: download-tools
-        securityContext:
-          runAsNonRoot: false
-        volumeMounts:
-          - mountPath: /custom-tools
-            name: custom-tools
+    # initContainers:
+    #   - args:
+    #       - >-
+    #         echo "Downloading AVP from ==> https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
+    #         && wget -O argocd-vault-plugin "https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
+    #         && chmod +x argocd-vault-plugin && mv argocd-vault-plugin
+    #         /custom-tools/
+    #     command:
+    #       - sh
+    #       - '-c'
+    #     env:
+    #       - name: AVP_VERSION
+    #         value: 1.15.0
+    #     image: 'alpine:3.18'
+    #     name: download-tools
+    #     securityContext:
+    #       runAsNonRoot: false
+    #     volumeMounts:
+    #       - mountPath: /custom-tools
+    #         name: custom-tools
 
-    # volumeMounts:
-    #   - mountPath: /etc/ssl/certs/fredcorp.pem
-    #     subPath: fredcorp.pem
-    #     name: fredcorp-cert
     volumeMounts:
       - mountPath: /etc/ssl/certs/vault-pki-certs.pem
         subPath: vault-pki-certs.pem
         name: fredcorp-pki-certs
 
     volumes:
-      - emptyDir: {}
-        name: custom-tools
-      - configMap:
-          name: argocd-cmp-cm
-        name: argocd-cmp-cm
+      # - emptyDir: {}
+      #   name: custom-tools
+      # - configMap:
+      #     name: argocd-cmp-cm
+      #   name: argocd-cmp-cm
       - name: fredcorp-pki-certs
         configMap:
           name: fredcorp-pki-certs
