@@ -1,113 +1,113 @@
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: vcluster-k3s
-  namespace: argocd
-spec:
-  generators:
-  - list:
-      elements: []
-      # - env: k0s
-      #   namespace: vk-pprod
-      #   vcluster-env: pprod
-      # - env: k0s
-      #   namespace: vk-prod
-      #   vcluster-env: prod
-  template:
-    metadata:
-      name: 'vcluster-k3s-{{vcluster-env}}'
-      finalizers: []
-    spec:
-      project: vcluster
-      destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
-      source:
-        repoURL: https://charts.loft.sh
-        targetRevision: 0.*.*
-        chart: vcluster
-        helm:
-          releaseName: 'vcluster-k3s-{{vcluster-env}}'
-          valuesObject:
-            fallbackHostDns: true
-            # mapServices:
-            #   fromVirtual:
-            #   - from: argocd/argocd-server
-            #     to: vcluster-argocd
-            vcluster:
-              # Image to use for the virtual cluster
-              image: rancher/k3s:v1.29.0-k3s1
-              imagePullPolicy: ""
-              command:
-                - /binaries/k3s
-              baseArgs:
-                - server
-                - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-                - --data-dir=/data
-                - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-                - --disable-network-policy
-                - --disable-agent
-                - --disable-cloud-controller
-                - --egress-selector-mode=disabled
-                - --flannel-backend=none
-                - --kube-apiserver-arg=bind-address=127.0.0.1
-            storage:
-              persistence: false                                                  
-              size: 5Gi
-            serviceAccount:
-              create: true
-            ingress:
-              enabled: true
-              pathType: ImplementationSpecific
-              apiVersion: networking.k8s.io/v1
-              ingressClassName: "nginx"
-              host: vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com
-              annotations:
-                nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-                nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
-                nginx.ingress.kubernetes.io/ssl-redirect: "true"
-            syncer:
-              extraArgs:
-              - --tls-san=vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com,vcluster-k3s-{{vcluster-env}}.{{namespace}}.svc.cluster.local
-              kubeConfigContextName: vcluster-k3s-{{vcluster-env}}
-            telemetry:
-              disabled: true
-            # sync:
-            #   generic:
-            #     clusterRole:
-            #       extraRules:
-            #         - apiGroups: ["apiextensions.k8s.io"]
-            #           resources: ["customresourcedefinitions"]
-            #           verbs: ["get", "list", "watch"]
-            #     role:
-            #       extraRules:
-            #         - apiGroups: ["external-secrets.io"]
-            #           resources: ["externalsecrets", "clustersecretstores", "secretstores"]
-            #           verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-            # init:
-            #   helm: 
-            #     - chart:
-            #         name: argo-cd
-            #         version: "5.51.1"
-            #         repo: https://argoproj.github.io/argo-helm
-            #       release:
-            #         name: argocd
-            #         namespace: argocd
-            #       timeout: "180s"
-                  # values: |-  string YAML object
-                  #   foo: bar
-                  # valuesTemplate: |-  string YAML object
-                  #   foo: {{ .Release.Name }}
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - Validate=true
-          - PruneLast=false
-          - RespectIgnoreDifferences=true
-          - Replace=false
-          - ApplyOutOfSyncOnly=true
-          - CreateNamespace=true
-          - ServerSideApply=true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: vcluster-k3s
+#   namespace: argocd
+# spec:
+#   generators:
+#   - list:
+#       elements: []
+#       # - env: k0s
+#       #   namespace: vk-pprod
+#       #   vcluster-env: pprod
+#       # - env: k0s
+#       #   namespace: vk-prod
+#       #   vcluster-env: prod
+#   template:
+#     metadata:
+#       name: 'vcluster-k3s-{{vcluster-env}}'
+#       finalizers: []
+#     spec:
+#       project: vcluster
+#       destination:
+#         name: '{{env}}'
+#         namespace: '{{namespace}}'
+#       source:
+#         repoURL: https://charts.loft.sh
+#         targetRevision: 0.*.*
+#         chart: vcluster
+#         helm:
+#           releaseName: 'vcluster-k3s-{{vcluster-env}}'
+#           valuesObject:
+#             fallbackHostDns: true
+#             # mapServices:
+#             #   fromVirtual:
+#             #   - from: argocd/argocd-server
+#             #     to: vcluster-argocd
+#             vcluster:
+#               # Image to use for the virtual cluster
+#               image: rancher/k3s:v1.29.0-k3s1
+#               imagePullPolicy: ""
+#               command:
+#                 - /binaries/k3s
+#               baseArgs:
+#                 - server
+#                 - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+#                 - --data-dir=/data
+#                 - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+#                 - --disable-network-policy
+#                 - --disable-agent
+#                 - --disable-cloud-controller
+#                 - --egress-selector-mode=disabled
+#                 - --flannel-backend=none
+#                 - --kube-apiserver-arg=bind-address=127.0.0.1
+#             storage:
+#               persistence: false                                                  
+#               size: 5Gi
+#             serviceAccount:
+#               create: true
+#             ingress:
+#               enabled: true
+#               pathType: ImplementationSpecific
+#               apiVersion: networking.k8s.io/v1
+#               ingressClassName: "nginx"
+#               host: vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com
+#               annotations:
+#                 nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+#                 nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+#                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#             syncer:
+#               extraArgs:
+#               - --tls-san=vcluster-k3s-{{vcluster-env}}.k8s-app.fredcorp.com,vcluster-k3s-{{vcluster-env}}.{{namespace}}.svc.cluster.local
+#               kubeConfigContextName: vcluster-k3s-{{vcluster-env}}
+#             telemetry:
+#               disabled: true
+#             # sync:
+#             #   generic:
+#             #     clusterRole:
+#             #       extraRules:
+#             #         - apiGroups: ["apiextensions.k8s.io"]
+#             #           resources: ["customresourcedefinitions"]
+#             #           verbs: ["get", "list", "watch"]
+#             #     role:
+#             #       extraRules:
+#             #         - apiGroups: ["external-secrets.io"]
+#             #           resources: ["externalsecrets", "clustersecretstores", "secretstores"]
+#             #           verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
+#             # init:
+#             #   helm: 
+#             #     - chart:
+#             #         name: argo-cd
+#             #         version: "5.51.1"
+#             #         repo: https://argoproj.github.io/argo-helm
+#             #       release:
+#             #         name: argocd
+#             #         namespace: argocd
+#             #       timeout: "180s"
+#                   # values: |-  string YAML object
+#                   #   foo: bar
+#                   # valuesTemplate: |-  string YAML object
+#                   #   foo: {{ .Release.Name }}
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true

@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: vcluster-apps
+  name: vcluster-k3s-apps
   namespace: argocd
 spec:
   goTemplate: true
@@ -12,7 +12,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
       revision: main
       directories:
-      - path: 'k0s/ephemeral/*/apps/*/*'
+      - path: 'k0s/vcluster-k3s/*/apps/*/*'
   template:
     metadata:
       name: '{{ index .path.segments 5 }}-vk-{{ index .path.segments 2 }}'

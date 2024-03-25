@@ -14,7 +14,9 @@ spec:
         directories:
           - path: 'k0s/*/*'
             exclude: false
-          - path: 'k0s/ephemeral/*'
+          - path: 'k0s/vcluster-k3s/*'
+            exclude: true
+          - path: 'k0s/vcluster-k0s/*'
             exclude: true
   template:
     metadata:
