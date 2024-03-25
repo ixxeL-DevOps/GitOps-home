@@ -7,6 +7,11 @@
 
 This git repository is the main ArgoCD repo. It contains the definition of the ArgoCD deployment itself as well as the definitions of the different ArgoCD objects (`Application`, `ApplicationSet`, `AppProject`...etc).
 
+<p align="center">
+  <img src="src/pictures/argocd-structure.png" width="80%" height="60%">
+</p>
+
+
 The structure of the repository is as follows:
 
 ```bash
@@ -112,17 +117,17 @@ To create a new application, simply add an `Application` or `ApplicationSet` fil
 To authenticate ArgoCD to the registry, you must use a ServiceAccount with appropriate permissions. Create the Google SA and assign permissions:
 ```bash
 gcloud iam service-accounts create argocd
-gcloud projects add-iam-policy-binding quanti --member="serviceAccount:argocd@quanti.iam.gserviceaccount.com" --role="roles/artifactregistry.reader"
+gcloud projects add-iam-policy-binding example --member="serviceAccount:argocd@example.iam.gserviceaccount.com" --role="roles/artifactregistry.reader"
 ```
 
 Check:
 ```bash
-gcloud projects get-iam-policy quanti --flatten="bindings[].members" --format='table(bindings.role)' --filter="bindings.members:argocd@quanti.iam.gserviceaccount.com"
+gcloud projects get-iam-policy example --flatten="bindings[].members" --format='table(bindings.role)' --filter="bindings.members:argocd@example.iam.gserviceaccount.com"
 ```
 
 Create JSONKEY:
 ```bash
-gcloud iam service-accounts keys create ./argocd.json --iam-account argocd@quanti.iam.gserviceaccount.com
+gcloud iam service-accounts keys create ./argocd.json --iam-account argocd@example.iam.gserviceaccount.com
 ```
 Create secret:
 ```yaml
@@ -201,7 +206,7 @@ Example:
 
 > [!TIP]
 > 
-> P.S: here there is an `app` alias which is determined here: `<alias>=...`. This alias can be reused later.
+> P.S: here there is an `app` alias which is determined here: `<alias>=<image-name>`. This alias can be reused later.
 > 
 
 Annotations must be accompanied by a `.argocd-source-<appName>.yaml` file to work. The `<appName>` part must match the name of the ArgoCD application. Here is an example :
@@ -261,7 +266,7 @@ helm:
   - name: connectors.image.name
     value: europe-west9-docker.pkg.dev/example/docker/api
     forcestring: true
-  - name: quanti-connector.image.tag
+  - name: connectors.image.tag
     value: dev-54f1bb55
     forcestring: true
 ```
@@ -433,7 +438,7 @@ spec:
 ```
 ## Tooling apps
 
-For applications managed by administrators, its is recommended to host then inside this repository. You cna use complex structure for `ApplicationSet` to handle multiple clusters values:
+For applications managed by administrators, its is recommended to host them inside this repository. You can use complex structure for `ApplicationSet` to handle multiple clusters values:
 
 Example with nginx:
 ```yaml
@@ -514,6 +519,13 @@ spec:
 ## Vcluster
 
 There is an `applicationSet` reponsible for auto creating vcluster. It allows dynamic environment creation based on Git path and config file.
+The vcluster is automatically added/deleted to ArgoCD clusters list through a secret provisionned by `Kyverno`. The idea is to create this kind of setup:
+
+<p align="center">
+  <img src="src/pictures/argo-vcluster.png" width="70%" height="70%">
+</p>
+
+ApplicationSet manifest to automatically create vclusters:
 
 ```yaml
 ---
@@ -601,11 +613,7 @@ spec:
           - ServerSideApply=true
 ```
 
-The vcluster is automatically added to ArgoCD clusters list through a secret provisionned by `Kyverno`. The idea is to create this kind of setup:
-
-<p align="center">
-  <img src="src/pictures/argo-vcluster.png" width="70%" height="70%">
-</p>
+Kyverno `ClusterPolicy` to automatically create ArgoCD cluster secret on vcluster creation:
 
 ```yaml
 ---
