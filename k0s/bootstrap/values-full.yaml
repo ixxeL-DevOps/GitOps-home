@@ -188,6 +188,18 @@ argo-cd:
     serviceAccount:
       create: true
       name: "argocd-notifications-controller"
+    extraVolumeMounts:
+      - mountPath: /etc/ssl/certs/vault-pki-certs.pem
+        subPath: vault-pki-certs.pem
+        name: fredcorp-pki-certs
+    extraVolumes:
+      - name: fredcorp-pki-certs
+        configMap:
+          name: fredcorp-pki-certs
+          items:
+          - key: vault-pki-certs.pem
+            path: vault-pki-certs.pem
+
 
     argocdUrl: "https://argocd.k8s-app.fredcorp.com"
 
@@ -212,13 +224,24 @@ argo-cd:
     #     - on-deployed
 
     triggers:
+      # trigger.sync-operation-change: |
+      #   - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+      #     oncePer: app.status.sync.revision
+      #     send: [app-sync-status]
+      #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+      #     send: [app-sync-status]    
       trigger.sync-operation-change: |
-        - when: app.status.operationState.phase in ['Succeeded']
-          send: [app-sync-status]
-        - when: app.status.operationState.phase in ['Running']
-          send: [app-sync-status]
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+          oncePer: app.status.operationState.finishedAt
+          send: [app-deployed]
         - when: app.status.operationState.phase in ['Error', 'Failed']
-          send: [app-sync-status]
+          oncePer: app.status.operationState.finishedAt
+          send: [app-sync-failed]
+        - when: app.status.health.status == 'Degraded'
+          oncePer: app.status.operationState.syncResult.revision
+          send: [app-health-degraded]
+        - when: app.status.sync.status == 'Unknown'
+          send: [app-sync-status-unknown]
 
       trigger.on-ephemeral-deployed: |
         - description: Application is synced and healthy. Triggered once per commit.
@@ -258,6 +281,10 @@ argo-cd:
                 "title": "Repository",
                 "value": "{{.app.spec.source.repoURL}}",
                 "short": true
+              }, {
+                "title": "version",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
               }]
             }]
       template.github-commit-status: |
@@ -284,6 +311,192 @@ argo-cd:
               {
                 "ref": "main"
               }
+      template.app-deployed: |
+        message: |
+          :white_check_mark: App {{.app.metadata.name}} is now running new version of deployments manifests.
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          App details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+        rocketchat:
+          attachments: |
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-health-degraded: |
+        message: |
+          :exclamation: App {{.app.metadata.name}} has degraded.
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#f4c030",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-failed: |
+        message: |
+          :exclamation: The sync operation of app {{.app.metadata.name}} has failed at {{.app.status.operationState.finishedAt}} with the following error: {{.app.status.operationState.message}}
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+          Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#E96D76",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-status-unknown: |
+        email:
+          subject: Application {{.app.metadata.name}} sync status is 'Unknown'
+        message: |
+          {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} sync is 'Unknown'.
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+          {{if ne .serviceType "slack"}}
+          {{range $c := .app.status.conditions}}
+              * {{$c.message}}
+          {{end}}
+          {{end}}
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#E96D76",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-succeeded: |
+        message: |
+          :white_check_mark: App {{.app.metadata.name}} has been successfully synced at {{.app.status.operationState.finishedAt}}.
+          Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
 
   redis:
     enabled: true
