@@ -192,14 +192,18 @@ argo-cd:
     argocdUrl: "https://argocd.k8s-app.fredcorp.com"
 
     secret:
-      name: repo-creds-github # uses this secret to fetch the 'password' key in it (which has access to api Github for notifications)
+      name: notifications # uses this secret to fetch the 'password' key in it (which has access to api Github for notifications)
 
     notifiers:
       service.webhook.github: |
         url: https://api.github.com
         headers:
         - name: Authorization
-          value: token $password
+          value: token $gh-token
+      service.rocketchat: |
+        email: $rocketchat-email
+        password: $rocketchat-password
+        serverUrl: https://rocketchat.k8s-app.fredcorp.com
 
     # subscriptions:
     #   - recipients:
@@ -208,6 +212,14 @@ argo-cd:
     #     - on-deployed
 
     triggers:
+      trigger.sync-operation-change: |
+        - when: app.status.operationState.phase in ['Succeeded']
+          send: [app-sync-status]
+        - when: app.status.operationState.phase in ['Running']
+          send: [app-sync-status]
+        - when: app.status.operationState.phase in ['Error', 'Failed']
+          send: [app-sync-status]
+
       trigger.on-ephemeral-deployed: |
         - description: Application is synced and healthy. Triggered once per commit.
           oncePer: app.status.operationState.syncResult.revision
@@ -228,6 +240,26 @@ argo-cd:
           when: app.status.operationState.phase in ['Error', 'Failed']
 
     templates:
+      template.app-sync-status: |
+        message: |
+          Application {{.app.metadata.name}} sync is {{.app.status.sync.status}}.
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+        rocketchat:
+          attachments: |
+            [{
+              "title": "{{.app.metadata.name}}",
+              "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [{
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              }, {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              }]
+            }]
       template.github-commit-status: |
         webhook:
           github:

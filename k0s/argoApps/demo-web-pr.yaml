@@ -20,6 +20,7 @@ spec:
         notifications.argoproj.io/subscribe.on-ephemeral-deployed.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-health-degraded.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-sync-failed.github: ""
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-ephemeral"
     spec:
       destination:
         namespace: 'demo-web-pr-{{number}}'
