@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: stakater-reloader
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: stakater
+  template:
+    metadata:
+      name: 'stakater-reloader-{{env}}'
+      finalizers: []
+    spec:
+      project: utils
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://stakater.github.io/stakater-charts
+        targetRevision: 1.*.*
+        chart: reloader
+        helm:
+          releaseName: 'stakater-reloader-{{env}}'
+          valuesObject:
+            fullnameOverride: stakater-reloader-{{env}}
+            reloader:
+              autoReloadAll: true
+              reloadStrategy: annotations
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
