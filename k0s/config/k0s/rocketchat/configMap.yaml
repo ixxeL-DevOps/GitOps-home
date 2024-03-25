@@ -1,184 +1,184 @@
-apiVersion: v1
-data:
-  updateSynapseHomeserverConfig.sh: >
-    [[ $(basename $SHELL) != "bash" ]] && {
-      echo "must be run in bash"
-      exit 1
-    } || :
+# apiVersion: v1
+# data:
+#   updateSynapseHomeserverConfig.sh: >
+#     [[ $(basename $SHELL) != "bash" ]] && {
+#       echo "must be run in bash"
+#       exit 1
+#     } || :
 
 
-    set -x
+#     set -x
 
-    _data_dir="${SYNAPSE_DATA_DIR:-/data}"
+#     _data_dir="${SYNAPSE_DATA_DIR:-/data}"
 
-    _data_dir="${_data_dir%/}"
+#     _data_dir="${_data_dir%/}"
 
-    _config_dir="${SYNAPSE_CONFIG_DIR:-/data}"
+#     _config_dir="${SYNAPSE_CONFIG_DIR:-/data}"
 
-    _config_dir="${_config_dir%/}"
-
-
-    start_or_exit() {
-      if [ "$1" = "--start" ]; then
-        exec /start.py
-      fi
-
-      exit 0
-    }
+#     _config_dir="${_config_dir%/}"
 
 
-    _remove_block() {
-      local type="${1^^}"
-      #local type="$(printf "%s" "$1" | tr '[[:lower:]]' '[[:upper:]]')"
-      local file="$2"
-      local start="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) START @@@"
-      local end="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) END @@@"
+#     start_or_exit() {
+#       if [ "$1" = "--start" ]; then
+#         exec /start.py
+#       fi
 
-      local l1="$(awk "/$start/ {print NR; exit}" "$file")"
-      local l2="$(awk "/$end/ {print NR; exit}" "$file")"
-
-      if [ -z "$l1" -o -z "$l2" ]; then
-        return
-      fi
-
-      sed -i "${l1},${l2}d" $file
-    }
+#       exit 0
+#     }
 
 
-    remove_extra_config() {
-      _remove_block "extra config" "$HOMESERVER"
-    }
+#     _remove_block() {
+#       local type="${1^^}"
+#       #local type="$(printf "%s" "$1" | tr '[[:lower:]]' '[[:upper:]]')"
+#       local file="$2"
+#       local start="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) START @@@"
+#       local end="@@@ $type ($(basename $HOMESERVER_EXTRA_CONFIG)) END @@@"
+
+#       local l1="$(awk "/$start/ {print NR; exit}" "$file")"
+#       local l2="$(awk "/$end/ {print NR; exit}" "$file")"
+
+#       if [ -z "$l1" -o -z "$l2" ]; then
+#         return
+#       fi
+
+#       sed -i "${l1},${l2}d" $file
+#     }
 
 
-    add_extra_config() {
-      if [ "$(tail -n 1 "$HOMESERVER" | base64)" != "Cg==" ]; then # `echo | base64`
-        printf "\n" >> "$HOMESERVER" 
-      fi
-
-      echo "# @@@ EXTRA CONFIG START ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
-      cat "$HOMESERVER_EXTRA_CONFIG" >> "$HOMESERVER"
-      echo "# @@@ EXTRA CONFIG END ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
-    }
+#     remove_extra_config() {
+#       _remove_block "extra config" "$HOMESERVER"
+#     }
 
 
-    hash() {
-      sha256sum "$1" | awk '{ print $1 }'
-    }
+#     add_extra_config() {
+#       if [ "$(tail -n 1 "$HOMESERVER" | base64)" != "Cg==" ]; then # `echo | base64`
+#         printf "\n" >> "$HOMESERVER" 
+#       fi
+
+#       echo "# @@@ EXTRA CONFIG START ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
+#       cat "$HOMESERVER_EXTRA_CONFIG" >> "$HOMESERVER"
+#       echo "# @@@ EXTRA CONFIG END ($(basename $HOMESERVER_EXTRA_CONFIG)) @@@" >>"$HOMESERVER"
+#     }
 
 
-    hash_file() {
-      local basename \
-            name \
-      basename="$(basename "$1")"
-      name=".${basename%.*}_hash"
-      echo -n "${_config_dir}/${name}"
-    }
+#     hash() {
+#       sha256sum "$1" | awk '{ print $1 }'
+#     }
 
 
-    extra_config_hash() {
-      hash "$HOMESERVER_EXTRA_CONFIG"
-    }
+#     hash_file() {
+#       local basename \
+#             name \
+#       basename="$(basename "$1")"
+#       name=".${basename%.*}_hash"
+#       echo -n "${_config_dir}/${name}"
+#     }
 
 
-    extra_config_current_hash() {
-      [[ -f "$(hash_file "$HOMESERVER_EXTRA_CONFIG")" ]] || return ""
-      cat "$(hash_file "$HOMESERVER_EXTRA_CONFIG")"
-    }
+#     extra_config_hash() {
+#       hash "$HOMESERVER_EXTRA_CONFIG"
+#     }
 
 
-    _save_hash() {
-      hash "$1" > "$(hash_file "$1")"
-    }
+#     extra_config_current_hash() {
+#       [[ -f "$(hash_file "$HOMESERVER_EXTRA_CONFIG")" ]] || return ""
+#       cat "$(hash_file "$HOMESERVER_EXTRA_CONFIG")"
+#     }
 
 
-    save_extra_config_hash() {
-      _save_hash "$HOMESERVER_EXTRA_CONFIG"
-    }
+#     _save_hash() {
+#       hash "$1" > "$(hash_file "$1")"
+#     }
 
 
-    HOMESERVER="${SYNAPSE_CONFIG_PATH:-$(ls "$_config_dir"/homeserver.y{a,}ml
-    2>/dev/null)}"
+#     save_extra_config_hash() {
+#       _save_hash "$HOMESERVER_EXTRA_CONFIG"
+#     }
 
 
-    if [ -z "$HOMESERVER" -o ! -f "$HOMESERVER" ]; then
-      echo "homeserver config not found: \"$HOMESERVER\"" >&2
-      exit 1
-    fi
+#     HOMESERVER="${SYNAPSE_CONFIG_PATH:-$(ls "$_config_dir"/homeserver.y{a,}ml
+#     2>/dev/null)}"
 
 
-    if [ -z "$HOMESERVER_EXTRA_CONFIG" ]; then
-      start_or_exit
-    fi
+#     if [ -z "$HOMESERVER" -o ! -f "$HOMESERVER" ]; then
+#       echo "homeserver config not found: \"$HOMESERVER\"" >&2
+#       exit 1
+#     fi
 
 
-    current_hash="$(extra_config_hash)"
-
-    expected_hash="$(extra_config_current_hash)"
-
-
-    if [ "$expected_hash" = "$current_hash" ]; then
-      echo "extra config hashes matched, ignoring append op."
-      exit 0
-    fi
+#     if [ -z "$HOMESERVER_EXTRA_CONFIG" ]; then
+#       start_or_exit
+#     fi
 
 
-    echo "extra config hashes mismatch, re-setting extra config" >&2
+#     current_hash="$(extra_config_hash)"
 
-    remove_extra_config
-
-    add_extra_config
-
-    save_extra_config_hash
+#     expected_hash="$(extra_config_current_hash)"
 
 
-    start_or_exit
-  verifyMongodb.js: >
-    const versions = [
-      "4.0",
-      "4.2",
-      "4.4",
-      "5.0",
-      "6.0"
-    ];
+#     if [ "$expected_hash" = "$current_hash" ]; then
+#       echo "extra config hashes matched, ignoring append op."
+#       exit 0
+#     fi
 
-    // [0]=mongosh path, [1]=mongosh path, [2]=connection string, [3]=script
-    path, [4]=new tag
 
-    const newVersion = process.argv[4].split('.').splice(0, 2).join('.');
+#     echo "extra config hashes mismatch, re-setting extra config" >&2
 
-    const currentVersion = db.version().split('.').splice(0, 2).join('.');
+#     remove_extra_config
 
-    if (currentVersion === newVersion) quit(0);
+#     add_extra_config
 
-    const featureCompatibilityVersionResp = db.adminCommand({ getParameter:
-      1, featureCompatibilityVersion: 1 });
-    if (!featureCompatibilityVersionResp.ok) {
-      print("failed to read current feature compatibility version");
-      quit(1);
-    }
+#     save_extra_config_hash
 
-    const featureCompatibilityVersion =
-    featureCompatibilityVersionResp.featureCompatibilityVersion.version;
 
-    if (featureCompatibilityVersion !== currentVersion) {
-      print("current feature compatibility version is incompatible with the mongodb version you're trying to update to");
-      quit(1);
-    }
+#     start_or_exit
+#   verifyMongodb.js: >
+#     const versions = [
+#       "4.0",
+#       "4.2",
+#       "4.4",
+#       "5.0",
+#       "6.0"
+#     ];
 
-    if (versions.indexOf(newVersion) - versions.indexOf(currentVersion) !== 1) {
-      print("you can't skip a mongodb version while updating, please read our update documentation for more information");
-      quit(1);
-    }
+#     // [0]=mongosh path, [1]=mongosh path, [2]=connection string, [3]=script
+#     path, [4]=new tag
 
-    quit(0);
-kind: ConfigMap
-metadata:
-  annotations:
-    argocd.argoproj.io/tracking-id: 'rocketchat-k0s:/ConfigMap:rocketchat/rocketchat-k0s-rocketchat-scripts'
-  labels:
-    app.kubernetes.io/instance: rocketchat-k0s
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: rocketchat
-    helm.sh/chart: rocketchat-6.8.0
-  name: rocketchat-k0s-rocketchat-scripts
-  namespace: rocketchat
+#     const newVersion = process.argv[4].split('.').splice(0, 2).join('.');
+
+#     const currentVersion = db.version().split('.').splice(0, 2).join('.');
+
+#     if (currentVersion === newVersion) quit(0);
+
+#     const featureCompatibilityVersionResp = db.adminCommand({ getParameter:
+#       1, featureCompatibilityVersion: 1 });
+#     if (!featureCompatibilityVersionResp.ok) {
+#       print("failed to read current feature compatibility version");
+#       quit(1);
+#     }
+
+#     const featureCompatibilityVersion =
+#     featureCompatibilityVersionResp.featureCompatibilityVersion.version;
+
+#     if (featureCompatibilityVersion !== currentVersion) {
+#       print("current feature compatibility version is incompatible with the mongodb version you're trying to update to");
+#       quit(1);
+#     }
+
+#     if (versions.indexOf(newVersion) - versions.indexOf(currentVersion) !== 1) {
+#       print("you can't skip a mongodb version while updating, please read our update documentation for more information");
+#       quit(1);
+#     }
+
+#     quit(0);
+# kind: ConfigMap
+# metadata:
+#   annotations:
+#     argocd.argoproj.io/tracking-id: 'rocketchat-k0s:/ConfigMap:rocketchat/rocketchat-k0s-rocketchat-scripts'
+#   labels:
+#     app.kubernetes.io/instance: rocketchat-k0s
+#     app.kubernetes.io/managed-by: Helm
+#     app.kubernetes.io/name: rocketchat
+#     helm.sh/chart: rocketchat-6.8.0
+#   name: rocketchat-k0s-rocketchat-scripts
+#   namespace: rocketchat
