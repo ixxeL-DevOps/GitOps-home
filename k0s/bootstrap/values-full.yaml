@@ -231,11 +231,9 @@ argo-cd:
       #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
       #     send: [app-sync-status]    
       trigger.sync-operation-change: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
-          oncePer: app.status.operationState.finishedAt
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
           send: [app-deployed]
-        - when: app.status.operationState.phase in ['Error', 'Failed']
-          oncePer: app.status.operationState.finishedAt
+        - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
           send: [app-sync-failed]
         - when: app.status.health.status == 'Degraded'
           oncePer: app.status.operationState.syncResult.revision
@@ -337,6 +335,11 @@ argo-cd:
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
                 "short": true
+              },
+              {
+                "title": "Image",
+                "value": "{{index .app.status.summary.images 0}}"
+                "short": true
               }
               {{range $index, $c := .app.status.conditions}}
               {{if not $index}},{{end}}
@@ -374,6 +377,11 @@ argo-cd:
               {
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
+                "short": true
+              },
+              {
+                "title": "Image",
+                "value": "{{index .app.status.summary.images 0}}"
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
@@ -414,6 +422,11 @@ argo-cd:
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
                 "short": true
+              },
+              {
+                "title": "Image",
+                "value": "{{index .app.status.summary.images 0}}"
+                "short": true
               }
               {{range $index, $c := .app.status.conditions}}
               {{if not $index}},{{end}}
@@ -452,6 +465,11 @@ argo-cd:
               {
                 "title": "Repository",
                 "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {
+                "title": "Image",
+                "value": "{{index .app.status.summary.images 0}}"
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
