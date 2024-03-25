@@ -1072,6 +1072,7 @@ argocd-image-updater:
       - name: Docker Hub
         api_url: https://index.docker.io/v1/
         ping: yes
+        prefix: docker.io
         credentials: pullsecret:argocd/dockerhub-creds
         defaultns: library
       # - name: Docker Hub

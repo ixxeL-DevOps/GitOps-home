@@ -18,10 +18,6 @@ spec:
     metadata:
       name: 'cert-manager-{{env}}'
       finalizers: []
-      annotations:
-        argocd-image-updater.argoproj.io/write-back-method: argocd
-        argocd-image-updater.argoproj.io/image-list: quay.io/jetstack/cert-manager-controller:v1.x
-        argocd-image-updater.argoproj.io/app.update-strategy: semver
     spec:
       project: infra-security
       destination:
