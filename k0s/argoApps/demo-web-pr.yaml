@@ -3,6 +3,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: demo-web-preview
+  namespace: argocd
 spec:
   generators:
     - pullRequest:
@@ -20,11 +21,11 @@ spec:
         notifications.argoproj.io/subscribe.on-ephemeral-deployed.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-health-degraded.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-sync-failed.github: ""
-        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-ephemeral"
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#vcluster-preview"
     spec:
       destination:
         namespace: 'demo-web-pr-{{number}}'
-        name: 'vk-pprod'
+        name: 'vk-preview'
       project: ephemeral
       source:
         path: deploy/
