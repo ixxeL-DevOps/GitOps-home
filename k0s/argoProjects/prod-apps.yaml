@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
-  name: prod-aps
+  name: prod-apps
 spec:
   clusterResourceWhitelist:
     - group: '*'
