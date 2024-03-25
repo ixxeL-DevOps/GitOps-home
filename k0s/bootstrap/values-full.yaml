@@ -792,7 +792,6 @@ argo-cd:
             password: "{{ `{{ .token }}` }}"
             url: https://github.com
       data:
-      data:
       - secretKey: token
         remoteRef:
           key: github/k0s
