@@ -1049,6 +1049,8 @@ argocd-image-updater:
     pullPolicy: Always
     tag: ""
   fullnameOverride: "argocd-img-updater"
+  updateStrategy:
+    type: RollingUpdate
 
   config:
     # -- API kind that is used to manage Argo CD applications (`kubernetes` or `argocd`)
