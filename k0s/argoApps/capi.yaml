@@ -7,9 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements:
-      - env: k0s
-        namespace: capi
+      elements: []
+      # - env: k0s
+      #   namespace: capi
   template:
     metadata:
       name: 'capi-{{env}}'
