@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: dev-apps
+  name: prod-apps
   namespace: argocd
 spec:
   goTemplate: true
@@ -20,7 +20,7 @@ spec:
             exclude: true
   template:
     metadata:
-      name: '{{ .path.basenameNormalized }}-dev'
+      name: '{{ .path.basenameNormalized }}'
       finalizers: []
     spec:
       project: dev-apps
