@@ -231,12 +231,12 @@ argo-cd:
       #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
       #     send: [app-sync-status]    
       trigger.sync-operation-change: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+          oncePer: app.status.operationState.finishedAt
           send: [app-deployed]
-        - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+        - when: app.status.operationState.phase in ['Error', 'Failed']
           send: [app-sync-failed]
         - when: app.status.health.status == 'Degraded'
-          oncePer: app.status.operationState.syncResult.revision
           send: [app-health-degraded]
         - when: app.status.sync.status == 'Unknown'
           send: [app-sync-status-unknown]
@@ -331,14 +331,16 @@ argo-cd:
                 "value": "{{.app.spec.source.repoURL}}",
                 "short": true
               },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
               {
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
-                "short": true
-              },
-              {
-                "title": "Image",
-                "value": "{{index .app.status.summary.images 0}}"
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
@@ -374,14 +376,16 @@ argo-cd:
                 "value": "{{.app.spec.source.repoURL}}",
                 "short": true
               },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
               {
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
-                "short": true
-              },
-              {
-                "title": "Image",
-                "value": "{{index .app.status.summary.images 0}}"
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
@@ -418,14 +422,16 @@ argo-cd:
                 "value": "{{.app.spec.source.repoURL}}",
                 "short": true
               },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
               {
                 "title": "Revision",
                 "value": "{{.app.status.sync.revision}}",
-                "short": true
-              },
-              {
-                "title": "Image",
-                "value": "{{index .app.status.summary.images 0}}"
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
@@ -467,9 +473,16 @@ argo-cd:
                 "value": "{{.app.spec.source.repoURL}}",
                 "short": true
               },
+              {{- range $deployedImage := .app.status.summary.images -}}
               {
                 "title": "Image",
-                "value": "{{index .app.status.summary.images 0}}"
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
                 "short": true
               }
               {{range $index, $c := .app.status.conditions}}
