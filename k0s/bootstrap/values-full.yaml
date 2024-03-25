@@ -265,8 +265,8 @@ argo-cd:
     templates:
       template.app-sync-status: |
         message: |
-          Application {{.app.metadata.name}} sync is {{.app.status.sync.status}}.
-          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+          Application {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
         rocketchat:
           attachments: |
             [{
