@@ -1070,10 +1070,10 @@ argocd-image-updater:
 
     registries:
       - name: Docker Hub
-        api_url: https://index.docker.io/v1/
+        api_url: https://index.docker.io/
         ping: yes
         prefix: docker.io
-        credentials: pullsecret:argocd/dockerhub-creds
+        credentials: pullsecret:argocd/dockerhub-credsv2
         defaultns: library
       # - name: Docker Hub
       #   api_url: https://registry-1.docker.io
