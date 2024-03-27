@@ -758,3 +758,21 @@ token=$(kubectl get secret vault-auth -n cert-manager -ojson | jq -r '.data.toke
 vault login -tls-skip-verify -address=https://vault.fredcorp.com
 vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/config token_reviewer_jwt=$token kubernetes_host=https://192.168.1.110:6443 kubernetes_ca_cert=@ca.crt
 ```
+
+
+
+## Tips
+> [!CAUTION]
+> If you struggle with `logs -f` command which result in error notifier, you can increase limits (also useful for testkube).
+
+get infos:
+```bash
+sysctl fs.inotify.max_user_watches
+sysctl fs.inotify.max_user_instances
+```
+
+configure new values
+```bash
+sudo sysctl -w fs.inotify.max_user_instances=256
+sudo sysctl -w fs.inotify.max_user_watches=1000000
+```

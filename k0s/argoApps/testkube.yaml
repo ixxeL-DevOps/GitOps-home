@@ -1,0 +1,55 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: testkube
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: testkube
+  template:
+    metadata:
+      name: 'testkube-{{env}}'
+      finalizers: []
+    spec:
+      project: ci-cd
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://kubeshop.github.io/helm-charts
+        targetRevision: 1.*.*
+        chart: testkube
+        helm:
+          releaseName: 'testkube-{{env}}'
+          valuesObject:
+            testkube-api:
+              uiIngress:
+                enabled: false
+                annotations:
+                  cert-manager.io/cluster-issuer: vault-issuer
+                  cert-manager.io/common-name: testkube.k8s-app.fredcorp.com
+                path: /
+                hosts:
+                  - testkube.k8s-app.fredcorp.com
+                tlsenabled: true
+                tls:
+                - hosts:
+                  - testkube.k8s-app.fredcorp.com
+                  secretName: testkube-tls-cert
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
