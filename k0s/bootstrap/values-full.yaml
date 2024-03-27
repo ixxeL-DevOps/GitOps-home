@@ -103,6 +103,13 @@ argo-cd:
     #   contents:
     #     - name: argo-rollouts
     #       url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.0/extension.tar
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-k0s
 
   controller:
     containerSecurityContext:
@@ -129,12 +136,13 @@ argo-cd:
     #     items:
     #     - key: fredcorp.pem
     #       path: fredcorp.pem
-    # metrics:
-    #   enabled: true
-    #   serviceMonitor:
-    #     enabled: true
-    #     additionalLabels:
-    #       release: prom-stack
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-k0s
 
   applicationSet:
     enabled: true
@@ -154,12 +162,13 @@ argo-cd:
     serviceAccount:
       create: true
       name: "argocd-applicationset-controller"
-    # metrics:
-    #   enabled: true
-    #   serviceMonitor:
-    #     enabled: true
-    #     additionalLabels:
-    #       release: prom-stack
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-k0s
     # volumeMounts:
     # - mountPath: /etc/ssl/certs/fredcorp.pem
     #   subPath: fredcorp.pem
@@ -199,7 +208,13 @@ argo-cd:
           items:
           - key: vault-pki-certs.pem
             path: vault-pki-certs.pem
-
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-k0s
 
     argocdUrl: "https://argocd.k8s-app.fredcorp.com"
 
@@ -554,12 +569,13 @@ argo-cd:
         resources:
           - secrets
           - configmaps
-    # metrics:
-    #   enabled: true
-    #   serviceMonitor:
-    #     enabled: true
-    #     additionalLabels:
-    #       release: prom-stack
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-k0s
     # extraContainers:
     #   - name: avp-helm
     #     command: [/var/run/argocd/argocd-cmp-server]

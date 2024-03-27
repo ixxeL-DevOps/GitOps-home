@@ -140,7 +140,7 @@ spec:
                     options:
                       path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
                   - name: 'grafana-dashboards-argocd'
-                    orgId: 2
+                    orgId: 1
                     folder: 'argocd'
                     type: file
                     disableDeletion: true
