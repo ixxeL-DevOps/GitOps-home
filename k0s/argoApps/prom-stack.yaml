@@ -26,6 +26,13 @@ spec:
         helm:
           releaseName: 'prom-stack-{{env}}'
           valuesObject:
+            prometheus-node-exporter:
+              prometheus:
+                monitor:
+                  relabelings:
+                  - action: replace
+                    sourceLabels: [__meta_kubernetes_pod_node_name]
+                    targetLabel: nodename
             fullnameOverride: 'prom-stack-{{env}}'
             prometheus:
               enabled: true
