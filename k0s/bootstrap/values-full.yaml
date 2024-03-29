@@ -219,7 +219,8 @@ argo-cd:
     argocdUrl: "https://argocd.k8s-app.fredcorp.com"
 
     secret:
-      name: notifications # uses this secret to fetch the 'password' key in it (which has access to api Github for notifications)
+      create: false
+      name: notifications-creds # uses this secret to fetch the 'password' key in it (which has access to api Github for notifications)
 
     notifiers:
       service.webhook.github: |
