@@ -776,3 +776,22 @@ configure new values
 sudo sysctl -w fs.inotify.max_user_instances=256
 sudo sysctl -w fs.inotify.max_user_watches=1000000
 ```
+
+## Crossplane GCP
+
+Create GKE admin ServiceAccount:
+```bash
+gcloud iam service-accounts create gke-crossplane
+gcloud projects add-iam-policy-binding dogwood-mission-418714 --member="serviceAccount:gke-crossplane@dogwood-mission-418714.iam.gserviceaccount.com" --role="roles/container.admin"
+gcloud projects get-iam-policy dogwood-mission-418714 --flatten="bindings[].members" --format='table(bindings.role)' --filter="bindings.members:gke-crossplane@dogwood-mission-418714.iam.gserviceaccount.com"
+```
+
+Create GKE admin ServiceAccount JSONKEY file:
+```bash
+gcloud iam service-accounts keys create ./gke-crossplane.json --iam-account gke-crossplane@dogwood-mission-418714.iam.gserviceaccount.com
+```
+
+Create secret:
+```bash
+kubectl create secret generic gke-crossplane -n crossplane --from-file=creds=./gke-crossplane.json --dry-run=client -oyaml
+```

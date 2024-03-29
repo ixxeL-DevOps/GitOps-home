@@ -26,9 +26,85 @@ spec:
         helm:
           releaseName: 'crossplane-{{env}}'
           valuesObject:
-            replicas: 1
-            deploymentStrategy: RollingUpdate
-            hostNetwork: false
+            # provider:
+            #   packages:
+            #   - xpkg.upbound.io/upbound/provider-gcp-storage:v1.0.2
+            #   - xpkg.upbound.io/upbound/provider-gcp-gke:v1.0.2
+            #   - xpkg.upbound.io/upbound/provider-gcp-secretmanager:v1.0.2
+            #   - xpkg.upbound.io/upbound/provider-gcp-artifact:v1.0.2
+            extraObjects:
+            - apiVersion: gcp.upbound.io/v1beta1
+              kind: ProviderConfig
+              metadata:
+                name: default
+              spec:
+                projectID: dogwood-mission-418714
+                credentials:
+                  source: Secret
+                  secretRef:
+                    namespace: crossplane
+                    name: gke-crossplane
+                    key: creds
+            - apiVersion: pkg.crossplane.io/v1
+              kind: Provider
+              metadata:
+                name: provider-gcp-artifact
+              spec:
+                ignoreCrossplaneConstraints: false
+                package: xpkg.upbound.io/upbound/provider-gcp-artifact:v1.0.2
+                packagePullPolicy: IfNotPresent
+                revisionActivationPolicy: Automatic
+                revisionHistoryLimit: 1
+                runtimeConfigRef:
+                  apiVersion: pkg.crossplane.io/v1beta1
+                  kind: DeploymentRuntimeConfig
+                  name: default
+                skipDependencyResolution: false
+            - apiVersion: pkg.crossplane.io/v1
+              kind: Provider
+              metadata:
+                name: provider-gcp-gke
+              spec:
+                ignoreCrossplaneConstraints: false
+                package: xpkg.upbound.io/upbound/provider-gcp-gke:v1.0.2
+                packagePullPolicy: IfNotPresent
+                revisionActivationPolicy: Automatic
+                revisionHistoryLimit: 1
+                runtimeConfigRef:
+                  apiVersion: pkg.crossplane.io/v1beta1
+                  kind: DeploymentRuntimeConfig
+                  name: default
+                skipDependencyResolution: false
+            - apiVersion: pkg.crossplane.io/v1
+              kind: Provider
+              metadata:
+                name: provider-gcp-secretmanager
+              spec:
+                ignoreCrossplaneConstraints: false
+                package: xpkg.upbound.io/upbound/provider-gcp-secretmanager:v1.0.2
+                packagePullPolicy: IfNotPresent
+                revisionActivationPolicy: Automatic
+                revisionHistoryLimit: 1
+                runtimeConfigRef:
+                  apiVersion: pkg.crossplane.io/v1beta1
+                  kind: DeploymentRuntimeConfig
+                  name: default
+                skipDependencyResolution: false
+            - apiVersion: pkg.crossplane.io/v1
+              kind: Provider
+              metadata:
+                name: provider-gcp-storage
+              spec:
+                ignoreCrossplaneConstraints: false
+                package: xpkg.upbound.io/upbound/provider-gcp-storage:v1.0.2
+                packagePullPolicy: IfNotPresent
+                revisionActivationPolicy: Automatic
+                revisionHistoryLimit: 1
+                runtimeConfigRef:
+                  apiVersion: pkg.crossplane.io/v1beta1
+                  kind: DeploymentRuntimeConfig
+                  name: default
+                skipDependencyResolution: false
       syncPolicy:
         automated:
           prune: true
