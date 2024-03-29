@@ -1,13 +1,4 @@
 # GitOps-core
-`ArgoCD` : [![App Status](https://argocd.k8s-app.fredcorp.com/api/badge?name=argocd&revision=true)](https://argocd.k8s-app.fredcorp.com/applications/argocd)
-
-`ArgoApps` : [![App Status](https://argocd.k8s-app.fredcorp.com/api/badge?name=argocd-apps&revision=true)](https://argocd.k8s-app.fredcorp.com/applications/argocd-apps)
-
-`ArgoClusters` : [![App Status](https://argocd.k8s-app.fredcorp.com/api/badge?name=argocd-clusters&revision=true)](https://argocd.k8s-app.fredcorp.com/applications/argocd-clusters)
-
-`ArgoProjects` : [![App Status](https://argocd.k8s-app.fredcorp.com/api/badge?name=argocd-projects&revision=true)](https://argocd.k8s-app.fredcorp.com/applications/argocd-projects)
-
-`ArgoRepos` : [![App Status](https://argocd.k8s-app.fredcorp.com/api/badge?name=argocd-repos&revision=true)](https://argocd.k8s-app.fredcorp.com/applications/argocd-repos)
 
 > [!CAUTION]
 > This structure is opinionated and result from multiple experiences using ArgoCD in Enterprise grade environments
