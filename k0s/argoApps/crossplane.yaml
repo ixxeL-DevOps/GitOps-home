@@ -1,42 +1,49 @@
+---
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
   name: crossplane
   namespace: argocd
 spec:
-  destination:
-    namespace: crossplane
-    name: k0s
-  project: infra-core
-  source:
-    repoURL: https://charts.crossplane.io/stable
-    targetRevision: 1.*.*
-    chart: crossplane
-    helm:
-      releaseName: crossplane
-      valuesObject:
-        replicas: 1
-        deploymentStrategy: RollingUpdate
-        hostNetwork: false
-        image:
-          repository: xpkg.upbound.io/crossplane/crossplane
-          tag: ""
-          pullPolicy: IfNotPresent
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - Validate=true
-      - PruneLast=false
-      - RespectIgnoreDifferences=true
-      - Replace=false
-      - ApplyOutOfSyncOnly=true
-      - CreateNamespace=true
-      - ServerSideApply=true
-  ignoreDifferences:
-  - group: apps
-    kind: Deployment
-    jqPathExpressions: 
-      - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
-      - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
+  generators:
+  - list:
+      elements:
+      - env: k0s
+        namespace: crossplane
+  template:
+    metadata:
+      name: 'crossplane-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.crossplane.io/stable
+        targetRevision: 1.*.*
+        chart: crossplane
+        helm:
+          releaseName: 'crossplane-{{env}}'
+          valuesObject:
+            replicas: 1
+            deploymentStrategy: RollingUpdate
+            hostNetwork: false
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jqPathExpressions: 
+          - .spec.template.spec.containers[].env[].valueFrom.resourceFieldRef.divisor
+          - .spec.template.spec.initContainers[].env[].valueFrom.resourceFieldRef.divisor
