@@ -51,7 +51,7 @@ spec:
                 annotations:
                   cert-manager.io/cluster-issuer: vault-issuer
                   cert-manager.io/common-name: prometheus.k8s-app.fredcorp.com
-                ingressClassName: nginx
+                ingressClassName: cilium
                 hosts:
                   - prometheus.k8s-app.fredcorp.com
                 path: /
@@ -209,7 +209,7 @@ spec:
                 annotations:
                   cert-manager.io/cluster-issuer: vault-issuer
                   cert-manager.io/common-name: grafana.k8s-app.fredcorp.com
-                ingressClassName: nginx
+                ingressClassName: cilium
                 hosts:
                   - grafana.k8s-app.fredcorp.com
                 path: /
