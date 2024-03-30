@@ -60,6 +60,8 @@ spec:
               ingressClassName: "nginx"
               host: '{{.values.release}}.k8s-app.fredcorp.com'
               annotations:
+                # ingress.cilium.io/force-https: "true"
+                # ingress.cilium.io/tls-passthrough: "true"
                 nginx.ingress.kubernetes.io/backend-protocol: HTTPS
                 nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
                 nginx.ingress.kubernetes.io/ssl-redirect: "true"
