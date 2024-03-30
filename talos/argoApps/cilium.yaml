@@ -55,8 +55,28 @@ spec:
             hubble:
               ui:
                 enabled: true
+                ingress:
+                  enabled: true
+                  annotations:
+                    cert-manager.io/cluster-issuer: vault-issuer
+                    cert-manager.io/common-name: hubble.k8s-app.fredcorp.com
+                  className: "cilium"
+                  hosts:
+                    - hubble.k8s-app.fredcorp.com
+                  tls:
+                   - secretName: hubble-tls-cert
+                     hosts:
+                       - hubble.k8s-app.fredcorp.com
               relay:
                 enabled: true
+            ingressController:
+              enabled: true
+              loadbalancerMode: shared
+              default: true
+              enforceHttps: true
+              service:
+                insecureNodePort: 32257
+                secureNodePort: 32732
       syncPolicy:
         automated:
           prune: true
