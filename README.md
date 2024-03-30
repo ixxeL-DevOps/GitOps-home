@@ -751,15 +751,12 @@ argocd cluster add vcluster_vcluster-dev_vk-dev_rke2-fredcorp --server argocd.k8
 
 ## Vault kubernetes auth for cert-manager
 
-
 ```bash
 kubectl config view --raw -o jsonpath='{.clusters[?(@.name == "'"$(kubectl config current-context)"'")].cluster.certificate-authority-data}' | base64 --decode > ca.crt
 token=$(kubectl get secret vault-auth -n cert-manager -ojson | jq -r '.data.token' | base64 -d)
 vault login -tls-skip-verify -address=https://vault.fredcorp.com
 vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/config token_reviewer_jwt=$token kubernetes_host=https://192.168.1.110:6443 kubernetes_ca_cert=@ca.crt
 ```
-
-
 
 ## Tips
 > [!CAUTION]
@@ -794,4 +791,162 @@ gcloud iam service-accounts keys create ./gke-crossplane.json --iam-account gke-
 Create secret:
 ```bash
 kubectl create secret generic gke-crossplane -n crossplane --from-file=creds=./gke-crossplane.json --dry-run=client -oyaml
+```
+
+## Home bootstrap Talos
+
+First install ArgoCD with the init `values.yaml`:
+```bash
+helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-init.yaml -n argocd --create-namespace 
+```
+
+then install `ApplicationSet` for External Secrets Operator:
+```bash
+kubectl apply -f talos/argoApps/external-secrets.yaml
+```
+
+Grant ESO SA for token reviwer permission on k8s API:
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: role-tokenreview-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: eso-auth
+    namespace: external-secrets
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: eso-auth
+  namespace: external-secrets
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: eso-auth
+  namespace: external-secrets
+  annotations:
+    kubernetes.io/service-account.name: "eso-auth"
+EOF
+```
+
+Configure Vault k8s auth:
+```bash
+vault login -tls-skip-verify -address=https://vault.fredcorp.com
+        
+kubectl config view --raw --minify --flatten -o jsonpath='{.clusters[].cluster.certificate-authority-data}' | base64 --decode > ca.crt
+TOKEN="$(kubectl get secret -n external-secrets eso-auth -o jsonpath='{.data.token}' | base64 -d)"
+
+vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/config token_reviewer_jwt="${TOKEN}" kubernetes_host="https://192.168.1.130:6443" kubernetes_ca_cert=@ca.crt disable_issuer_verification=true
+```
+
+```bash      
+vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/role/external-secrets bound_service_account_names=eso-auth bound_service_account_namespaces=external-secrets policies=secretstore ttl=24h
+```
+
+Create configMap for Vault certificate:
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fredcorp-pki-certs
+  namespace: external-secrets
+data:
+  vault-pki-certs.pem: |
+    -----BEGIN CERTIFICATE-----
+    MIIErzCCA5egAwIBAgIUOCzHnMA4TtM2IzVN+JB7DKwX97cwDQYJKoZIhvcNAQEL
+    BQAwazELMAkGA1UEBhMCRlIxDTALBgNVBAgTBE5vcmQxDjAMBgNVBAcTBUxpbGxl
+    MREwDwYDVQQKEwhGUkVEQ09SUDELMAkGA1UECxMCSVQxHTAbBgNVBAMTFGZyZWRj
+    b3JwLmNvbSBSb290IENBMB4XDTIxMTEwODEyNDEzMFoXDTM2MTEwNDEyNDIwMFow
+    ajELMAkGA1UEBhMCRlIxDTALBgNVBAgTBE5vcmQxDjAMBgNVBAcTBUxpbGxlMREw
+    DwYDVQQKEwhGUkVEQ09SUDELMAkGA1UECxMCSVQxHDAaBgNVBAMTE2ZyZWRjb3Jw
+    LmNvbSBJTlQgQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCTnpT1
+    gke64n1Xs80SeRT/YDNTvuh6iZFPVP71I8JKEffHqQFzBwdsz5NnnW46ZOIp+jHK
+    HbgZq1XjQYGqNzUrTM6mbUTDfmeJ0vcNieGq7vY0c4hPr+4u0HbP21Cj2Kv+cE0l
+    TuP63ro4QN15aE+IbnUin2uZO6152x08tgl+DmsQ08ek5EFlsuYMoZJvKBSKqNRq
+    VQC8+sJx4AbJv/NHhw6OwtLNgEqvlb9rv72G6QmBkXbwofSBxChBJwXzULByXHdA
+    iWAUAsplkF7mVHzc7M7bKKbNvve+9tpXYiJ9vTtbmlqhvuej0NWga/9sAWE+MZ2q
+    iKA+RktYizXqUg0TAgMBAAGjggFKMIIBRjAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0T
+    AQH/BAUwAwEB/zAdBgNVHQ4EFgQU3t6Xv6DuBTsQTl06yhwgLXmkxjUwHwYDVR0j
+    BBgwFoAU6X0TA2ic6+vcWFsH1GUyUPpz2z4wdwYIKwYBBQUHAQEEazBpMDUGCCsG
+    AQUFBzAChilodHRwczovL3ZhdWx0LmZyZWRjb3JwLmNvbTo4MjAwL3YxL3BraS9j
+    YTAwBggrBgEFBQcwAoYkaHR0cHM6Ly92YXVsdC5mcmVkY29ycC5jb20vdjEvcGtp
+    L2NhMGoGA1UdHwRjMGEwMaAvoC2GK2h0dHBzOi8vdmF1bHQuZnJlZGNvcnAuY29t
+    OjgyMDAvdjEvcGtpL2NybCIwLKAqoCiGJmh0dHBzOi8vdmF1bHQuZnJlZGNvcnAu
+    Y29tL3YxL3BraS9jcmwiMA0GCSqGSIb3DQEBCwUAA4IBAQCFROitTOJp1sb9o6x4
+    dfrH4uUH2k7voe8OIqD8KjmunKjRE6VvnDPXV3wHnjJIqEUbnvFWscKZmKN5dYLc
+    1p6EB8m+Xggpwt+dM1iXJ3rzrYH5t6BeD1WSwGOVQNFSEg5ty3QrdccwtJ3jXhXo
+    6U9zc7Uc7B1OJYWi/NHfdn1aSBNUEAglaACG7h9rb7FBKlt2hGsQ9SGnEFtEvJmk
+    0MbXaB+HWZveVMODKTllyMiQTG0QWquEcAWGkBrn2XmwGmIP2wDQtAZKuiEVjw5N
+    Phg9QLyjizbOqHj7w7kNs4uyXBKl6QFxOt55SvpVZ+0N2EDRFsdF8WJGqElLP3F1
+    Ugv3
+    -----END CERTIFICATE-----
+    -----BEGIN CERTIFICATE-----
+    MIIDxzCCAq+gAwIBAgIUAIOOFp/kn//KT5+E9YsoAgi4h0YwDQYJKoZIhvcNAQEL
+    BQAwazELMAkGA1UEBhMCRlIxDTALBgNVBAgTBE5vcmQxDjAMBgNVBAcTBUxpbGxl
+    MREwDwYDVQQKEwhGUkVEQ09SUDELMAkGA1UECxMCSVQxHTAbBgNVBAMTFGZyZWRj
+    b3JwLmNvbSBSb290IENBMB4XDTIxMTEwODEyMzUxMFoXDTM2MTEwNDEyMzU0MFow
+    azELMAkGA1UEBhMCRlIxDTALBgNVBAgTBE5vcmQxDjAMBgNVBAcTBUxpbGxlMREw
+    DwYDVQQKEwhGUkVEQ09SUDELMAkGA1UECxMCSVQxHTAbBgNVBAMTFGZyZWRjb3Jw
+    LmNvbSBSb290IENBMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2cJC
+    8i4Ep06zWa2IJBomIQKQwCQCuWbGvHG1iFfsCJ4tRC8QC4BYWo0298TJklpogBat
+    +TQsy50wH+Xhxtcw+N84EKF3sVpNlNZOwrqlpcK04TNzcXGGXzB9DPTfobAx50t7
+    /VgEJAncDAXFsN91s7IZs16mSP53e5tOfUeJE92z45+idqgGHJ/173d66t34KBGy
+    /tvuts5+gain0wkgaz44ZKdyM4jVKWk+HccpG9qf3TbhwQvFmqPbzcHIUmJTgdZh
+    KnJ/KthAUVTwvMi57ZlemKv2fVLTOCbgjdtjqdcCJcpdHSXN858uRSuGoyMW+uac
+    R+yXRe2GmWJf+vK9bwIDAQABo2MwYTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/
+    BAUwAwEB/zAdBgNVHQ4EFgQU6X0TA2ic6+vcWFsH1GUyUPpz2z4wHwYDVR0jBBgw
+    FoAU6X0TA2ic6+vcWFsH1GUyUPpz2z4wDQYJKoZIhvcNAQELBQADggEBAEvcAI41
+    3vYDbpQbB7kL/teuW/Smxx/mOMyTmNxKOotUDf47Z0U8/1n7yApmbAHP3myHdxtT
+    ieQ0ia4fi+gRoueCAZXOzctptrnZ57Ocd5uuX8Hzwxwa+diqi5+HwhJsfYdAX062
+    x+fN/NknYnP11RoJlHwm9EAf9mjqqW6AspHV1zAaf2sPCKyGqWyuTpGAgnkbR0x6
+    G1bl4NAeZk+x9SvvHM8E/B7OQ1Xq03RyEVJylFqJZnb2TGPPcpNLRWya8L422vaw
+    GF1wBuQQrmjqX7I1ix3TeYdcxqsJJVslR7iTrdyzgz8KMU4yBjNKdOF1eMx/xIAu
+    xw+ozAYOQ7kyZD0=
+    -----END CERTIFICATE-----
+EOF
+```
+
+Create ClusterSecretStore:
+```bash
+kubectl apply -f - <<EOF
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: admin
+spec:
+  provider:
+    vault:
+      server: "https://vault.fredcorp.com"
+      path: "admin"
+      version: "v2"
+      caProvider:
+        type: "ConfigMap"
+        namespace: "external-secrets"
+        name: "fredcorp-pki-certs"
+        key: "vault-pki-certs.pem"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "external-secrets"
+          serviceAccountRef:
+            name: "eso-auth"
+            namespace: external-secrets
+          secretRef:
+            name: "eso-auth"
+            key: "token"
+            namespace: external-secrets
+EOF
 ```
