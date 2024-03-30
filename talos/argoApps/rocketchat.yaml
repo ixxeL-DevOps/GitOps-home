@@ -7,9 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements:
-      - env: talos
-        namespace: rocketchat
+      elements: []
+      # - env: talos
+      #   namespace: rocketchat
   template:
     metadata:
       name: 'rocketchat-{{env}}'

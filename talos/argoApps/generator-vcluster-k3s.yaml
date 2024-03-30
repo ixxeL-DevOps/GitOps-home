@@ -72,16 +72,6 @@ spec:
             sync:
               ingresses:
                 enabled: true
-            init:
-              helm: 
-                - chart:
-                    name: external-secrets
-                    version: "0.9.13"
-                    repo: https://charts.external-secrets.io
-                  release:
-                    name: external-secrets
-                    namespace: external-secrets
-                  timeout: "180s"
       syncPolicy:
         automated:
           prune: true

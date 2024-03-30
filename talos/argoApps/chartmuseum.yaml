@@ -7,13 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements:
-      - env: talos
-        namespace: chartmuseum
-      # - env: talos-vk-dev
-      #   namespace: cert-manager
-      # - env: talos-vk-prod
-      #   namespace: cert-manager
+      elements: []
+      # - env: talos
+      #   namespace: chartmuseum
   template:
     metadata:
       name: 'chartmuseumr-{{env}}'
