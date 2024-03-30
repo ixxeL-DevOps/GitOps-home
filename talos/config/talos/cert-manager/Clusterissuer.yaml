@@ -1,4 +1,19 @@
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: certmanager-auth
+  namespace: cert-manager
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: certmanager-auth
+  namespace: cert-manager
+  annotations:
+    kubernetes.io/service-account.name: "certmanager-auth"
+---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
@@ -12,8 +27,7 @@ spec:
     auth:
       kubernetes:
         mountPath: /v1/auth/kubernetes
-        role: vault-issuer
+        role: cert-manager
         secretRef:
-          name: cert-manager
-          # name: cert-manager-token-s8xv6
+          name: certmanager-auth
           key: token

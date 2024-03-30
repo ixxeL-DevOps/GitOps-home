@@ -1,15 +1,15 @@
----
-apiVersion: storage.gcp.upbound.io/v1beta1
-kind: Bucket
-metadata:
-  name: s3-bucket1
-  namespace: crossplane
-  annotations:
-    crossplane.io/external-name: s3-bucket1
-spec:
-  forProvider:
-    location: EU
-    storageClass: MULTI_REGIONAL
-  providerConfigRef:
-    name: default
-  deletionPolicy: Delete
+# ---
+# apiVersion: storage.gcp.upbound.io/v1beta1
+# kind: Bucket
+# metadata:
+#   name: s3-bucket1
+#   namespace: crossplane
+#   annotations:
+#     crossplane.io/external-name: s3-bucket1
+# spec:
+#   forProvider:
+#     location: EU
+#     storageClass: MULTI_REGIONAL
+#   providerConfigRef:
+#     name: default
+#   deletionPolicy: Delete

@@ -795,6 +795,8 @@ kubectl create secret generic gke-crossplane -n crossplane --from-file=creds=./g
 
 ## Home bootstrap Talos
 
+### ArgoCD and ESO
+
 First install ArgoCD with the init `values.yaml`:
 ```bash
 helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-init.yaml -n argocd --create-namespace 
@@ -956,7 +958,7 @@ Then bootstrap final ArgoCD app of apps:
 helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=false --set updater.enabled=false
 helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=true --set updater.enabled=true
 ```
-
+### Metallb
 Some applications (e.g. Prometheus node exporter or storage solutions) require more relaxed Pod Security Standards, which can be configured by either updating the Pod Security Admission plugin configuration, or by using the pod-security.kubernetes.io/enforce label on the namespace level:
 
 - https://kubernetes.io/docs/concepts/security/pod-security-admission/
@@ -969,4 +971,45 @@ For `metallb` for example you can add following SyncOption:
         managedNamespaceMetadata:
           labels:
             pod-security.kubernetes.io/enforce: privileged
+```
+### Certmanager
+
+Update ClusterRoleBinding and create SA and token:
+```yaml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: role-tokenreview-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: eso-auth
+    namespace: external-secrets
+  - kind: ServiceAccount
+    name: certmanager-auth
+    namespace: cert-manager
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: certmanager-auth
+  namespace: cert-manager
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: certmanager-auth
+  namespace: cert-manager
+  annotations:
+    kubernetes.io/service-account.name: "certmanager-auth"
+```
+
+For Cert manager:
+```bash
+vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/role/cert-manager bound_service_account_names=certmanager-auth bound_service_account_namespaces=cert-manager policies=pki_fredcorp ttl=24h
 ```
