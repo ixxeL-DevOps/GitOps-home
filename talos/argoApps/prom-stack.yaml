@@ -52,6 +52,7 @@ spec:
                   cert-manager.io/cluster-issuer: vault-issuer
                   cert-manager.io/common-name: prometheus.k8s-app.fredcorp.com
                 ingressClassName: cilium
+                pathType: Prefix
                 hosts:
                   - prometheus.k8s-app.fredcorp.com
                 path: /
