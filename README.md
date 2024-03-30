@@ -956,3 +956,9 @@ Then bootstrap final ArgoCD app of apps:
 helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=false --set updater.enabled=false
 helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=true --set updater.enabled=true
 ```
+
+Some applications (e.g. Prometheus node exporter or storage solutions) require more relaxed Pod Security Standards, which can be configured by either updating the Pod Security Admission plugin configuration, or by using the pod-security.kubernetes.io/enforce label on the namespace level:
+
+```bash
+kubectl label namespace NAMESPACE-NAME pod-security.kubernetes.io/enforce=privileged
+```
