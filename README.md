@@ -1013,3 +1013,5 @@ For Cert manager:
 ```bash
 vault write -tls-skip-verify -address=https://vault.fredcorp.com auth/kubernetes/role/cert-manager bound_service_account_names=certmanager-auth bound_service_account_namespaces=cert-manager policies=pki_fredcorp ttl=24h
 ```
+
+You can now deploy Nginx ingress controller and set `ingress.enabled=true` for ArgoCD.
