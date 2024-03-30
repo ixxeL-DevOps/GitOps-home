@@ -950,3 +950,9 @@ spec:
             namespace: external-secrets
 EOF
 ```
+
+Then bootstrap final ArgoCD app of apps:
+```bash
+helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=false --set updater.enabled=false
+helm upgrade -i argocd talos/bootstrap/ -f talos/bootstrap/values-full.yaml -n argocd --create-namespace --set apps.enabled=true --set updater.enabled=true
+```
