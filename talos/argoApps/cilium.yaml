@@ -77,6 +77,19 @@ spec:
               service:
                 insecureNodePort: 32257
                 secureNodePort: 32732
+            # prometheus:
+            #   enabled: true
+            #   serviceMonitor:
+            #     enabled: true
+            #     labels:
+            #       release: prom-stack-talos
+            # operator:
+            #   prometheus:
+            #     enabled: true
+            #     serviceMonitor:
+            #       enabled: true
+            #       labels: 
+            #         release: prom-stack-talos
       syncPolicy:
         automated:
           prune: true
