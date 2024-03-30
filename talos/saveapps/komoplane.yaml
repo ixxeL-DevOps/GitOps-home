@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: komoplane
+  namespace: argocd
+spec:
+  destination:
+    namespace: crossplane
+    name: talos
+  project: infra-core
+  source:
+    repoURL: https://helm-charts.komodor.io
+    targetRevision: 0.*.*
+    chart: komoplane
+    helm:
+      releaseName: komoplane
+      valuesObject:
+        ingress:
+          enabled: true
+          className: "nginx"
+          annotations:
+            cert-manager.io/cluster-issuer: vault-issuer
+            cert-manager.io/common-name: komoplane.k8s-app.fredcorp.com
+          hosts:
+            - host: komoplane.k8s-app.fredcorp.com
+              paths:
+                - path: /
+                  pathType: ImplementationSpecific
+          tls: 
+          - hosts: 
+            - komoplane.k8s-app.fredcorp.com
+            secretName: komoplane-tls-cert
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - Validate=true
+      - PruneLast=false
+      - RespectIgnoreDifferences=true
+      - Replace=false
+      - ApplyOutOfSyncOnly=true
+      - CreateNamespace=true
+      - ServerSideApply=true

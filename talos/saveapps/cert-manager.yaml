@@ -1,0 +1,65 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cert-manager
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: cert-manager
+      # - env: vk-dev
+      #   cluster-url: https://vcluster-dev.k8s-app.fredcorp.com
+      #   cluster-name: vk-dev
+      #   namespace: cert-manager
+  template:
+    metadata:
+      name: 'cert-manager-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-security
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      sources:
+        - repoURL: https://charts.jetstack.io
+          targetRevision: v1.*.*
+          chart: cert-manager
+          helm:
+            releaseName: 'cert-manager-{{env}}'
+            valuesObject:
+              global:
+                rbac:
+                  create: true
+                  aggregateClusterRoles: true
+                extraArgs:
+                  - --feature-gates=ExperimentalGatewayAPISupport=true
+              installCRDs: true    
+              serviceAccount:
+                create: true
+                name: "cert-manager"
+                automountServiceAccountToken: true
+              webhook:
+                serviceAccount:
+                  create: true
+                  name: "cert-manager-webhook"
+                  automountServiceAccountToken: true
+        - repoURL: https://charts.jetstack.io
+          targetRevision: v0.*.*
+          chart: cert-manager-trust
+          helm:
+            releaseName: 'cert-manager-trust-{{env}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

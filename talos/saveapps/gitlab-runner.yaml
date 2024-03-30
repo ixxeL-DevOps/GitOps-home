@@ -1,0 +1,83 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: gitlab-runner
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: gitlab-runner
+  template:
+    metadata:
+      name: 'gitlab-runner-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-pipelines
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://charts.gitlab.io/
+        targetRevision: 0.*.*
+        chart: gitlab-runner
+        helm:
+          releaseName: 'gitlab-runner-{{env}}'
+          valuesObject:
+            gitlabUrl: 'https://gitlab.com/'
+            image: 
+              registry: docker.io
+              image: gitlab/gitlab-runner
+              tag: alpine3.18-v16.5.0
+            imagePullPolicy: IfNotPresent
+            fullnameOverride: gitlab-runner-fredcorp-{{env}}
+            # runnerRegistrationToken: GR1348941a7dYG_7u6CCXBG6Hz-n2
+            runnerToken: glrt-8ZFfu5Wgx3wDrQHWThLH
+            concurrent: 15
+            checkInterval: 15
+            rbac:
+              serviceAccountName: gitlab-runner-fredcorp-{{env}}
+              clusterWideAccess: false
+              create: true
+              rules:
+              - apiGroups: ["*"]
+                resources: ["*"]
+                verbs: ["*"]
+              - apiGroups: ["batch"]
+                resources: ["cronjobs","jobs"]
+                verbs: ["*"]
+            runners:
+              config: |
+                [[runners]]
+                  name = "runner-fredcorp"
+                  request_concurrency = 6
+                  limit = 0
+                  [runners.kubernetes]
+                    namespace = "{{.Release.Namespace}}"
+                    privileged = true
+                    pull_policy = ["always"]
+                    tls_verify = false
+                    # helper_image = "harbor.fredcorp.com/hubproxy/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
+                    # helper_image = "nexus-hub.fredcorp.com/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
+                    # extra_hosts = ["harbor.fredcorp.com:192.168.0.146"]
+                    service_account = "gitlab-runner-fredcorp-{{env}}"
+              name: talos-fredcorp-runner
+              # tags: talos-cluster
+              # runUntagged: true
+            service:
+              enabled: true
+              type: ClusterIP  
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

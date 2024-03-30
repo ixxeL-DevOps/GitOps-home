@@ -1,0 +1,65 @@
+# ---
+# apiVersion: pkg.crossplane.io/v1
+# kind: Provider
+# metadata:
+#   name: provider-gcp-artifact
+#   namespace: crossplane
+# spec:
+#   ignoreCrossplaneConstraints: false
+#   package: xpkg.upbound.io/upbound/provider-gcp-artifact:v1.0.2
+#   packagePullPolicy: IfNotPresent
+#   revisionActivationPolicy: Automatic
+#   revisionHistoryLimit: 1
+#   runtimeConfigRef:
+#     apiVersion: pkg.crossplane.io/v1beta1
+#     kind: DeploymentRuntimeConfig
+#     name: default
+#   skipDependencyResolution: false
+# ---
+# apiVersion: pkg.crossplane.io/v1
+# kind: Provider
+# metadata:
+#   name: provider-gcp-gke
+# spec:
+#   ignoreCrossplaneConstraints: false
+#   package: xpkg.upbound.io/upbound/provider-gcp-gke:v1.0.2
+#   packagePullPolicy: IfNotPresent
+#   revisionActivationPolicy: Automatic
+#   revisionHistoryLimit: 1
+#   runtimeConfigRef:
+#     apiVersion: pkg.crossplane.io/v1beta1
+#     kind: DeploymentRuntimeConfig
+#     name: default
+#   skipDependencyResolution: false
+# ---
+# apiVersion: pkg.crossplane.io/v1
+# kind: Provider
+# metadata:
+#   name: provider-gcp-secretmanager
+# spec:
+#   ignoreCrossplaneConstraints: false
+#   package: xpkg.upbound.io/upbound/provider-gcp-secretmanager:v1.0.2
+#   packagePullPolicy: IfNotPresent
+#   revisionActivationPolicy: Automatic
+#   revisionHistoryLimit: 1
+#   runtimeConfigRef:
+#     apiVersion: pkg.crossplane.io/v1beta1
+#     kind: DeploymentRuntimeConfig
+#     name: default
+#   skipDependencyResolution: false
+# ---
+# apiVersion: pkg.crossplane.io/v1
+# kind: Provider
+# metadata:
+#   name: provider-gcp-artifact
+# spec:
+#   ignoreCrossplaneConstraints: false
+#   package: xpkg.upbound.io/upbound/provider-gcp-artifact:v1.0.2
+#   packagePullPolicy: IfNotPresent
+#   revisionActivationPolicy: Automatic
+#   revisionHistoryLimit: 1
+#   runtimeConfigRef:
+#     apiVersion: pkg.crossplane.io/v1beta1
+#     kind: DeploymentRuntimeConfig
+#     name: default
+#   skipDependencyResolution: false

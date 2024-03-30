@@ -1,0 +1,99 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster-talos
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        files: 
+        - path: 'talos/vcluster-k0s/*/cluster/config.json'
+        values:
+          namespace: 'vk-{{ index .path.segments 2 }}'
+          release: 'vk-k0s-{{ index .path.segments 2 }}'
+  template:
+    metadata:
+      name: '{{.values.release}}'
+      finalizers: []
+    spec:
+      project: vcluster
+      destination:
+        name: '{{ index .path.segments 0 }}'
+        namespace: '{{.values.namespace}}'
+      source:
+        repoURL: https://charts.loft.sh
+        targetRevision: 0.*.*
+        chart: vcluster-k0s
+        helm:
+          releaseName: '{{.values.release}}'
+          valuesObject:
+            fallbackHostDns: true
+            vcluster:
+              image: k0sproject/k0s:v1.29.1-k0s.0
+              imagePullPolicy: ""
+              command:
+                - /binaries/k0s
+              baseArgs:
+                - controller
+                - --config=/tmp/k0s-config.yaml
+                - --data-dir=/data/k0s
+              extraArgs: []
+              env: []
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 256Mi
+                requests:
+                  cpu: 40m
+                  memory: 64Mi
+              priorityClassName: ""
+              clusterDomain: cluster.local
+            storage:
+              persistence: false                                                  
+              size: 5Gi
+            serviceAccount:
+              create: true
+            ingress:
+              enabled: true
+              pathType: ImplementationSpecific
+              apiVersion: networking.k8s.io/v1
+              ingressClassName: "nginx"
+              host: '{{.values.release}}.k8s-app.fredcorp.com'
+              annotations:
+                nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+                nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+                nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            syncer:
+              extraArgs:
+              - --tls-san={{.values.release}}.k8s-app.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
+              kubeConfigContextName: '{{.values.release}}'
+              resources:
+                limits:
+                  ephemeral-storage: 8Gi
+                  memory: 2Gi
+                requests:
+                  ephemeral-storage: 200Mi
+                  cpu: 10m
+                  memory: 64Mi
+            telemetry:
+              disabled: true
+            sync:
+              ingresses:
+                enabled: true
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

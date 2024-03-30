@@ -1,0 +1,39 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-config
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: talos
+  template:
+    metadata:
+      name: 'cluster-config-{{cluster}}'
+      finalizers: []
+    spec:
+      project: infra-config
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        targetRevision: main
+        path: talos
+        directory:
+          recurse: true
+          include: 'config/{{cluster}}/*'
+      destination:
+        name: '{{cluster}}'
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

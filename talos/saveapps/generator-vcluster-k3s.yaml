@@ -1,0 +1,96 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vcluster-k3s
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        files: 
+        - path: 'talos/vcluster-k3s/*/cluster/config.json'
+        values:
+          namespace: 'vk-{{ index .path.segments 2 }}'
+          release: 'vk-k3s-{{ index .path.segments 2 }}'
+  template:
+    metadata:
+      name: '{{.values.release}}'
+      finalizers: []
+    spec:
+      project: vcluster
+      destination:
+        name: '{{ index .path.segments 0 }}'
+        namespace: '{{.values.namespace}}'
+      source:
+        repoURL: https://charts.loft.sh
+        targetRevision: 0.*.*
+        chart: vcluster
+        helm:
+          releaseName: '{{.values.release}}'
+          valuesObject:
+            fallbackHostDns: true
+            vcluster:
+              image: '{{.image}}'
+              command:
+                - /binaries/k3s
+              baseArgs:
+                - server
+                - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+                - --data-dir=/data
+                - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+                - --disable-network-policy
+                - --disable-agent
+                - --disable-cloud-controller
+                - --egress-selector-mode=disabled
+                - --flannel-backend=none
+                - --kube-apiserver-arg=bind-address=127.0.0.1
+            storage:
+              persistence: false                                                  
+              size: 5Gi
+            serviceAccount:
+              create: true
+            ingress:
+              enabled: true
+              pathType: ImplementationSpecific
+              apiVersion: networking.k8s.io/v1
+              ingressClassName: "nginx"
+              host: '{{.values.release}}.k8s-app.fredcorp.com'
+              annotations:
+                nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+                nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+                nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            syncer:
+              extraArgs:
+              - --tls-san={{.values.release}}.k8s-app.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
+              kubeConfigContextName: '{{.values.release}}'
+            telemetry:
+              disabled: true
+            sync:
+              ingresses:
+                enabled: true
+            init:
+              helm: 
+                - chart:
+                    name: external-secrets
+                    version: "0.9.13"
+                    repo: https://charts.external-secrets.io
+                  release:
+                    name: external-secrets
+                    namespace: external-secrets
+                  timeout: "180s"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

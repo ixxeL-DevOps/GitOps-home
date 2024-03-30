@@ -1,0 +1,73 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: chartmuseum
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: chartmuseum
+      # - env: talos-vk-dev
+      #   namespace: cert-manager
+      # - env: talos-vk-prod
+      #   namespace: cert-manager
+  template:
+    metadata:
+      name: 'chartmuseumr-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-core
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://chartmuseum.github.io/charts
+        targetRevision: 3.*.*
+        chart: chartmuseum
+        helm:
+          releaseName: 'chartmuseum-{{env}}'
+          valuesObject:
+            env:
+              open:
+                STORAGE: local
+                DISABLE_API: false
+                AUTH_ANONYMOUS_GET: true
+                DEBUG: false
+                ALLOW_OVERWRITE: false
+                DEPTH: 0
+            existingSecret: chartmuseum-creds
+            existingSecretMappings:
+              BASIC_AUTH_USER: user
+              BASIC_AUTH_PASS: password
+            persistence:
+              enabled: true
+              acessmode: ReadWriteMany
+              size: 10Gi
+              path: /storage
+            ingress:
+              enabled: true
+              pathType: "ImplementationSpecific"
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: chartmuseum.k8s-app.fredcorp.com
+              hosts:
+                - name: chartmuseum.k8s-app.fredcorp.com
+                  path: /
+                  tls: true
+                  tlsSecret: chartmuseum-tls-cert
+              ingressClassName: nginx
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

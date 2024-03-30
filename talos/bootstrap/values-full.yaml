@@ -1,0 +1,1122 @@
+argocd:
+  enabled: true
+apps:
+  enabled: true
+updater:
+  enabled: true
+
+argo-cd:
+  fullnameOverride: "argocd"
+  apiVersionOverrides:
+    certmanager: "cert-manager.io/v1" # cert-manager.io/v1
+    ingress: "networking.k8s.io/v1" # networking.k8s.io/v1beta1
+  crds:
+    install: true
+    keep: false
+  global:
+    image:
+      imagePullPolicy: IfNotPresent
+      repository: quay.io/argoproj/argocd
+      tag: v2.10.5
+      # imagePullPolicy: IfNotPresent
+      # repository: ghcr.io/flux-subsystem-argo/fsa/argocd
+      # tag: v2.9.3-fl.21-main-a6eaf3af
+    logging:
+      format: text
+      level: info
+    securityContext:
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+
+  server:
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: argocd-server
+      automountServiceAccountToken: true
+    clusterAdminAccess:
+      enabled: true
+
+    ingress:
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: vault-issuer
+        cert-manager.io/common-name: argocd.k8s-app.fredcorp.com
+        # traefik.ingress.kubernetes.io/router.tls: true
+      labels: {}
+      ingressClassName: "nginx"
+      hostname: argocd.k8s-app.fredcorp.com
+      # hosts:
+      #   - argocd.k8s-app.fredcorp.com
+      path: /
+      pathType: Prefix
+      tls: true
+      # tls:
+      # - secretName: argocd-tls-cert
+      #   hosts:
+      #     - argocd.k8s-app.fredcorp.com
+      # https: true
+
+    # ingressGrpc:
+    #   enabled: true
+    #   isAWSALB: false
+    #   annotations:
+    #     cert-manager.io/cluster-issuer: vault-issuer
+    #     cert-manager.io/common-name: argocd-grpc.k8s-app.fredcorp.com
+    #   labels: {}
+    #   ingressClassName: "traefik-rke2"
+    #   awsALB:
+    #     serviceType: NodePort
+    #     backendProtocolVersion: HTTP2
+    #   hosts:
+    #     - argocd-grpc.k8s-app.fredcorp.com
+    #   paths:
+    #     - /
+    #   pathType: Prefix
+    #   extraPaths:
+    #     []
+    #   tls:
+    #   - secretName: argocd-grpc-tls-cert
+    #     hosts:
+    #       - argocd-grpc.k8s-app.fredcorp.com
+    #   https: true
+      
+    extensions:
+      enabled: true
+      image:
+        repository: "ghcr.io/argoproj-labs/argocd-extensions"
+        tag: "v0.2.1"
+        imagePullPolicy: IfNotPresent
+      resources: 
+       limits:
+         cpu: 50m
+         memory: 128Mi
+       requests:
+         cpu: 10m
+         memory: 64Mi
+    #   contents:
+    #     - name: argo-rollouts
+    #       url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.0/extension.tar
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-talos
+
+  controller:
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: argocd-application-controller
+      automountServiceAccountToken: true
+    clusterAdminAccess:
+      enabled: true
+    # volumeMounts:
+    # - mountPath: /etc/ssl/certs/fredcorp.pem
+    #   subPath: fredcorp.pem
+    #   name: fredcorp-cert
+    # volumes:
+    # - name: fredcorp-cert
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: fredcorp-cert
+    #     items:
+    #     - key: fredcorp.pem
+    #       path: fredcorp.pem
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-talos
+
+  applicationSet:
+    enabled: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    args:
+      metricsAddr: :8080
+      probeBindAddr: :8081
+      enableLeaderElection: false
+      policy: sync
+      debug: false
+      dryRun: false
+    serviceAccount:
+      create: true
+      name: "argocd-applicationset-controller"
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-talos
+    # volumeMounts:
+    # - mountPath: /etc/ssl/certs/fredcorp.pem
+    #   subPath: fredcorp.pem
+    #   name: fredcorp-cert
+    # volumes:
+    # - name: fredcorp-cert
+    #   secret:
+    #     defaultMode: 420
+    #     secretName: fredcorp-cert
+    #     items:
+    #     - key: fredcorp.pem
+    #       path: fredcorp.pem
+
+  dex:
+    enabled: false
+    name: dex-server
+
+  notifications:
+    enabled: true
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      name: "argocd-notifications-controller"
+    extraVolumeMounts:
+      - mountPath: /etc/ssl/certs/vault-pki-certs.pem
+        subPath: vault-pki-certs.pem
+        name: fredcorp-pki-certs
+    extraVolumes:
+      - name: fredcorp-pki-certs
+        configMap:
+          name: fredcorp-pki-certs
+          items:
+          - key: vault-pki-certs.pem
+            path: vault-pki-certs.pem
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-talos
+
+    argocdUrl: "https://argocd.k8s-app.fredcorp.com"
+
+    secret:
+      create: false
+      name: notifications-creds # uses this secret to fetch the 'password' key in it (which has access to api Github for notifications)
+
+    notifiers:
+      service.webhook.github: |
+        url: https://api.github.com
+        headers:
+        - name: Authorization
+          value: token $gh-token
+      service.rocketchat: |
+        email: $rocketchat-email
+        password: $rocketchat-password
+        serverUrl: https://rocketchat.k8s-app.fredcorp.com
+
+    # subscriptions:
+    #   - recipients:
+    #     - github
+    #     triggers:
+    #     - on-deployed
+
+    triggers:
+      # trigger.sync-operation-change: |
+      #   - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+      #     oncePer: app.status.sync.revision
+      #     send: [app-sync-status]
+      #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
+      #     send: [app-sync-status]    
+      trigger.sync-operation-change: |
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+          oncePer: app.status.operationState.finishedAt
+          send: [app-deployed]
+        - when: app.status.operationState.phase in ['Error', 'Failed']
+          send: [app-sync-failed]
+        - when: app.status.health.status == 'Degraded'
+          send: [app-health-degraded]
+        - when: app.status.sync.status == 'Unknown'
+          send: [app-sync-status-unknown]
+
+      trigger.on-ephemeral-deployed: |
+        - description: Application is synced and healthy. Triggered once per commit.
+          oncePer: app.status.operationState.syncResult.revision
+          send:
+          - github-commit-status
+          when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+      trigger.on-ephemeral-health-degraded: |
+        - description: Application has degraded
+          oncePer: app.status.operationState.syncResult.revision
+          send:
+          - github-commit-status
+          when: app.status.health.status == 'Degraded'
+      trigger.on-ephemeral-sync-failed: |
+        - description: Application syncing has failed
+          oncePer: app.status.operationState.syncResult.revision
+          send:
+          - github-commit-status
+          when: app.status.operationState.phase in ['Error', 'Failed']
+
+    templates:
+      template.app-sync-status: |
+        message: |
+          Application {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+        rocketchat:
+          attachments: |
+            [{
+              "title": "{{.app.metadata.name}}",
+              "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [{
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              }, {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              }, {
+                "title": "version",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }]
+            }]
+      template.github-commit-status: |
+        webhook:
+          github:
+            method: POST
+            path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/statuses/{{.app.status.operationState.operation.sync.revision}}
+            body: |
+              {
+                {{if eq .app.status.operationState.phase "Running"}} "state": "pending"{{end}}
+                {{if eq .app.status.operationState.phase "Succeeded"}} "state": "success"{{end}}
+                {{if eq .app.status.operationState.phase "Error"}} "state": "error"{{end}}
+                {{if eq .app.status.operationState.phase "Failed"}} "state": "error"{{end}},
+                "description": "{{.app.metadata.name}} img tag: {{ (call .repo.GetAppDetails).Helm.GetParameterValueByName "tag" }}",
+                "target_url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+                "context": "continuous-integration/argocd"
+              }
+      template.run-github-pipeline: |
+        webhook:
+          github:
+            method: POST
+            path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/actions/workflows/ci.yml/dispatches
+            body: |
+              {
+                "ref": "main"
+              }
+      template.app-deployed: |
+        message: |
+          :white_check_mark: App {{.app.metadata.name}} is now running new version of deployments manifests.
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          App details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+        rocketchat:
+          attachments: |
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-health-degraded: |
+        message: |
+          :exclamation: App {{.app.metadata.name}} has degraded.
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#f4c030",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-failed: |
+        message: |
+          :exclamation: The sync operation of app {{.app.metadata.name}} has failed at {{.app.status.operationState.finishedAt}} with the following error: {{.app.status.operationState.message}}
+          App {{.app.metadata.name}} sync is {{.app.status.sync.status}}
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}
+          Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#E96D76",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-status-unknown: |
+        email:
+          subject: Application {{.app.metadata.name}} sync status is 'Unknown'
+        message: |
+          {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} sync is 'Unknown'.
+          Application details: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}.
+          {{if ne .serviceType "slack"}}
+          {{range $c := .app.status.conditions}}
+              * {{$c.message}}
+          {{end}}
+          {{end}}
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#E96D76",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              },
+              {{- range $deployedImage := .app.status.summary.images -}}
+              {
+                "title": "Image",
+                "value": "{{ $deployedImage }}",
+                "short": true
+              },
+              {{- end -}}
+              {
+                "title": "Revision",
+                "value": "{{.app.status.sync.revision}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+      template.app-sync-succeeded: |
+        message: |
+          :white_check_mark: App {{.app.metadata.name}} has been successfully synced at {{.app.status.operationState.finishedAt}}.
+          Sync operation details are available at: {{.context.argocdUrl}}/applications/{{.app.metadata.name}}?operation=true .
+        rocketchat:
+          attachments: |-
+            [{
+              "title": "{{ .app.metadata.name}}",
+              "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+              "color": "#18be52",
+              "fields": [
+              {
+                "title": "Sync Status",
+                "value": "{{.app.status.sync.status}}",
+                "short": true
+              },
+              {
+                "title": "Repository",
+                "value": "{{.app.spec.source.repoURL}}",
+                "short": true
+              }
+              {{range $index, $c := .app.status.conditions}}
+              {{if not $index}},{{end}}
+              {{if $index}},{{end}}
+              {
+                "title": "{{$c.type}}",
+                "value": "{{$c.message}}",
+                "short": true
+              }
+              {{end}}
+              ]
+            }]
+
+  redis:
+    enabled: true
+    name: redis
+
+  repoServer:
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+    serviceAccount:
+      create: true
+      automountServiceAccountToken: true
+      name: argocd-repo-server
+    rbac:
+      - verbs:
+          - get
+          - list
+          - watch
+        apiGroups:
+          - ''
+        resources:
+          - secrets
+          - configmaps
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        interval: 30s
+        additionalLabels:
+          release: prom-stack-talos
+    # extraContainers:
+    #   - name: avp-helm
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-helm.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
+    #   - name: avp-kustomize
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-kustomize.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
+    #   - name: avp-plain-yaml
+    #     command: [/var/run/argocd/argocd-cmp-server]
+    #     image: quay.io/argoproj/argocd:v2.9.3
+    #     securityContext:
+    #       runAsNonRoot: true
+    #       runAsUser: 999
+    #     env:
+    #       - name: AVP_SECRET_CONFIG
+    #         value: argocd-repo-creds-vault-auth
+    #     volumeMounts:
+    #       - mountPath: /var/run/argocd
+    #         name: var-files
+    #       - mountPath: /home/argocd/cmp-server/plugins
+    #         name: plugins
+    #       - mountPath: /tmp
+    #         name: tmp
+    #       - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+    #         subPath: avp-plain-yaml.yaml
+    #         name: argocd-cmp-cm
+    #       - name: custom-tools
+    #         subPath: argocd-vault-plugin
+    #         mountPath: /usr/local/bin/argocd-vault-plugin
+
+    # envFrom:
+    #   - secretRef:
+    #       name: argocd-repo-creds-vault-auth
+
+    # initContainers:
+    #   - args:
+    #       - >-
+    #         echo "Downloading AVP from ==> https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
+    #         && wget -O argocd-vault-plugin "https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64"
+    #         && chmod +x argocd-vault-plugin && mv argocd-vault-plugin
+    #         /custom-tools/
+    #     command:
+    #       - sh
+    #       - '-c'
+    #     env:
+    #       - name: AVP_VERSION
+    #         value: 1.15.0
+    #     image: 'alpine:3.18'
+    #     name: download-tools
+    #     securityContext:
+    #       runAsNonRoot: false
+    #     volumeMounts:
+    #       - mountPath: /custom-tools
+    #         name: custom-tools
+
+    volumeMounts:
+      - mountPath: /etc/ssl/certs/vault-pki-certs.pem
+        subPath: vault-pki-certs.pem
+        name: fredcorp-pki-certs
+
+    volumes:
+      # - emptyDir: {}
+      #   name: custom-tools
+      # - configMap:
+      #     name: argocd-cmp-cm
+      #   name: argocd-cmp-cm
+      - name: fredcorp-pki-certs
+        configMap:
+          name: fredcorp-pki-certs
+          items:
+          - key: vault-pki-certs.pem
+            path: vault-pki-certs.pem
+      # - name: fredcorp-cert
+      #   secret:
+      #     defaultMode: 420
+      #     secretName: fredcorp-cert
+      #     items:
+      #     - key: fredcorp.pem
+      #       path: fredcorp.pem
+
+  configs:
+    secret:
+      # -- Bcrypt hashed admin password
+      ## Argo expects the password in the secret to be bcrypt hashed. You can create this hash with
+      ## `htpasswd -nbBC 10 "" $ARGO_PWD | tr -d ':\n' | sed 's/$2y/$2a/'`
+      argocdServerAdminPassword: "$2a$10$EKno1mbVegvSeibj3UeYguY3NS6sb9JVWj9B5m8/baoQIv2mQBkSS"
+      # -- Admin password modification time. Eg. `"2006-01-02T15:04:05Z"`
+      # @default -- `""` (defaults to current time)
+      argocdServerAdminPasswordMtime: "2022-03-03T23:02:00Z"
+    # credentialTemplates:
+    #   vault-auth:
+    #     AVP_AUTH_TYPE: approle
+    #     AVP_ROLE_ID: 4dab94e9-3d06-eded-c235-267c2a75a800
+    #     AVP_SECRET_ID: eb6392f3-64de-c635-1824-309e4fbd3ddc
+    #     AVP_TYPE: vault
+    #     VAULT_ADDR: 'https://vault.fredcorp.com'
+    #     VAULT_SKIP_VERIFY: true
+    cm:
+      create: true
+      accounts.fred: "apiKey, login"
+      accounts.pipeline: "apiKey"
+      # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
+      url: "https://argocd.k8s-app.fredcorp.com"
+      application.instanceLabelKey: argocd.argoproj.io/instance
+      server.rbac.log.enforce.enable: false
+      exec.enabled: true
+      admin.enabled: true
+      timeout.reconciliation: 180s
+      timeout.hard.reconciliation: 0
+      application.resourceTrackingMethod: annotation
+      statusbadge.enabled: "true"
+      resource.customizations.ignoreDifferences.apps_StatefulSet: |
+        jqPathExpressions:
+        - .spec.volumeClaimTemplates[]?
+      resource.customizations.ignoreDifferences.apiextensions.k8s.io_CustomResourceDefinition: |
+        jqPathExpressions:
+        - .spec.conversion.webhook.clientConfig.caBundle
+      resource.customizations.ignoreDifferences.admissionregistration.k8s.io_MutatingWebhookConfiguration: |
+        jqPathExpressions:
+        - .webhooks[]?.clientConfig.caBundle
+        - .webhooks[].namespaceSelector.matchExpressions[] | select(.key == "control-plane")
+        - .webhooks[].failurePolicy
+      resource.customizations.ignoreDifferences.apiregistration.k8s.io_APIService: |
+        jqPathExpressions:
+        - .spec.insecureSkipTLSVerify
+    rbac:
+      create: true
+      policy.csv: |
+        g, fred, role:admin
+        g, pipeline, role:admin
+    params:
+      otlp.address: ''
+      controller.status.processors: 20
+      controller.operation.processors: 10
+      controller.self.heal.timeout.seconds: 5
+      controller.repo.server.timeout.seconds: 60
+      server.insecure: true
+      server.basehref: /
+      server.rootpath: ''
+      server.staticassets: /shared/app
+      server.disable.auth: false
+      server.enable.gzip: false
+      server.x.frame.options: sameorigin
+      reposerver.parallelism.limit: 0
+    cmp:
+      create: false
+      annotations: {}
+      plugins:
+        avp-helm:
+          discover:
+            find:
+              command: [sh, -c]
+              args:
+                - |
+                  find . name 'Chart.yaml' && find . -name 'values*.yaml'
+          init:
+            command: [sh, -c]
+            args:
+              - |
+                echo "Initializing AVP Helm plugin..." && helm dependency update
+          generate:
+            command: [sh, -c]
+            args:
+              - |
+                helm template $ARGOCD_APP_NAME -n $ARGOCD_APP_NAMESPACE ${ARGOCD_ENV_HELM_ARGS} . |
+                argocd-vault-plugin generate --verbose-sensitive-output --secret-name $AVP_SECRET_CONFIG -
+        avp-plain-yaml:
+          discover:
+            find:
+              command: [sh, -c]
+              args:
+                - |
+                  find . -name '*.yaml' | xargs -I {} grep \"<path\\|avp\\.kubernetes\\.io\" {} | grep .
+          init:
+            command: [sh -c]
+            args:
+              - |
+                echo "Initializing AVP Plain YAML..."
+          generate:
+            command: [sh -c]
+            args:
+              - |
+                argocd-vault-plugin generate . --verbose-sensitive-output --secret-name $AVP_SECRET_CONFIG
+
+  extraObjects:
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: repo-creds-github
+      namespace: argocd
+    spec:
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: admin
+      target:
+        name: repo-creds-github
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          engineVersion: v2
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          data:
+            username: ixxel
+            password: "{{ `{{ .token }}` }}"
+            url: https://github.com
+      data:
+      - secretKey: token
+        remoteRef:
+          key: github
+          property: DEVOPS_ORG_PAT
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+
+  - apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: repo-creds-gitlab
+      namespace: argocd
+    spec:
+      secretStoreRef:
+        kind: ClusterSecretStore
+        name: admin
+      target:
+        name: repo-creds-gitlab
+        creationPolicy: Owner
+        deletionPolicy: Retain
+        template:
+          engineVersion: v2
+          metadata:
+            labels:
+              argocd.argoproj.io/secret-type: repo-creds
+          data:
+            username: ixxel
+            password: "{{ `{{ .token }}` }}"
+            url: https://gitlab.com
+      data:
+      - secretKey: token
+        remoteRef:
+          key: gitlab
+          property: TOKEN
+          conversionStrategy: Default
+          decodingStrategy: None
+          metadataPolicy: None
+
+argocd-apps:
+  applications:
+  - name: argocd
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      helm:
+        valueFiles:
+          - values-full.yaml
+        version: v3
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: talos/bootstrap
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: false
+        selfHeal: false
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+  - name: argocd-apps
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: talos/argoApps
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+  - name: argocd-projects
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: talos/argoProjects
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+  - name: argocd-repos
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: talos/argoRepositories
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+  - name: argocd-clusters
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    project: argocd
+    source:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+      targetRevision: main
+      path: talos/argoClusters
+      directory:
+        recurse: true
+    destination:
+      server: https://kubernetes.default.svc
+      namespace: argocd
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+      syncOptions:
+        - Validate=true
+        - PruneLast=false
+        - RespectIgnoreDifferences=true
+        - Replace=false
+        - ApplyOutOfSyncOnly=true
+        - CreateNamespace=true
+        - ServerSideApply=true
+    ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+      - /spec/replicas
+    info:
+    - name: url
+      value: https://argoproj.github.io/
+
+
+
+  projects:
+  - name: argocd
+    namespace: argocd
+    additionalLabels: {}
+    additionalAnnotations: {}
+    finalizers: []
+    description: Argocd Project
+    sourceRepos:
+    - '*'
+    destinations:
+    - namespace: '*'
+      server: https://kubernetes.default.svc
+    clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+    namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+argocd-image-updater:
+  image:
+    repository: quay.io/argoprojlabs/argocd-image-updater
+    pullPolicy: Always
+    tag: ""
+  fullnameOverride: "argocd-img-updater"
+  updateStrategy:
+    type: RollingUpdate
+
+  config:
+    # -- API kind that is used to manage Argo CD applications (`kubernetes` or `argocd`)
+    applicationsAPIKind: ""
+    argocd:
+      grpcWeb: true
+      serverAddress: ""
+      insecure: false
+      plaintext: false
+      token: ""
+
+    disableKubeEvents: false
+
+    gitCommitUser: ""
+    gitCommitMail: ""
+    gitCommitTemplate: ""
+    logLevel: "debug"
+
+    registries:
+      - name: Docker Hub
+        api_url: https://index.docker.io/
+        ping: yes
+        prefix: docker.io
+        credentials: pullsecret:argocd/dockerhub-credsv2
+        defaultns: library
+      # - name: Docker Hub
+      #   api_url: https://registry-1.docker.io
+      #   ping: yes
+      #   credentials: secret:foo/bar#creds
+      #   defaultns: library
+      # - name: Google Container Registry
+      #   api_url: https://gcr.io
+      #   prefix: gcr.io
+      #   ping: no
+      #   credentials: pullsecret:foo/bar
+      # - name: RedHat Quay
+      #   api_url: https://quay.io
+      #   ping: no
+      #   prefix: quay.io
+      #   credentials: env:REGISTRY_SECRET
+      # - name: ECR
+      #   api_url: https://123456789.dkr.ecr.eu-west-1.amazonaws.com
+      #   prefix: 123456789.dkr.ecr.eu-west-1.amazonaws.com
+      #   ping: yes
+      #   insecure: no
+      #   credentials: ext:/scripts/auth1.sh
+      #   credsexpire: 10h
