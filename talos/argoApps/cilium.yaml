@@ -52,6 +52,11 @@ spec:
               hostRoot: /sys/fs/cgroup
             k8sServiceHost: localhost
             k8sServicePort: 7445
+            hubble:
+              ui:
+                enabled: true
+              relay:
+                enabled: true
       syncPolicy:
         automated:
           prune: true
