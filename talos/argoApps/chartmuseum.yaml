@@ -7,9 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements: []
-      # - env: talos
-      #   namespace: chartmuseum
+      elements:
+      - env: talos
+        namespace: chartmuseum
   template:
     metadata:
       name: 'chartmuseumr-{{env}}'
@@ -54,7 +54,7 @@ spec:
                   path: /
                   tls: true
                   tlsSecret: chartmuseum-tls-cert
-              ingressClassName: nginx
+              ingressClassName: cilium
       syncPolicy:
         automated:
           prune: true

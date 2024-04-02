@@ -25,6 +25,11 @@ spec:
         chart: csi-driver-nfs
         helm:
           releaseName: 'csi-driver-nfs-{{env}}'
+          valuesObject:
+            controller:
+              logLevel: 4
+            node:
+              logLevel: 4
       syncPolicy:
         automated:
           prune: true
