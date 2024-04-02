@@ -248,7 +248,6 @@ argo-cd:
       #     send: [app-sync-status]    
       trigger.sync-operation-change: |
         - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
-          oncePer: app.status.operationState.finishedAt
           send: [app-deployed]
         - when: app.status.operationState.phase in ['Error', 'Failed']
           send: [app-sync-failed]
