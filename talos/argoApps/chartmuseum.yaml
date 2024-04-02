@@ -45,7 +45,7 @@ spec:
               path: /storage
             ingress:
               enabled: true
-              pathType: "ImplementationSpecific"
+              pathType: "Prefix"
               annotations:
                 cert-manager.io/cluster-issuer: vault-issuer
                 cert-manager.io/common-name: chartmuseum.k8s-app.fredcorp.com
