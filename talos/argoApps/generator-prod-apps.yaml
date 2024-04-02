@@ -1,0 +1,53 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: prod-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        directories:
+          - path: 'talos/*/*/*'
+            exclude: false
+          - path: 'talos/vcluster-k3s/**/**'
+            exclude: true
+          - path: 'talos/vcluster-k0s/**/**'
+            exclude: true
+  template:
+    metadata:
+      name: '{{ .path.basenameNormalized }}'
+      annotations:
+        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 2 }}.tag'
+        argocd-image-updater.argoproj.io/app.update-strategy: semver
+        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
+        argocd-image-updater.argoproj.io/app.force-update: "true"
+        argocd-image-updater.argoproj.io/write-back-method: git
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-talos-prod"
+      finalizers: []
+    spec:
+      project: prod-apps
+      destination:
+        name: '{{ index .path.segments 0 }}'
+        namespace: '{{ index .path.segments 1 }}'
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{.path.path}}'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
