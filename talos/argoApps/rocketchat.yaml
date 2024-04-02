@@ -7,9 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements: []
-      # - env: talos
-      #   namespace: rocketchat
+      elements:
+      - env: talos
+        namespace: rocketchat
   template:
     metadata:
       name: 'rocketchat-{{env}}'
@@ -33,6 +33,11 @@ spec:
                 passwords:
                   - rocketchat
                 rootPassword: rocketchatroot
+              persistence:
+                enabled: true
+                storageClass: "nfs-csi-retain"
+                accessMode: ReadWriteMany
+                size: 8Gi
             ingress:
               enabled: true
               pathType: Prefix
@@ -45,6 +50,11 @@ spec:
                - secretName: rocketchat-tls-cert
                  hosts:
                    - rocketchat.k8s-app.fredcorp.com
+            persistence:
+              enabled: true
+              storageClass: "nfs-csi-retain"
+              accessMode: ReadWriteMany
+              size: 8Gi
       syncPolicy:
         automated:
           prune: true
