@@ -1,0 +1,68 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: argo-rollouts
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: argocd
+  template:
+    metadata:
+      name: 'argo-rollouts-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-pipelines
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://argoproj.github.io/argo-helm
+        targetRevision: 2.*.*
+        chart: argo-rollouts
+        helm:
+          releaseName: 'argo-rollouts-{{env}}'
+          valuesObject:
+            fullnameOverride: argo-rollouts-{{env}}
+            installCRDs: true
+            keepCRDs: true
+            controller:
+              metrics:
+                enabled: true
+                serviceMonitor:
+                  enabled: true
+                  additionalLabels:
+                    release: prom-stack-{{env}}
+            dashboard:
+              enabled: true
+              readonly: false
+              ingress:
+                enabled: true
+                annotations:
+                  cert-manager.io/cluster-issuer: vault-issuer
+                  cert-manager.io/common-name: argo-rollouts.k8s-app.fredcorp.com
+                ingressClassName: "cilium"
+                hosts: 
+                  - argo-rollouts.k8s-app.fredcorp.com
+                paths:
+                  - /
+                pathType: Prefix
+                tls:
+                  - secretName: argorollouts-tls-cert
+                    hosts:
+                      - argo-rollouts.k8s-app.fredcorp.com
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
