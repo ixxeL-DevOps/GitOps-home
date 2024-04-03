@@ -247,9 +247,10 @@ argo-cd:
       #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
       #     send: [app-sync-status]    
       trigger.sync-operation-change: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+        - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+          oncePer: app.status.operationState.finishedAt
           send: [app-deployed]
-        - when: app.status.operationState.phase in ['Error', 'Failed']
+        - when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
           send: [app-sync-failed]
         - when: app.status.health.status == 'Degraded'
           send: [app-health-degraded]
@@ -261,7 +262,7 @@ argo-cd:
           oncePer: app.status.operationState.syncResult.revision
           send:
           - github-commit-status
-          when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+          when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
       trigger.on-ephemeral-health-degraded: |
         - description: Application has degraded
           oncePer: app.status.operationState.syncResult.revision
@@ -273,7 +274,7 @@ argo-cd:
           oncePer: app.status.operationState.syncResult.revision
           send:
           - github-commit-status
-          when: app.status.operationState.phase in ['Error', 'Failed']
+          when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
 
     templates:
       template.app-sync-status: |
