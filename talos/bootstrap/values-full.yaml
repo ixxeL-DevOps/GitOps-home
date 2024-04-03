@@ -89,20 +89,23 @@ argo-cd:
       
     extensions:
       enabled: true
-      image:
-        repository: "ghcr.io/argoproj-labs/argocd-extensions"
-        tag: "v0.2.1"
-        imagePullPolicy: IfNotPresent
-      resources: 
-       limits:
-         cpu: 50m
-         memory: 128Mi
-       requests:
-         cpu: 10m
-         memory: 64Mi
-    #   contents:
-    #     - name: argo-rollouts
-    #       url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.0/extension.tar
+      # -- Extensions for Argo CD
+      # @default -- `[]` (See [values.yaml])
+      ## Ref: https://github.com/argoproj-labs/argocd-extension-metrics#install-ui-extension
+      extensionList:
+      - name: extension-metrics
+        env:
+        - name: EXTENSION_URL
+          value: https://github.com/argoproj-labs/argocd-extension-metrics/releases/download/v1.0.1/extension.tar.gz
+        - name: EXTENSION_CHECKSUM_URL
+          value: https://github.com/argoproj-labs/argocd-extension-metrics/releases/download/v1.0.1/extension_checksums.txt
+      - name: argo-rollouts
+        env:
+        - name: EXTENSION_URL
+          value: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
+      #      - name: EXTENSION_CHECKSUM_URL
+      #        value: https://github.com/argoproj-labs/argocd-extension-metrics/releases/download/v1.0.0/extension_checksums.txt
+
     metrics:
       enabled: true
       serviceMonitor:
@@ -714,6 +717,16 @@ argo-cd:
     #     VAULT_SKIP_VERIFY: true
     cm:
       create: true
+      extension.config: |
+        extensions:
+        - name: metrics
+          backend:
+            connectionTimeout: 2s
+            keepAlive: 15s
+            idleConnectionTimeout: 60s
+            maxIdleConnections: 30
+            services:
+            - url: http://argocd-metrics-server.argocd.svc.cluster.local:9003
       accounts.fred: "apiKey, login"
       accounts.pipeline: "apiKey"
       # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
@@ -745,6 +758,9 @@ argo-cd:
       policy.csv: |
         g, fred, role:admin
         g, pipeline, role:admin
+        p, role:readonly, extensions, invoke, metrics, allow
+        p, role:admin, extensions, invoke, metrics, allow
+      # See : https://github.com/argoproj-labs/argocd-extension-metrics#install-ui-extension
     params:
       otlp.address: ''
       controller.status.processors: 20
@@ -758,6 +774,8 @@ argo-cd:
       server.disable.auth: false
       server.enable.gzip: false
       server.x.frame.options: sameorigin
+      server.enable.proxy.extension: "true"
+      # See : https://github.com/argoproj-labs/argocd-extension-metrics#install-ui-extension
       reposerver.parallelism.limit: 0
     cmp:
       create: false
@@ -863,6 +881,14 @@ argo-cd:
           metadataPolicy: None
 
 argocd-apps:
+  # extensions: 
+  #   - name: argo-rollouts
+  #     namespace: argocd
+  #     additionalLabels: {}
+  #     additionalAnnotations: {}
+  #     sources:
+  #       - web:
+  #           url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
   applications:
   - name: argocd
     namespace: argocd
