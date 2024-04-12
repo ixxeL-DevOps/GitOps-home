@@ -33,13 +33,26 @@ spec:
         targetRevision: '{{branch}}'
         helm:
           releaseName: 'demo-web-pr-{{number}}'
-          parameters:
-            - name: demo-web.tag
-              value: 'sha-{{head_sha}}'
-            - name: demo-web.name
-              value: 'demo-web-pr-{{number}}'
-            - name: demo-web.test.enabled
-              value: 'true'
+          valuesObject:
+            demo-web:
+              fullnameOverride: 'demo-web-pr-{{number}}'
+              image:
+                registry: docker.io
+                repository: ixxel/demo-web
+                tag: 'sha-{{head_sha}}'
+              ingress:
+                enabled: true
+                className: "cilium"
+                annotations:
+                  cert-manager.io/cluster-issuer: vault-issuer
+                  cert-manager.io/common-name: 'demo-web-pr-{{number}}.k8s-app.fredcorp.com'
+                hosts:
+                  - host: 'demo-web-pr-{{number}}.k8s-app.fredcorp.com'
+                    paths:
+                      - path: /
+                        pathType: Prefix
+              test: 
+                enabled: true
       syncPolicy:
         automated:
           prune: true
