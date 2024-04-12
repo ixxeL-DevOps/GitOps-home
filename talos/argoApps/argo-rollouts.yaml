@@ -30,6 +30,10 @@ spec:
             installCRDs: true
             keepCRDs: true
             controller:
+              trafficRouterPlugins:
+                trafficRouterPlugins: |-
+                  - name: "argoproj-labs/gatewayAPI"
+                    location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.2.0/gateway-api-plugin-linux-amd64"
               metrics:
                 enabled: true
                 serviceMonitor:
