@@ -25,6 +25,8 @@ spec:
         helm:
           releaseName: cilium
           valuesObject:
+            debug:
+              enabled: true
             gatewayAPI:
               enabled: true
             ipam:
