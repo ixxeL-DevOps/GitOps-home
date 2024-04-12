@@ -25,6 +25,8 @@ spec:
         helm:
           releaseName: cilium
           valuesObject:
+            gatewayAPI:
+              enabled: true
             ipam:
               mode: kubernetes
             kubeProxyReplacement: true
