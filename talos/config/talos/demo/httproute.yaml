@@ -8,7 +8,7 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io	
     kind: Gateway
-    name: cilium
+    name: wildcard-tls-gateway
     namespace: kube-system
   hostnames:
   - "demo-web.k8s-app.gateway.fredcorp.com"

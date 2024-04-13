@@ -1,0 +1,85 @@
+# ---
+# apiVersion: external-secrets.io/v1beta1
+# kind: ExternalSecret
+# metadata:
+#   name: fredcorp-wildcard-cert
+#   namespace: kube-system
+# spec:
+#   refreshInterval: 1h
+#   secretStoreRef:
+#     name: admin
+#     kind: ClusterSecretStore
+#   target:
+#     name: fredcorp-wildcard-cert
+#     template:
+#       type: kubernetes.io/tls
+#       engineVersion: v2
+#       data:
+#         tls.crt: "{{ .p12 | b64dec | pkcs12cert }}"
+#         tls.key: "{{ .p12 | b64dec | pkcs12key }}"
+#   data:
+#   - secretKey: p12
+#     remoteRef:
+#       conversionStrategy: Default	
+#       decodingStrategy: None
+#       key: wildcard/fredcorp
+#       property: p12
+#       metadataPolicy: None
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: fredcorp-wildcard-cert
+  namespace: kube-system
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: fredcorp-wildcard-cert
+    template:
+      type: kubernetes.io/tls
+      engineVersion: v2
+  data:
+  - secretKey: tls.crt
+    remoteRef:
+      conversionStrategy: Default	
+      decodingStrategy: None
+      key: wildcard/fredcorp
+      property: cert
+      metadataPolicy: None
+  - secretKey: tls.key
+    remoteRef:
+      conversionStrategy: Default	
+      decodingStrategy: None
+      key: wildcard/fredcorp
+      property: key
+      metadataPolicy: None
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: wildcard-tls-gateway
+  namespace: kube-system
+spec:
+  gatewayClassName: cilium
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80
+    allowedRoutes:
+      namespaces:
+        from: All
+  - name: https
+    protocol: HTTPS
+    port: 443
+    allowedRoutes:
+      namespaces:
+        from: All
+    tls:
+      mode: Terminate
+      certificateRefs:
+      - kind: Secret
+        group: ""
+        name: fredcorp-wildcard-cert
