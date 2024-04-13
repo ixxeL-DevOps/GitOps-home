@@ -51,3 +51,8 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
+      ignoreDifferences:
+      - group: gateway.networking.k8s.io
+        kind: HTTPRoute
+        jqPathExpressions:
+        - .spec.rules[].backendRefs[].weight
