@@ -40,9 +40,9 @@ spec:
         path: '{{.path.path}}'
         targetRevision: main
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
+        # automated:
+        #   prune: true
+        #   selfHeal: true
         syncOptions:
           - Validate=true
           - PruneLast=false
