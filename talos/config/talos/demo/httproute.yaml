@@ -1,55 +1,55 @@
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: tls-redirect
-  namespace: kube-system
-  labels:
-    gateway: redirect-gateway
-spec:
-  parentRefs:
-  - group: gateway.networking.k8s.io	
-    kind: Gateway
-    name: wildcard-tls-gateway
-    namespace: kube-system
-    sectionName: http
-  hostnames:
-  - "*.fredcorp.com"
-  rules:
-  - filters:
-      - requestRedirect:
-          scheme: https
-          statusCode: 301
-        type: RequestRedirect
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: demo-https
-  namespace: demo
-  labels:
-    gateway: redirect-gateway
-spec:
-  parentRefs:
-  - group: gateway.networking.k8s.io	
-    kind: Gateway
-    name: wildcard-tls-gateway
-    namespace: kube-system
-    sectionName: https
-  hostnames:
-  - "demo-web.k8s-app.gateway.fredcorp.com"
-  rules:
-  - backendRefs:
-      - group: ''
-        kind: Service
-        name: demo-web
-        port: 80
-        weight: 100
-    matches:
-      - path:
-          type: PathPrefix
-          value: /
+# ---
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: tls-redirect
+#   namespace: kube-system
+#   labels:
+#     gateway: redirect-gateway
+# spec:
+#   parentRefs:
+#   - group: gateway.networking.k8s.io	
+#     kind: Gateway
+#     name: wildcard-tls-gateway
+#     namespace: kube-system
+#     sectionName: http
+#   hostnames:
+#   - "*.fredcorp.com"
+#   rules:
+#   - filters:
+#       - requestRedirect:
+#           scheme: https
+#           statusCode: 301
+#         type: RequestRedirect
+#     matches:
+#       - path:
+#           type: PathPrefix
+#           value: /
+# ---
+# apiVersion: gateway.networking.k8s.io/v1
+# kind: HTTPRoute
+# metadata:
+#   name: demo-https
+#   namespace: demo
+#   labels:
+#     gateway: redirect-gateway
+# spec:
+#   parentRefs:
+#   - group: gateway.networking.k8s.io	
+#     kind: Gateway
+#     name: wildcard-tls-gateway
+#     namespace: kube-system
+#     sectionName: https
+#   hostnames:
+#   - "demo-web.k8s-app.gateway.fredcorp.com"
+#   rules:
+#   - backendRefs:
+#       - group: ''
+#         kind: Service
+#         name: demo-web
+#         port: 80
+#         weight: 100
+#     matches:
+#       - path:
+#           type: PathPrefix
+#           value: /
