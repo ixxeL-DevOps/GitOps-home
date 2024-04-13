@@ -30,6 +30,10 @@ spec:
             installCRDs: true
             keepCRDs: true
             controller:
+              image:
+                registry: quay.io
+                repository: argoproj/argo-rollouts
+                tag: "v1.7.0-rc1"
               trafficRouterPlugins:
                 trafficRouterPlugins: |-
                   - name: "argoproj-labs/gatewayAPI"
