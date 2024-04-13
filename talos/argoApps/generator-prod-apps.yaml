@@ -58,5 +58,7 @@ spec:
         - .spec.rules[].backendRefs[].weight
       - group: ""
         kind: Service
-        jqPathExpressions:
-        - .spec.selector.rollouts-pod-template-hash
+        jsonPointers:
+          - '/spec/selector/rollouts-pod-template-hash'
+        # jqPathExpressions:
+        # - .spec.selector
