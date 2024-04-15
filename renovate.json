@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "dependencyDashboard": true,
+  "reviewers": [
+    "@ixxeL2097"
+  ],
+
+  "extends": [
+    "config:base",
+
+    ":timezone(Europe/Paris)",
+    ":prHourlyLimitNone",
+    ":prConcurrentLimitNone"
+  ],
+  "argocd": {
+    "fileMatch": [
+      "talos/argoApps/.*\\.yaml"
+    ]
+  }
+}
