@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://stakater.github.io/stakater-charts
-        targetRevision: 1.0.78
+        targetRevision: 1.0.79
         chart: reloader
         helm:
           releaseName: 'stakater-reloader-{{env}}'
