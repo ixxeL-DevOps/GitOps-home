@@ -1,0 +1,41 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: opentelemetry
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: opentelemetry
+  template:
+    metadata:
+      name: 'opentelemetry-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-monitoring
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+        targetRevision: 0.*.*
+        chart: opentelemetry-operator
+        helm:
+          releaseName: 'opentelemetry-{{env}}'
+          valuesObject:
+            fullnameOverride: opentelemetry-{{env}}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true

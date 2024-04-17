@@ -1,0 +1,39 @@
+---
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel
+  namespace: opentelemetry
+spec:
+  mode: deployment
+  config: |
+    presets:
+      clusterMetrics:
+        enabled: true
+      hostMetrics:
+        enabled: true
+      kubernetesEvents:
+        enabled: true
+      kubernetesAttributes:
+        enabled: true
+        extractAllPodLabels: true
+        extractAllPodAnnotations: true
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+
+    exporters:
+      logging:
+        loglevel: debug
+      prometheus:
+        endpoint: ":9090"
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: []
+          exporters: [prometheus, logging]
+
