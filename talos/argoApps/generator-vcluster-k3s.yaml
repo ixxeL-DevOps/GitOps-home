@@ -69,11 +69,11 @@ spec:
                     tag: '{{.tag}}'
                   resources:
                     limits:
-                      cpu: 100m
-                      memory: 256Mi
+                      cpu: 2000m
+                      memory: 4096Mi
                     requests:
-                      cpu: 40m
-                      memory: 64Mi
+                      cpu: 100m
+                      memory: 128Mi
               ingress:
                 enabled: true
                 host: '{{.values.release}}.vcluster.fredcorp.com'
