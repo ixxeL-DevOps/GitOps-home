@@ -32,48 +32,80 @@ spec:
         helm:
           releaseName: '{{.values.release}}'
           valuesObject:
-            fallbackHostDns: true
-            vcluster:
-              image: '{{.image}}'
-              command:
-                - /binaries/k3s
-              baseArgs:
-                - server
-                - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-                - --data-dir=/data
-                - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-                - --disable-network-policy
-                - --disable-agent
-                - --disable-cloud-controller
-                - --egress-selector-mode=disabled
-                - --flannel-backend=none
-                - --kube-apiserver-arg=bind-address=127.0.0.1
-            storage:
-              persistence: false                                                  
-              size: 5Gi
-            serviceAccount:
-              create: true
-            ingress:
-              enabled: true
-              pathType: ImplementationSpecific
-              apiVersion: networking.k8s.io/v1
-              ingressClassName: "nginx"
-              host: '{{.values.release}}.vcluster.fredcorp.com'
-              annotations:
-                # ingress.cilium.io/force-https: "true"
-                # ingress.cilium.io/tls-passthrough: "true"
-                nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-                nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
-                nginx.ingress.kubernetes.io/ssl-redirect: "true"
-            syncer:
-              extraArgs:
-              - --tls-san={{.values.release}}.vcluster.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
-              kubeConfigContextName: '{{.values.release}}'
             telemetry:
               disabled: true
             sync:
-              ingresses:
-                enabled: true
+              toHost:
+                ingresses:
+                  enabled: true
+            networking:
+              replicateServices:
+                toHost: []
+                fromHost: []
+              advanced:
+                clusterDomain: "cluster.local"
+                fallbackHostCluster: true
+            exportKubeConfig:
+              context: '{{.values.release}}'
+            controlPlane:
+              distro:
+                k3s:
+                  enabled: true
+                  command: []
+                  extraArgs:
+                  - server
+                  - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+                  - --data-dir=/data
+                  - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+                  - --disable-network-policy
+                  - --disable-agent
+                  - --disable-cloud-controller
+                  - --egress-selector-mode=disabled
+                  - --flannel-backend=none
+                  - --kube-apiserver-arg=bind-address=127.0.0.1
+                  imagePullPolicy: ""
+                  image:
+                    repository: "rancher/k3s"
+                    tag: '{{.tag}}'
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 256Mi
+                    requests:
+                      cpu: 40m
+                      memory: 64Mi
+                ingress:
+                  enabled: true
+                  host: '{{.values.release}}.vcluster.fredcorp.com'
+                  pathType: ImplementationSpecific
+                  annotations:
+                    # ingress.cilium.io/force-https: "true"
+                    # ingress.cilium.io/tls-passthrough: "true"
+                    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+                    nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+                    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+                  spec:
+                    ingressClassName: "nginx"
+                    # tls: []
+
+            # vcluster:
+            #   image: '{{.image}}'
+            #   command:
+            #     - /binaries/k3s
+            #   baseArgs:
+            #     - server
+            #     - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+            #     - --data-dir=/data
+            #     - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+            #     - --disable-network-policy
+            #     - --disable-agent
+            #     - --disable-cloud-controller
+            #     - --egress-selector-mode=disabled
+            #     - --flannel-backend=none
+            #     - --kube-apiserver-arg=bind-address=127.0.0.1
+            # syncer:
+            #   extraArgs:
+            #   - --tls-san={{.values.release}}.vcluster.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
       syncPolicy:
         automated:
           prune: true
