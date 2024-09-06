@@ -48,21 +48,24 @@ spec:
             exportKubeConfig:
               context: '{{.values.release}}'
             controlPlane:
+              statefulSet:
+                persistence:
+                  volumeClaim:
+                    enabled: false
               distro:
                 k3s:
                   enabled: true
                   command: []
-                  extraArgs: []
-                  # - server
-                  # - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-                  # - --data-dir=/data
-                  # - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-                  # - --disable-network-policy
-                  # - --disable-agent
-                  # - --disable-cloud-controller
-                  # - --egress-selector-mode=disabled
-                  # - --flannel-backend=none
-                  # - --kube-apiserver-arg=bind-address=127.0.0.1
+                  extraArgs:
+                  - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+                  - --data-dir=/data
+                  - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+                  - --disable-network-policy
+                  - --disable-agent
+                  - --disable-cloud-controller
+                  - --egress-selector-mode=disabled
+                  - --flannel-backend=none
+                  - --kube-apiserver-arg=bind-address=127.0.0.1
                   imagePullPolicy: ""
                   image:
                     repository: "rancher/k3s"
