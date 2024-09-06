@@ -52,17 +52,17 @@ spec:
                 k3s:
                   enabled: true
                   command: []
-                  extraArgs:
-                  - server
-                  - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-                  - --data-dir=/data
-                  - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-                  - --disable-network-policy
-                  - --disable-agent
-                  - --disable-cloud-controller
-                  - --egress-selector-mode=disabled
-                  - --flannel-backend=none
-                  - --kube-apiserver-arg=bind-address=127.0.0.1
+                  extraArgs: []
+                  # - server
+                  # - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+                  # - --data-dir=/data
+                  # - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+                  # - --disable-network-policy
+                  # - --disable-agent
+                  # - --disable-cloud-controller
+                  # - --egress-selector-mode=disabled
+                  # - --flannel-backend=none
+                  # - --kube-apiserver-arg=bind-address=127.0.0.1
                   imagePullPolicy: ""
                   image:
                     repository: "rancher/k3s"
@@ -87,25 +87,12 @@ spec:
                 spec:
                   ingressClassName: "nginx"
                     # tls: []
-
-            # vcluster:
-            #   image: '{{.image}}'
-            #   command:
-            #     - /binaries/k3s
-            #   baseArgs:
-            #     - server
-            #     - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-            #     - --data-dir=/data
-            #     - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-            #     - --disable-network-policy
-            #     - --disable-agent
-            #     - --disable-cloud-controller
-            #     - --egress-selector-mode=disabled
-            #     - --flannel-backend=none
-            #     - --kube-apiserver-arg=bind-address=127.0.0.1
-            # syncer:
-            #   extraArgs:
-            #   - --tls-san={{.values.release}}.vcluster.fredcorp.com,{{.values.release}}.{{.values.namespace}}.svc.cluster.local
+              proxy:
+                bindAddress: "0.0.0.0"
+                port: 8443
+                extraSANs: 
+                - '{{.values.release}}.vcluster.fredcorp.com'
+                - '{{.values.release}}.{{.values.namespace}}.svc.cluster.local'
       syncPolicy:
         automated:
           prune: true
