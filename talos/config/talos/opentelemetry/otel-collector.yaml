@@ -23,7 +23,6 @@ spec:
       otlp:
         protocols:
           grpc:
-          http:
 
     exporters:
       logging:
