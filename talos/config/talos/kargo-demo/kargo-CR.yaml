@@ -172,7 +172,7 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/dev/Chart.yaml
+          chartPath: talos/kargo/stages/dev
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
@@ -200,7 +200,7 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/uat/Chart.yaml
+          chartPath: talos/kargo/stages/uat
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
@@ -228,7 +228,7 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/prod/Chart.yaml
+          chartPath: talos/kargo/stages/prod
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
