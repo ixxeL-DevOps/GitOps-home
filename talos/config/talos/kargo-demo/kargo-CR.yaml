@@ -2,7 +2,7 @@
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: kargo-creds
+  name: kargo-creds-github
   namespace: kargo-demo
 spec:
   refreshInterval: "60s"
@@ -10,7 +10,7 @@ spec:
     name: admin
     kind: ClusterSecretStore
   target:
-    name: kargo-creds
+    name: kargo-creds-github
     creationPolicy: Owner
     deletionPolicy: Retain
     template:
@@ -48,6 +48,10 @@ spec:
       repoURL: docker.io/ixxel/demo-web
       discoveryLimit: 20
       imageSelectionStrategy: SemVer
+  - chart:
+      repoURL: https://chartmuseum.k8s-app.fredcorp.com
+      name: demo-web
+      discoveryLimit: 20
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -65,11 +69,16 @@ spec:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
       writeBranch: stage/dev
-      kustomize:
+      helm:
+        charts:
+        - repository: https://chartmuseum.k8s-app.fredcorp.com
+          name: demo-web
+          chartPath: talos/kargo/stages/dev
         images:
         - image: docker.io/ixxel/demo-web
-          path: stages/dev
-          useDigest: false
+          key: 'demo-web.image.tag'
+          value: Tag
+          valuesFilePath: talos/kargo/stages/dev/values.yaml
     argoCDAppUpdates:
     - appName: kargo-demo-dev
       appNamespace: argocd
@@ -91,11 +100,16 @@ spec:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
       writeBranch: stage/uat
-      kustomize:
+      helm:
+        charts:
+        - repository: https://chartmuseum.k8s-app.fredcorp.com
+          name: demo-web
+          chartPath: talos/kargo/stages/uat
         images:
         - image: docker.io/ixxel/demo-web
-          path: stages/uat
-          useDigest: false
+          key: 'demo-web.image.tag'
+          value: Tag
+          valuesFilePath: talos/kargo/stages/uat/values.yaml
     argoCDAppUpdates:
     - appName: kargo-demo-uat
       appNamespace: argocd
@@ -117,11 +131,16 @@ spec:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
       writeBranch: stage/prod
-      kustomize:
+      helm:
+        charts:
+        - repository: https://chartmuseum.k8s-app.fredcorp.com
+          name: demo-web
+          chartPath: talos/kargo/stages/prod
         images:
         - image: docker.io/ixxel/demo-web
-          path: stages/prod
-          useDigest: false
+          key: 'demo-web.image.tag'
+          value: Tag
+          valuesFilePath: talos/kargo/stages/prod/values.yaml
     argoCDAppUpdates:
     - appName: kargo-demo-prod
       appNamespace: argocd
