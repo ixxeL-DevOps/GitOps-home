@@ -113,7 +113,7 @@ spec:
   subscriptions:
   - image:
       repoURL: docker.io/ixxel/demo-web
-      discoveryLimit: 20
+      discoveryLimit: 5
       imageSelectionStrategy: SemVer
   - chart:
       repoURL: https://chartmuseum.k8s-app.fredcorp.com
