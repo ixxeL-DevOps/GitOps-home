@@ -95,7 +95,7 @@ spec:
       name: kargo-demo
     sources:
       stages:
-      - test
+      - dev
   promotionMechanisms:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
