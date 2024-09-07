@@ -68,39 +68,6 @@ spec:
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
-  name: kargo-creds-dockerhub
-  namespace: kargo-demo
-spec:
-  refreshInterval: "60s"
-  secretStoreRef:
-    name: admin
-    kind: ClusterSecretStore
-  target:
-    name: kargo-creds-dockerhub
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    template:
-      engineVersion: v2
-      metadata:
-        labels:
-          kargo.akuity.io/cred-type: image
-      data:
-        repoURL: docker.io/.*
-        repoURLIsRegex: 'true'
-        username: ixxel
-        password: "{{ .token }}"
-  data:
-  - secretKey: token
-    remoteRef:
-      conversionStrategy: Default
-      decodingStrategy: None
-      key: dockerhub/raw
-      metadataPolicy: None
-      property: TOKEN
----
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata:
   name: kargo-creds-github
   namespace: kargo-demo
 spec:
@@ -119,7 +86,8 @@ spec:
           kargo.akuity.io/cred-type: git
       data:
         repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-        username: ixxeL
+        # repoURLIsRegex: 'true'
+        username: ixxeL2097
         password: "{{ .token }}"
   data:
   - secretKey: token
@@ -151,6 +119,13 @@ spec:
       repoURL: https://chartmuseum.k8s-app.fredcorp.com
       name: demo-web
       discoveryLimit: 20
+  - git:
+      repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+      branch: main
+      commitSelectionStrategy: NewestFromBranch
+      discoveryLimit: 20
+      includePaths:
+      - talos/kargo/stages
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
