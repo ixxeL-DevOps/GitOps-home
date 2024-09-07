@@ -1,3 +1,43 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: add-vault-root-cert
+spec:
+  rules:
+    - name: add-vault-root-cert
+      match:
+        resources:
+          kinds:
+            - Pod
+          namespaces:
+            - kargo
+          selector:
+            matchLabels:
+              app.kubernetes.io/instance: kargo
+              app.kubernetes.io/name: kargo
+      skipBackgroundRequests: true
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              cert-injection.fredcorp.com/injected: "true"
+          spec:
+            volumes:
+              - name: fredcorp-pki-certs
+                configMap:
+                  name: fredcorp-pki-certs
+                  items:
+                    - key: vault-pki-certs.pem
+                      path: vault-pki-certs.pem
+            containers:
+              - (name): "*"
+                volumeMounts:
+                  - name: fredcorp-pki-certs
+                    mountPath: /etc/ssl/certs/vault-pki-certs.pem
+                    subPath: vault-pki-certs.pem
+                    readOnly: true
+
+
 # apiVersion: kyverno.io/v1
 # kind: ClusterPolicy
 # metadata:
@@ -10,11 +50,12 @@
 #           kinds:
 #             - Pod
 #           namespaces:
-#             - chartmuseum
+#             - kargo
 #           selector:
 #             matchLabels:
-#               app.kubernetes.io/instance: helm-dashboard-k0s
-#               app.kubernetes.io/name: helm-dashboard
+#               app.kubernetes.io/instance: kargo
+#               app.kubernetes.io/name: kargo
+#       skipBackgroundRequests: true
 #       mutate:
 #         patchStrategicMerge:
 #           metadata:
@@ -36,7 +77,7 @@
 #                   - |
 #                     cp /tmp/vault-pki-certs.pem /etc/ssl/certs
 #                     update-ca-certificates &&
-#                     /bin/helm-dashboard --no-browser --bind=0.0.0.0
+#                     /usr/local/bin/kargo controller
 #                 volumeMounts:
 #                   - name: fredcorp-pki-certs
 #                     mountPath: /tmp
