@@ -103,6 +103,12 @@ kind: Project
 metadata:
   name: kargo-demo
   namespace: kargo-demo
+spec:
+  promotionPolicies:
+  - stage: dev
+    autoPromotionEnabled: true
+  - stage: uat
+    autoPromotionEnabled: true
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Warehouse
@@ -119,13 +125,13 @@ spec:
       repoURL: https://chartmuseum.k8s-app.fredcorp.com
       name: demo-web
       discoveryLimit: 20
-  - git:
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      branch: main
-      commitSelectionStrategy: NewestFromBranch
-      discoveryLimit: 20
-      includePaths:
-      - talos/kargo/stages
+  # - git:
+  #     repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+  #     branch: main
+  #     commitSelectionStrategy: NewestFromBranch
+  #     discoveryLimit: 20
+  #     includePaths:
+  #     - talos/kargo/stages
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
