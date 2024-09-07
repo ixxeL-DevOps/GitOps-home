@@ -1,0 +1,127 @@
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: kargo-creds
+  namespace: kargo-demo
+spec:
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: kargo-creds
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          kargo.akuity.io/cred-type: git
+      data:
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+        username: ixxeL
+        password: "{{ .token }}"
+  data:
+  - secretKey: token
+    remoteRef:
+      conversionStrategy: Default
+      decodingStrategy: None
+      key: github
+      metadataPolicy: None
+      property: DEVOPS_ORG_PAT
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Project
+metadata:
+  name: kargo-demo
+  namespace: kargo-demo
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Warehouse
+metadata:
+  name: kargo-demo
+  namespace: kargo-demo
+spec:
+  subscriptions:
+  - image:
+      repoURL: docker.io/ixxel/demo-web
+      discoveryLimit: 20
+      imageSelectionStrategy: SemVer
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: dev
+  namespace: kargo-demo
+spec:
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: kargo-demo
+    sources:
+      direct: true
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+      writeBranch: stage/dev
+      kustomize:
+        images:
+        - image: docker.io/ixxel/demo-web
+          path: stages/dev
+          useDigest: false
+    argoCDAppUpdates:
+    - appName: kargo-demo-dev
+      appNamespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: uat
+  namespace: kargo-demo
+spec:
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: kargo-demo
+    sources:
+      stages:
+      - test
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+      writeBranch: stage/uat
+      kustomize:
+        images:
+        - image: docker.io/ixxel/demo-web
+          path: stages/uat
+          useDigest: false
+    argoCDAppUpdates:
+    - appName: kargo-demo-uat
+      appNamespace: argocd
+---
+apiVersion: kargo.akuity.io/v1alpha1
+kind: Stage
+metadata:
+  name: prod
+  namespace: kargo-demo
+spec:
+  requestedFreight:
+  - origin:
+      kind: Warehouse
+      name: kargo-demo
+    sources:
+      stages:
+      - uat
+  promotionMechanisms:
+    gitRepoUpdates:
+    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+      writeBranch: stage/prod
+      kustomize:
+        images:
+        - image: docker.io/ixxel/demo-web
+          path: stages/prod
+          useDigest: false
+    argoCDAppUpdates:
+    - appName: kargo-demo-prod
+      appNamespace: argocd

@@ -18,6 +18,8 @@ spec:
             exclude: true
           - path: 'talos/vcluster-k0s/**/**'
             exclude: true
+          - path: 'talos/kargo/stages/**/**'
+            exclude: true
   template:
     metadata:
       name: '{{ .path.basenameNormalized }}'
