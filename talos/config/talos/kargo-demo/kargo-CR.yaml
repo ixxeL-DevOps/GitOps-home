@@ -2,6 +2,105 @@
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:
+  name: kargo-creds-chartmuseum
+  namespace: kargo-demo
+spec:
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: kargo-creds-chartmuseum
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          kargo.akuity.io/cred-type: helm
+      data:
+        repoURL: https://chartmuseum.k8s-app.fredcorp.com/.*
+        repoURLIsRegex: 'true'
+        username: root
+        password: "{{ .password }}"
+  data:
+  - secretKey: password
+    remoteRef:
+      key: chartmuseum/k0s
+      property: PWD
+      conversionStrategy: Default
+      decodingStrategy: None
+      metadataPolicy: None
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: kargo-creds-dockerhubv2
+  namespace: kargo-demo
+spec:
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: kargo-creds-dockerhubv2
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          kargo.akuity.io/cred-type: image
+      data:
+        repoURL: https://index.docker.io/.*
+        repoURLIsRegex: 'true'
+        username: ixxel
+        password: "{{ .token }}"
+  data:
+  - secretKey: token
+    remoteRef:
+      conversionStrategy: Default
+      decodingStrategy: None
+      key: dockerhub/raw
+      metadataPolicy: None
+      property: TOKEN
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: kargo-creds-dockerhub
+  namespace: kargo-demo
+spec:
+  refreshInterval: "60s"
+  secretStoreRef:
+    name: admin
+    kind: ClusterSecretStore
+  target:
+    name: kargo-creds-dockerhub
+    creationPolicy: Owner
+    deletionPolicy: Retain
+    template:
+      engineVersion: v2
+      metadata:
+        labels:
+          kargo.akuity.io/cred-type: image
+      data:
+        repoURL: docker.io/.*
+        repoURLIsRegex: 'true'
+        username: ixxel
+        password: "{{ .token }}"
+  data:
+  - secretKey: token
+    remoteRef:
+      conversionStrategy: Default
+      decodingStrategy: None
+      key: dockerhub/raw
+      metadataPolicy: None
+      property: TOKEN
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
   name: kargo-creds-github
   namespace: kargo-demo
 spec:
@@ -73,15 +172,12 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/dev
+          chartPath: talos/kargo/stages/dev/Chart.yaml
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
           valuesFilePath: talos/kargo/stages/dev/values.yaml
-    argoCDAppUpdates:
-    - appName: kargo-demo-dev
-      appNamespace: argocd
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -104,15 +200,12 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/uat
+          chartPath: talos/kargo/stages/uat/Chart.yaml
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
           valuesFilePath: talos/kargo/stages/uat/values.yaml
-    argoCDAppUpdates:
-    - appName: kargo-demo-uat
-      appNamespace: argocd
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -135,12 +228,9 @@ spec:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/prod
+          chartPath: talos/kargo/stages/prod/Chart.yaml
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
           valuesFilePath: talos/kargo/stages/prod/values.yaml
-    argoCDAppUpdates:
-    - appName: kargo-demo-prod
-      appNamespace: argocd
