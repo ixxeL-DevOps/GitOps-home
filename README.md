@@ -436,6 +436,58 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
 ```
+## Auto Create PR
+
+Previous examples were pushing directly to main branch. In some cases you might want to push to another branch, for example in production you would prefer to push to another branch and create PR for review. Use the following template to do so:
+
+```yaml
+argocd-image-updater.argoproj.io/git-branch: main:auto/{{range .Images}}{{.Name}}:{{.OldTag}}-{{.NewTag}}{{end}}
+```
+
+And for `ApplicationSet` you need to escape the GoTemplating:
+```yaml
+argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}:{{`{{ .OldTag }}`}}-{{`{{ .NewTag }}`}}{{`{{end}}`}}'
+```
+
+This will force the git write-back to a custom branch named accordingly to image name and version. Be sure to use GoTemplate rendering in the manifest:
+
+```yaml
+spec:
+  goTemplate: true
+```
+
+> [!CAUTION]
+> Do not use the `goTemplateOptions: ["missingkey=error"]` line otherwise it will prompt error.
+
+You might want to combine this with auto Pull Request creation. For example, in Github use this workflow:
+
+```yaml
+---
+name: Image Updater Auto-PR
+on:
+  create:
+    branches:
+    - 'auto/*'
+
+jobs:
+  auto-pull-request:
+    name: Automatically open PR to main
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      name: checkout
+
+    - uses: repo-sync/pull-request@v2
+      name: pull-request
+      with:
+        destination_branch: "main"
+        pr_title: "chore: image promotion ${{ github.ref }} into main"
+        pr_body: ":crown: *An automated PR* - ${{ github.ref }}"
+        pr_reviewer: "ixxeL2097"
+        pr_draft: false
+        github_token: ${{ secrets.SUPER_ADMIN_TOKEN }}
+```
+
 ## Tooling apps
 
 For applications managed by administrators, its is recommended to host them inside this repository. You can use complex structure for `ApplicationSet` to handle multiple clusters values:
