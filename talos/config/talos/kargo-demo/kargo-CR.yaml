@@ -148,17 +148,17 @@ spec:
   promotionMechanisms:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: stage/dev
+      writeBranch: deploy/dev
       helm:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/dev
+          chartPath: kargo-test/stages/dev/kargo-demo
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
-          valuesFilePath: talos/kargo/stages/dev/values.yaml
+          valuesFilePath: kargo-test/stages/dev/kargo-demo/values.yaml
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -176,17 +176,17 @@ spec:
   promotionMechanisms:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: stage/uat
+      writeBranch: deploy/uat
       helm:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/uat
+          chartPath: kargo-test/stages/uat/kargo-demo
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
-          valuesFilePath: talos/kargo/stages/uat/values.yaml
+          valuesFilePath: kargo-test/stages/uat/kargo-demo/values.yaml
 ---
 apiVersion: kargo.akuity.io/v1alpha1
 kind: Stage
@@ -204,14 +204,14 @@ spec:
   promotionMechanisms:
     gitRepoUpdates:
     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: stage/prod
+      writeBranch: deploy/prod
       helm:
         charts:
         - repository: https://chartmuseum.k8s-app.fredcorp.com
           name: demo-web
-          chartPath: talos/kargo/stages/prod
+          chartPath: kargo-test/stages/prod/kargo-demo
         images:
         - image: docker.io/ixxel/demo-web
           key: 'demo-web.image.tag'
           value: Tag
-          valuesFilePath: talos/kargo/stages/prod/values.yaml
+          valuesFilePath: kargo-test/stages/prod/kargo-demo/values.yaml
