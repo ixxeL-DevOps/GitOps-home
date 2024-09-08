@@ -7,9 +7,9 @@ metadata:
 spec:
   generators:
   - list:
-      elements:
-      - env: talos
-        namespace: renovate
+      elements: []
+      # - env: talos
+      #   namespace: renovate
   template:
     metadata:
       name: 'renovate-{{env}}'
