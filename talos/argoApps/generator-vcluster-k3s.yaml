@@ -12,10 +12,10 @@ spec:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         files: 
-        - path: 'talos/vcluster-k3s/*/cluster/config.json'
+        - path: 'envs/talos/vcluster/*/config/config.json'
         values:
-          namespace: 'vk-{{ index .path.segments 2 }}'
-          release: 'vk-k3s-{{ index .path.segments 2 }}'
+          namespace: 'vk-{{ index .path.segments 3 }}'
+          release: 'vk-k3s-{{ index .path.segments 3 }}'
   template:
     metadata:
       name: '{{.values.release}}'
@@ -23,7 +23,7 @@ spec:
     spec:
       project: vcluster
       destination:
-        name: '{{ index .path.segments 0 }}'
+        name: '{{ index .path.segments 1 }}'
         namespace: '{{.values.namespace}}'
       source:
         repoURL: https://charts.loft.sh

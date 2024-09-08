@@ -21,7 +21,7 @@ spec:
       source:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         targetRevision: stage/{{stage}}
-        path: talos/kargo/stages/{{stage}}
+        path: talos/kargo/stages/{{stage}}/kargo-demo
       destination:
         name: vk-{{stage}}
         namespace: kargo-demo-{{stage}}
