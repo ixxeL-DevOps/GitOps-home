@@ -1,0 +1,26 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: vault-issuer
+    cert-manager.io/common-name: kargo.k8s-app.fredcorp.com
+  name: kargo
+  namespace: kargo
+spec:
+  ingressClassName: cilium
+  rules:
+    - host: kargo.k8s-app.fredcorp.com
+      http:
+        paths:
+          - backend:
+              service:
+                name: kargo-api
+                port:
+                  number: 443
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - kargo.k8s-app.fredcorp.com
+      secretName: kargo-server-tls
