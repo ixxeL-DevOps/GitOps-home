@@ -6,7 +6,7 @@ metadata:
   namespace: argocd
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
+  # goTemplateOptions: ["missingkey=error"]
   generators:
     - git:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
@@ -26,7 +26,7 @@ spec:
       annotations:
         argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 5 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: semver
-        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/git-branch: 'main:auto-update/{{`{{ range .Images }}`}}-{{`{{ .Name }}`}}-{{`{{ .NewTag }}`}}{{`{{end}}`}}'
         argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
         argocd-image-updater.argoproj.io/app.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git
