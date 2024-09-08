@@ -8,23 +8,23 @@ spec:
   generators:
   - list:
       elements:
-      - stage: dev
-      - stage: uat
-      - stage: prod
+      - env: dev
+      - env: uat
+      - env: prod
   template:
     metadata:
-      name: kargo-demo-{{stage}}
+      name: kargo-demo-{{env}}
       annotations:
-        kargo.akuity.io/authorized-stage: kargo-demo:{{stage}}
+        kargo.akuity.io/authorized-stage: kargo-demo:{{env}}
     spec:
       project: ci-cd
       source:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
-        targetRevision: stage/{{stage}}
-        path: talos/kargo/stages/{{stage}}/kargo-demo
+        targetRevision: deploy/{{env}}
+        path: kargo-test/stages/{{env}}/kargo-demo
       destination:
-        name: vk-{{stage}}
-        namespace: kargo-demo-{{stage}}
+        name: vk-{{env}}
+        namespace: kargo-demo-{{env}}
       syncPolicy:
         # automated:
         #   prune: true

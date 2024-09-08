@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kargo-app
+  name: kargo-operator
   namespace: argocd
 spec:
   project: infra-pipelines
