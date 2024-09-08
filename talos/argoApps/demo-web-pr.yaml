@@ -18,6 +18,7 @@ spec:
     metadata:
       name: 'demo-web-pr-{{number}}'
       annotations:
+        notifications.argoproj.io/subscribe.sync-operation-success.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-deployed.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-health-degraded.github: ""
         notifications.argoproj.io/subscribe.on-ephemeral-sync-failed.github: ""

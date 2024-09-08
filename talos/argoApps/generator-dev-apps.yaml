@@ -1,0 +1,60 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dev-apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - git:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        revision: main
+        directories:
+          - path: 'envs/vk-dev/namespaces/*/apps/*'
+            exclude: false
+  template:
+    metadata:
+      name: '{{ .path.basenameNormalized }}-dev'
+      annotations:
+        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 5 }}.image.tag'
+        argocd-image-updater.argoproj.io/app.update-strategy: semver
+        argocd-image-updater.argoproj.io/git-branch: main
+        argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
+        argocd-image-updater.argoproj.io/app.force-update: "true"
+        argocd-image-updater.argoproj.io/write-back-method: git
+        notifications.argoproj.io/subscribe.sync-operation-success.github: ""
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-talos-prod"
+      finalizers: []
+    spec:
+      project: dev-apps
+      destination:
+        name: '{{ index .path.segments 1 }}'
+        namespace: '{{ index .path.segments 3 }}'
+      source:
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+        path: '{{.path.path}}'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: gateway.networking.k8s.io
+        kind: HTTPRoute
+        jqPathExpressions:
+        - .spec.rules[].backendRefs[].weight
+      - group: ""
+        kind: Service
+        jsonPointers:
+          - '/spec/selector/rollouts-pod-template-hash'
+        # jqPathExpressions:
+        # - .spec.selector

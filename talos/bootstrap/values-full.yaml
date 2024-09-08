@@ -247,7 +247,12 @@ argo-cd:
       #     oncePer: app.status.sync.revision
       #     send: [app-sync-status]
       #   - when: app.status.operationState.phase in ['Error', 'Failed'] and time.Now().Sub(time.Parse(app.status.operationState.startedAt)).Minutes() < 2
-      #     send: [app-sync-status]    
+      #     send: [app-sync-status]
+      trigger.sync-operation-success: |
+        - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
+          oncePer: app.status.operationState.finishedAt
+          send: [run-github-pipeline]
+
       trigger.sync-operation-change: |
         - when: app.status.operationState != nil and app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.sync.status == 'Synced'
           oncePer: app.status.operationState.finishedAt
@@ -279,6 +284,19 @@ argo-cd:
           when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
 
     templates:
+      template.run-github-pipeline: |
+        webhook:
+          github:
+            method: POST
+            path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/dispatches
+            body: |
+              {
+                "event_type": "helm_promotion",
+                "client_payload": {
+                  "helm_chart_version": "{{ .app.spec.source.chart }}",
+                  "app_version": "{{ .app.status.sync.status }}"
+                }
+              }
       template.app-sync-status: |
         message: |
           Application {{.app.metadata.name}} sync is {{.app.status.sync.status}}
@@ -317,15 +335,6 @@ argo-cd:
                 "description": "{{.app.metadata.name}} img tag: {{ (call .repo.GetAppDetails).Helm.GetParameterValueByName "tag" }}",
                 "target_url": "{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
                 "context": "continuous-integration/argocd"
-              }
-      template.run-github-pipeline: |
-        webhook:
-          github:
-            method: POST
-            path: /repos/{{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}/actions/workflows/ci.yml/dispatches
-            body: |
-              {
-                "ref": "main"
               }
       template.app-deployed: |
         message: |
