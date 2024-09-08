@@ -441,12 +441,12 @@ spec:
 Previous examples were pushing directly to main branch. In some cases you might want to push to another branch, for example in production you would prefer to push to another branch and create PR for review. Use the following template to do so:
 
 ```yaml
-argocd-image-updater.argoproj.io/git-branch: main:auto/{{range .Images}}{{.Name}}:{{.OldTag}}-{{.NewTag}}{{end}}
+argocd-image-updater.argoproj.io/git-branch: main:auto/{{range .Images}}{{.Name}}-{{.OldTag}}-{{.NewTag}}{{end}}
 ```
 
 And for `ApplicationSet` you need to escape the GoTemplating:
 ```yaml
-argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}:{{`{{ .OldTag }}`}}-{{`{{ .NewTag }}`}}{{`{{end}}`}}'
+argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}-{{`{{ .OldTag }}`}}-{{`{{ .NewTag }}`}}{{`{{end}}`}}'
 ```
 
 This will force the git write-back to a custom branch named accordingly to image name and version. Be sure to use GoTemplate rendering in the manifest:
