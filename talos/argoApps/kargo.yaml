@@ -17,9 +17,12 @@ spec:
       releaseName: kargo
       valuesObject:
         api:
+          tls:
+            enabled: false
+            selfSignedCert: false
           host: kargo.k8s-app.fredcorp.com
           ingress:
-            enabled: true
+            enabled: false
             # annotations:
             #   cert-manager.io/cluster-issuer: vault-issuer
             #   cert-manager.io/common-name: kargo.k8s-app.fredcorp.com
