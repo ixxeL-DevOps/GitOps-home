@@ -12,19 +12,19 @@ spec:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         directories:
-          - path: 'talos/*/*/*'
+          - path: 'envs/talos/namespaces/*/apps/*'
             exclude: false
-          - path: 'talos/vcluster-k3s/**/**'
-            exclude: true
-          - path: 'talos/vcluster-k0s/**/**'
-            exclude: true
-          - path: 'talos/kargo/stages/**'
-            exclude: true
+          # - path: 'envs/talos/vcluster-k3s/**/**'
+          #   exclude: true
+          # - path: 'envs/talos/vcluster-k0s/**/**'
+          #   exclude: true
+          # - path: 'envs/talos/kargo/stages/**'
+          #   exclude: true
   template:
     metadata:
       name: '{{ .path.basenameNormalized }}'
       annotations:
-        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 2 }}.image.tag'
+        argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 5 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: semver
         argocd-image-updater.argoproj.io/git-branch: main
         argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
@@ -35,8 +35,8 @@ spec:
     spec:
       project: prod-apps
       destination:
-        name: '{{ index .path.segments 0 }}'
-        namespace: '{{ index .path.segments 1 }}'
+        name: '{{ index .path.segments 1 }}'
+        namespace: '{{ index .path.segments 3 }}'
       source:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         path: '{{.path.path}}'
