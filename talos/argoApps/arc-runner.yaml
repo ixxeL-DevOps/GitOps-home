@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://actions-runner-controller.github.io/actions-runner-controller
-        targetRevision: 0.*.*
+        targetRevision: 0.23.7
         chart: actions-runner-controller
         helm:
           releaseName: 'gha-runner-ctrl-{{env}}'

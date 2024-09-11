@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://chartmuseum.github.io/charts
-        targetRevision: 3.*.*
+        targetRevision: 3.10.3
         chart: chartmuseum
         helm:
           releaseName: 'chartmuseum-{{env}}'
