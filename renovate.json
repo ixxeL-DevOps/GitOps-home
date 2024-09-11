@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "enabledManagers": ["argocd", "helmv3", "github-actions"],
+  "dependencyDashboard": true,
+  "ignorePaths": [
+    "k0s/**",
+    "rke2/**",
+    "src/**",
+    "talos/saveapps/**"
+  ],
+  "helmv3": {
+    "fileMatch": [
+        "(^|/)Chart\\.ya?ml$"
+    ]
+  },
+  "argocd": {
+    "fileMatch": [
+      "talos/argoApps/.*\\.ya?ml$"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Automerge apps for security patch release",
+      "enabled": true,
+      "matchManagers": ["argocd"],
+      "automerge": false,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for ArgoCD instance",
+      "enabled": true,
+      "matchManagers": ["helmv3"],
+      "matchFileNames": [
+        "talos/boostrap/**"
+      ],
+      "automerge": false
+    }
+  ]
+}
