@@ -5,6 +5,10 @@
   ],
   "enabledManagers": ["argocd", "helmv3", "github-actions"],
   "dependencyDashboard": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "branchConcurrentLimit": 0,
+  "automergeStrategy": "squash",
   "ignorePaths": [
     "k0s/**",
     "rke2/**",
@@ -18,26 +22,52 @@
   },
   "argocd": {
     "fileMatch": [
-      "talos/argoApps/.*\\.ya?ml$"
+      "talos/argoApps/.+\\.ya?ml$"
     ]
   },
   "packageRules": [
     {
-      "description": "Automerge apps for security patch release",
-      "enabled": true,
+      "description": "Global rules for version detection",
+      "matchManagers": ["argocd", "helmv3"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "labels": ["{{depName}}", "{{updateType}}-update"]
+    },
+    {
+      "description": "Automerge apps for patch release",
       "matchManagers": ["argocd"],
-      "automerge": false,
+      "matchUpdateTypes": ["patch"],
+      "matchFileNames": ["talos/argoApps/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
       "requiredStatusChecks": null
     },
     {
-      "description": "Manual merge for ArgoCD instance",
-      "enabled": true,
+      "description": "Manual merge apps for major and minor releases",
+      "matchManagers": ["argocd"],
+      "matchUpdateTypes": ["major", "minor"],
+      "matchFileNames": ["talos/argoApps/**"],
+      "addLabels": ["MANUAL-REVIEW"],
+      "automerge": false
+    },
+    {
+      "description": "Automerge for ArgoCD instance patch updates",
       "matchManagers": ["helmv3"],
-      "matchFileNames": [
-        "talos/boostrap/**"
-      ],
+      "matchUpdateTypes": ["patch"],
+      "matchFileNames": ["talos/boostrap/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for ArgoCD instance major and minor updates",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["major", "minor"],
+      "matchFileNames": ["talos/boostrap/**"],
+      "addLabels": ["MANUAL-REVIEW"],
       "automerge": false
     }
   ]
