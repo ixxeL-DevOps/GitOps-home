@@ -11,6 +11,10 @@ on:
       - '**/Chart.yaml'
       - '**/Chart.yml'
 
+concurrency:
+  group: auto
+  cancel-in-progress: false
+
 jobs:
   helm-diff-chart:
     runs-on: self-hosted

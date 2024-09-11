@@ -6,7 +6,7 @@ on:
     types:
     - renovate
   schedule:
-  - cron: "0 2 * * 1"
+  - cron: "0 2 * * *"
 
 concurrency:
   group: auto
