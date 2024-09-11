@@ -14,7 +14,6 @@ on:
 jobs:
   helm-diff-chart:
     runs-on: self-hosted
-    if: ${{ !startsWith(github.head_ref, 'renovate/') }}
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4
