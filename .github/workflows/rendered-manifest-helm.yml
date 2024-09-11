@@ -14,6 +14,7 @@ on:
 jobs:
   helm-diff-chart:
     runs-on: self-hosted
+    if: github.event.pull_request.head.ref != 'renovate/**'
     steps:
       - name: Checkout PR
         uses: actions/checkout@v4

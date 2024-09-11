@@ -5,6 +5,10 @@
   ],
   "enabledManagers": ["argocd", "helmv3", "github-actions"],
   "dependencyDashboard": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "branchConcurrentLimit": 0,
+  "automergeStrategy": "squash",
   "ignorePaths": [
     "k0s/**",
     "rke2/**",
@@ -18,27 +22,72 @@
   },
   "argocd": {
     "fileMatch": [
-      "talos/argoApps/.*\\.ya?ml$"
+      "talos/argoApps/.+\\.ya?ml$"
     ]
   },
   "packageRules": [
     {
-      "description": "Automerge apps for security patch release",
+      "description": "Automerge apps for patch release",
       "enabled": true,
       "matchManagers": ["argocd"],
-      "automerge": false,
+      "matchUpdateTypes": ["patch"],
+      "labels": ["PATCH-RELEASE"],
+      "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
       "requiredStatusChecks": null
     },
     {
-      "description": "Manual merge for ArgoCD instance",
+      "description": "Manual merge apps for major release",
+      "enabled": true,
+      "matchManagers": ["argocd"],
+      "matchUpdateTypes": ["major"],
+      "labels": ["MAJOR-RELEASE"],
+      "automerge": false
+    },
+    {
+      "description": "Manual merge apps for minor release",
+      "enabled": true,
+      "matchManagers": ["argocd"],
+      "matchUpdateTypes": ["minor"],
+      "labels": ["MINOR-RELEASE"],
+      "automerge": false
+    },
+    {
+      "description": "Automerge for ArgoCD instance patch updates",
       "enabled": true,
       "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["patch"],
+      "labels": ["PATCH-RELEASE"],
+      "matchFileNames": [
+        "talos/boostrap/**"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for ArgoCD instance major updates",
+      "enabled": true,
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["major"],
+      "labels": ["MAJOR-RELEASE"],
       "matchFileNames": [
         "talos/boostrap/**"
       ],
       "automerge": false
-    }
+    },
+    {
+      "description": "Manual merge for ArgoCD instance minor updates",
+      "enabled": true,
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["minor"],
+      "labels": ["MINOR-RELEASE"],
+      "matchFileNames": [
+        "talos/boostrap/**"
+      ],
+      "automerge": false
+    }    
   ]
 }
