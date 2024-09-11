@@ -25,7 +25,7 @@ spec:
         namespace: '{{namespace}}'
       sources:
         - repoURL: https://charts.jetstack.io
-          targetRevision: v1.*.*
+          targetRevision: v1.15.3
           chart: cert-manager
           helm:
             releaseName: 'cert-manager-{{env}}'
@@ -47,7 +47,7 @@ spec:
                   name: "cert-manager-webhook"
                   automountServiceAccountToken: true
         - repoURL: https://charts.jetstack.io
-          targetRevision: v0.*.*
+          targetRevision: v0.2.1
           chart: cert-manager-trust
           helm:
             releaseName: 'cert-manager-trust-{{env}}'

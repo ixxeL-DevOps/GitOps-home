@@ -36,6 +36,8 @@
       "description": "Automerge apps for patch release",
       "matchManagers": ["argocd"],
       "matchUpdateTypes": ["patch"],
+      "commitMessagePrefix": "(argo-app)",
+      "additionalBranchPrefix": "app/",
       "matchFileNames": ["talos/argoApps/**"],
       "automerge": true,
       "automergeType": "pr",
@@ -46,6 +48,8 @@
       "description": "Manual merge apps for major and minor releases",
       "matchManagers": ["argocd"],
       "matchUpdateTypes": ["major", "minor"],
+      "commitMessagePrefix": "(argo-app)",
+      "additionalBranchPrefix": "app/",
       "matchFileNames": ["talos/argoApps/**"],
       "automerge": false
     },
@@ -53,6 +57,8 @@
       "description": "Automerge for ArgoCD instance patch updates",
       "matchManagers": ["helmv3"],
       "matchUpdateTypes": ["patch"],
+      "commitMessagePrefix": "(helm)",
+      "additionalBranchPrefix": "helm/",      
       "matchFileNames": ["talos/boostrap/**"],
       "automerge": true,
       "automergeType": "pr",
@@ -63,6 +69,8 @@
       "description": "Manual merge for ArgoCD instance major and minor updates",
       "matchManagers": ["helmv3"],
       "matchUpdateTypes": ["major", "minor"],
+      "commitMessagePrefix": "(helm)",
+      "additionalBranchPrefix": "helm/", 
       "matchFileNames": ["talos/boostrap/**"],
       "automerge": false
     }
