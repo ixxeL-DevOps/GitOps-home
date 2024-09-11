@@ -30,7 +30,7 @@
       "description": "Global rules for version detection",
       "matchManagers": ["argocd", "helmv3"],
       "matchUpdateTypes": ["major", "minor", "patch"],
-      "labels": ["{{depName}}", "{{updateType}}-update"]
+      "labels": ["{{updateType}}-update"]
     },
     {
       "description": "Automerge apps for patch release",
