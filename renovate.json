@@ -18,7 +18,7 @@
   },
   "argocd": {
     "fileMatch": [
-      "talos/argoApps/.*\\.ya?ml$"
+      "talos/argoApps/.+\\.ya?ml$"
     ]
   },
   "packageRules": [
@@ -32,9 +32,24 @@
       "requiredStatusChecks": null
     },
     {
-      "description": "Manual merge for ArgoCD instance",
+      "description": "Automerge for ArgoCD instance patch updates",
       "enabled": true,
       "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["patch"],
+      "matchFileNames": [
+        "talos/boostrap/**"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for ArgoCD instance minor/major updates",
+      "enabled": true,
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["minor", "major"],
+      "labels": ["UPDATE-MAJOR-MINOR"],
       "matchFileNames": [
         "talos/boostrap/**"
       ],
