@@ -7,6 +7,8 @@ on:
       - synchronize
     branches:
       - main
+    branches-ignore:
+      - renovate/**
     paths:
       - '**/Chart.yaml'
       - '**/Chart.yml'
