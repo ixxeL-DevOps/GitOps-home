@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://argoproj.github.io/argo-helm
-        targetRevision: 2.37.6
+        targetRevision: 2.37.7
         chart: argo-rollouts
         helm:
           releaseName: 'argo-rollouts-{{env}}'
