@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://charts.gitlab.io/
-        targetRevision: 0.68.1
+        targetRevision: 0.69.0
         chart: gitlab-runner
         helm:
           releaseName: 'gitlab-runner-{{env}}'
