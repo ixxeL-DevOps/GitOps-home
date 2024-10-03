@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://prometheus-community.github.io/helm-charts
-        targetRevision: 62.6.0
+        targetRevision: 64.0.0
         chart: kube-prometheus-stack
         helm:
           releaseName: 'prom-stack-{{env}}'
