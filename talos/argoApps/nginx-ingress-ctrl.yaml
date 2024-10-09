@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://kubernetes.github.io/ingress-nginx
-        targetRevision: 4.11.2
+        targetRevision: 4.11.3
         chart: ingress-nginx
         helm:
           releaseName: 'nginx-ingress-ctrl-{{env}}'
