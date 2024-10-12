@@ -82,6 +82,7 @@ jobs:
               then
                 echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                 yq e '.spec.source.helm.valuesObject' $file > $VALUES_FILE
+                sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
               fi
             elif [ "$kind" = "ApplicationSet" ]
             then
@@ -98,6 +99,7 @@ jobs:
               then
                 echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                 yq e '.spec.template.spec.source.helm.valuesObject' $file > $VALUES_FILE
+                sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
               fi
             fi
             helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
