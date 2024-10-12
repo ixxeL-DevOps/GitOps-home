@@ -104,6 +104,7 @@ jobs:
         with:
           source: main/*_manifest_main.yaml
           target: pr/*_manifest_pr.yaml
+          exclude-regexp: "spec.template.metadata.annotations.checksum"
 
       - name: Comment on PR for helm dyff
         uses: actions/github-script@v7
