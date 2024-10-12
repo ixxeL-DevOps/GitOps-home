@@ -1,0 +1,148 @@
+---
+name: Helm Rendered Manifest (ArgoCD apps)
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    branches:
+      - main
+    paths:
+      - '**/argoApps/*.yaml'
+      - '**/argoApps/*.yml'
+
+concurrency:
+  group: auto
+  cancel-in-progress: false
+
+jobs:
+  helm-diff-chart:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find modified Application/ApplicationSet files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            **/argoApps/*.yaml
+            **/argoApps/*.yml
+
+      - name: Generate diffs for each Chart
+        id: gen-pr-chart
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          RED="\033[1;31m"
+          GREEN="\033[1;32m"
+          YELLOW="\033[1;33m"
+          BLUE="\033[1;34m"
+          PURPLE="\033[1;35m"
+          CYAN="\033[1;36m"
+          BLANK="\033[0m"
+
+          echo "CHART_FILES=${ALL_CHANGED_FILES}"
+
+          detect_kind() {
+            local file=$1
+            kind=$(yq e '.kind' "$file")
+            case "$kind" in
+              "Application")
+                echo "Application"
+                ;;
+              "ApplicationSet")
+                echo "ApplicationSet"
+                ;;
+              *)
+                echo "Unknown"
+                ;;
+            esac
+          }
+
+          template_version() {
+            local suffix=$1
+            mkdir -p $suffix
+
+            local kind=$(detect_kind "$file")
+
+            if [ "$kind" = "Application" ]
+            then
+              APP_NAME=$(yq e '.metadata.name' "$file")
+              APP_CHART_REPO=$(yq e '.spec.source.repoURL' "$file")
+              APP_CHART_NAME=$(yq e '.spec.source.chart' "$file")
+              APP_CHART_VERSION=$(yq e '.spec.source.targetRevision' "$file")
+              APP_CHART_RELEASE=$(yq e '.spec.source.helm.releaseName' "$file")
+              echo -e "${CYAN}[ INFO ] > Application ${PURPLE}${APP_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
+              VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
+              if yq e 'has(".spec.source.helm.valuesObject")' "$file"
+              then
+                yq e '.spec.source.helm.valuesObject' $file > $VALUES_FILE
+              fi
+            elif [ "$kind" = "ApplicationSet" ]
+            then
+              APPSET_NAME=$(yq e '.metadata.name' "$file")
+              APPSET_NAMESPACE=$(yq e '.metadata.namespace' "$file")
+              APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
+              APP_CHART_REPO=$(yq e '.spec.template.spec.source.repoURL' "$file")
+              APP_CHART_NAME=$(yq e '.spec.template.spec.source.chart' "$file")
+              APP_CHART_VERSION=$(yq e '.spec.template.spec.source.targetRevision' "$file")
+              APP_CHART_RELEASE=$(yq e '.spec.template.spec.source.helm.releaseName' "$file")
+              echo -e "${CYAN}[ INFO ] > ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
+              VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
+              if yq e 'has(".spec.template.spec.source.helm.valuesObject")' "$file"
+              then
+                yq e '.spec.template.spec.source.helm.valuesObject' $file > $VALUES_FILE
+              fi
+            fi
+            helm repo add "$APP_CHART_NAME" "$APP_CHART_REPO"
+            helm repo update
+
+            echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
+            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${APP_CHART_NAME}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
+            helm template "${APP_CHART_NAME}" "${REPO_NAME}/${APP_CHART_NAME}" --version ${APP_CHART_VERSION} -f ${VALUES_FILE} > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
+          }
+
+          for file in ${ALL_CHANGED_FILES}
+          do
+            echo -e "${BLUE}[ STEP ] > Processing file ${YELLOW}${file}${BLANK}"
+            CHART_DIR=$(dirname "$file")
+
+            template_version "pr"
+
+            git checkout origin/main -- "$file"
+
+            template_version "main"
+            echo ""
+          done
+      - name: Generate dyff on release
+        id: dyff-helm
+        uses: ixxeL-DevOps/gha-templates/.github/actions/dyff@main
+        with:
+          source: main/*_manifest_main.yaml
+          target: pr/*_manifest_pr.yaml
+
+      - name: Comment on PR for helm dyff
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        env:
+          DYFF_RESULTS: ${{ steps.dyff-helm.outputs.DYFF_RESULT }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `
+            #### Dyff helm: \`chart helm dyff\`
+            \`\`\`py
+            ${process.env.DYFF_RESULTS}
+            \`\`\`
+            `;
+
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: output
+            })

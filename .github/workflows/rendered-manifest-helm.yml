@@ -1,5 +1,5 @@
 ---
-name: Helm Manifests Diff - Rendered Manifest (Chart.yaml)
+name: Helm Rendered Manifest (Chart.yaml)
 on:
   pull_request:
     types:
