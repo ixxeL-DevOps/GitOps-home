@@ -78,8 +78,8 @@ jobs:
             helm repo update
             helm dependency update "$CHART_DIR"
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
-            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${RELEASE_NAME}_manifest_${suffix}.yaml${BLANK}"
-            helm template "$CHART_NAME" "$CHART_DIR" > "${suffix}/${CHART_NAME}_${RELEASE_NAME}_manifest_${suffix}.yaml"
+            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${CHART_DIR}_manifest_${suffix}.yaml${BLANK}"
+            helm template "$CHART_NAME" "$CHART_DIR" > "${suffix}/${CHART_NAME}_${CHART_DIR}_manifest_${suffix}.yaml"
           }
 
           for file in ${ALL_CHANGED_FILES}
@@ -98,8 +98,8 @@ jobs:
         id: dyff-helm
         uses: ixxeL-DevOps/gha-templates/.github/actions/dyff@main
         with:
-          source: source/*_manifest_main.yaml
-          target: target/*_manifest_pr.yaml
+          source: main/*_manifest_main.yaml
+          target: pr/*_manifest_pr.yaml
 
       - name: Comment on PR for helm dyff
         uses: actions/github-script@v7
