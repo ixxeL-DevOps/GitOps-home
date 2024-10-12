@@ -36,6 +36,7 @@ jobs:
         id: gen-pr-chart
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          VALUES_FILE: values-full.yaml
         run: |
           RED="\033[1;31m"
           GREEN="\033[1;32m"
@@ -77,9 +78,12 @@ jobs:
             
             helm repo update
             helm dependency update "$CHART_DIR"
+            if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]; then
+              VALUES_FILE="values.yaml"
+            fi
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
-            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml${BLANK}"
-            helm template "$CHART_NAME" "$CHART_DIR" > "${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml"
+            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} with values file ${GREEN}${CHART_DIR}/${VALUES_FILE}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml${BLANK}"
+            helm template "$CHART_NAME" "$CHART_DIR" -f ${CHART_DIR}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml"
           }
 
           for file in ${ALL_CHANGED_FILES}
