@@ -80,6 +80,7 @@ jobs:
               VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
               if yq e 'has(".spec.source.helm.valuesObject")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                 yq e '.spec.source.helm.valuesObject' $file > $VALUES_FILE
               fi
             elif [ "$kind" = "ApplicationSet" ]
@@ -95,15 +96,17 @@ jobs:
               VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
               if yq e 'has(".spec.template.spec.source.helm.valuesObject")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                 yq e '.spec.template.spec.source.helm.valuesObject' $file > $VALUES_FILE
               fi
             fi
-            helm repo add "$APP_CHART_NAME" "$APP_CHART_REPO"
+            helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
             helm repo update
+            APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
 
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
             echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${APP_CHART_NAME}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
-            helm template "${APP_CHART_NAME}" "${REPO_NAME}/${APP_CHART_NAME}" --version ${APP_CHART_VERSION} -f ${VALUES_FILE} > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
+            helm template "${APP_CHART_RELEASE}" "${APP_CHART_NAME}/${APP_CHART_NAME}" --version ${APP_CHART_VERSION} -f ${VALUES_FILE} > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
           }
 
           for file in ${ALL_CHANGED_FILES}
