@@ -20,8 +20,8 @@ spec:
         name: '{{env}}'
         namespace: '{{namespace}}'
       source:
-        repoURL: https://ansible.github.io/awx-operator/
-        targetRevision: '*'
+        repoURL: https://ansible-community.github.io/awx-operator-helm/
+        targetRevision: 2.19.1
         chart: awx-operator
         helm:
           releaseName: 'awx-operator-{{env}}'
