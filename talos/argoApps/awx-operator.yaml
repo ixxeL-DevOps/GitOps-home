@@ -30,7 +30,7 @@ spec:
               enabled: true
               name: awx
               spec:
-                postgres_storage_class: nfs-csi-special-mounts
+                postgres_storage_class: nfs-csi-delete
                 admin_user: admin
                 ingress_type: ingress
                 ingress_class_name: cilium
