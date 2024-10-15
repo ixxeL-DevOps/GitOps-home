@@ -30,6 +30,10 @@ spec:
               enabled: true
               name: awx
               spec:
+                postgres_data_volume_init: true
+                postgres_init_container_commands: |
+                  chown 26:0 /var/lib/pgsql/data
+                  chmod 700 /var/lib/pgsql/data
                 postgres_storage_class: nfs-csi-delete
                 admin_user: admin
                 ingress_type: ingress
