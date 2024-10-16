@@ -36,8 +36,8 @@ spec:
 
     exporters:
       debug:
-      prometheus:
-        endpoint: 0.0.0.0:8889
+      otlp:
+        endpoint: 0.0.0.0:4319
 
     processors:
       batch:
