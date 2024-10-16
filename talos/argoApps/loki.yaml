@@ -1,0 +1,61 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: loki
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: loki
+  template:
+    metadata:
+      name: 'loki-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-monitoring
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      source:
+        repoURL: https://grafana.github.io/helm-charts
+        targetRevision: 6.16.0
+        chart: loki
+        helm:
+          releaseName: 'loki-{{env}}'
+          valuesObject:
+            fullnameOverride: 'loki-{{env}}'
+            deploymentMode: SingleBinary
+            loki:
+              auth_enabled: false
+            gateway:
+              enabled: false
+            ingress:
+              enabled: true
+              annotations:
+                cert-manager.io/cluster-issuer: vault-issuer
+                cert-manager.io/common-name: loki.k8s-app.fredcorp.com
+              ingressClassName: cilium
+              hosts:
+                - loki.k8s-app.fredcorp.com
+              tls:
+                - hosts:
+                    - loki.k8s-app.fredcorp.com
+                  secretName: loki-tls-cert
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+        managedNamespaceMetadata:
+          labels:
+            pod-security.kubernetes.io/enforce: privileged

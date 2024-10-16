@@ -29,10 +29,10 @@ spec:
       prometheus:
         config:
           scrape_configs:
-            - job_name: otel-collector
-              scrape_interval: 5s
-              static_configs:
-                - targets: [localhost:8888]
+          - job_name: otel-collector
+            scrape_interval: 5s
+            static_configs:
+            - targets: [0.0.0.0:8888]
 
     exporters:
       debug:
@@ -40,22 +40,23 @@ spec:
         endpoint: 0.0.0.0:4319
 
     processors:
-      batch:
-        timeout: 1s
       memory_limiter:
-        limit_mib: 512
-        spike_limit_mib: 128
         check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 15
+      batch:
+        send_batch_size: 10000
+        timeout: 10s
 
     service:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [batch]
+          processors: [memory_limiter, batch]
           exporters: [otlp]
         traces:
           receivers: [otlp]
-          processors: [batch, memory_limiter]
+          processors: [memory_limiter, batch]
           exporters: [otlp]
 
 
