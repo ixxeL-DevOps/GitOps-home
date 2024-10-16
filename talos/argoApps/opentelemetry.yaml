@@ -27,6 +27,9 @@ spec:
           releaseName: 'otel-operator-{{env}}'
           valuesObject:
             fullnameOverride: otel-operator-{{env}}
+            manager:
+              collectorImage:
+                repository: otel/opentelemetry-collector-contrib
       syncPolicy:
         automated:
           prune: true
