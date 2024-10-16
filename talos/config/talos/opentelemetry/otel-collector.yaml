@@ -47,3 +47,15 @@ spec:
         spike_limit_mib: 128
         check_interval: 1s
 
+    service:
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [otlp]
+        traces:
+          receivers: [otlp]
+          processors: [batch, memory_limiter]
+          exporters: [otlp]
+
+
