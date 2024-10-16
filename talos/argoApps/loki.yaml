@@ -27,11 +27,15 @@ spec:
           releaseName: 'loki-{{env}}'
           valuesObject:
             fullnameOverride: 'loki-{{env}}'
-            deploymentMode: SingleBinary
+            # deploymentMode: SingleBinary
             loki:
               auth_enabled: false
+              commonConfig:
+                replication_factor: 1
               storage:
                 type: filesystem
+            singleBinary:
+              replicas: 1
             gateway:
               enabled: false
             ingress:
