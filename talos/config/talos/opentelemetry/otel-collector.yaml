@@ -23,17 +23,20 @@ spec:
       otlp:
         protocols:
           grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
 
     exporters:
-      logging:
-        loglevel: debug
+      debug:
       prometheus:
         endpoint: ":9090"
 
-    service:
-      pipelines:
-        metrics:
-          receivers: [otlp]
-          processors: []
-          exporters: [prometheus, logging]
+    processors:
+      batch:
+        timeout: 1s
+      memory_limiter:
+        limit_mib: 512
+        spike_limit_mib: 128
+        check_interval: 1s
 
