@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: opentelemetry
+  name: otel-operator
   namespace: argocd
 spec:
   generators:
@@ -12,7 +12,7 @@ spec:
         namespace: opentelemetry
   template:
     metadata:
-      name: 'opentelemetry-{{env}}'
+      name: 'otel-operator-{{env}}'
       finalizers: []
     spec:
       project: infra-monitoring
@@ -24,9 +24,9 @@ spec:
         targetRevision: 0.71.0
         chart: opentelemetry-operator
         helm:
-          releaseName: 'opentelemetry-{{env}}'
+          releaseName: 'otel-operator-{{env}}'
           valuesObject:
-            fullnameOverride: opentelemetry-{{env}}
+            fullnameOverride: otel-operator-{{env}}
       syncPolicy:
         automated:
           prune: true
