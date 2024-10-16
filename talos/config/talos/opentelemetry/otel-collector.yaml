@@ -5,7 +5,7 @@ metadata:
   name: otel
   namespace: opentelemetry
 spec:
-  mode: deployment
+  mode: daemonset
   config: |
     presets:
       clusterMetrics:

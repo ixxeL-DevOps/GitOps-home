@@ -29,7 +29,7 @@ spec:
             fullnameOverride: otel-operator-{{env}}
             manager:
               collectorImage:
-                repository: otel/opentelemetry-collector-contrib
+                repository: otel/opentelemetry-collector-k8s
       syncPolicy:
         automated:
           prune: true
