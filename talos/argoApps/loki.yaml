@@ -27,7 +27,7 @@ spec:
           releaseName: 'loki-{{env}}'
           valuesObject:
             fullnameOverride: 'loki-{{env}}'
-            deploymentMode: SingleBinary
+            deploymentMode: SingleBinary<->SimpleScalable
             loki:
               auth_enabled: false
               commonConfig:
