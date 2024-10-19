@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
-        targetRevision: 0.71.0
+        targetRevision: 0.71.1
         chart: opentelemetry-operator
         helm:
           releaseName: 'otel-operator-{{env}}'
