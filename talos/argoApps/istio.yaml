@@ -1,0 +1,44 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: istio
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: talos
+        namespace: istio-system
+  template:
+    metadata:
+      name: 'istio-{{env}}'
+      finalizers: []
+    spec:
+      project: infra-network
+      destination:
+        name: '{{env}}'
+        namespace: '{{namespace}}'
+      sources:
+      - repoURL: https://istio-release.storage.googleapis.com/charts
+        targetRevision: 1.23.3
+        chart: base
+        helm:
+          releaseName: 'istio-base-{{env}}'
+          valuesObject:
+            defaultRevision: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+        managedNamespaceMetadata:
+          labels:
+            pod-security.kubernetes.io/enforce: privileged
