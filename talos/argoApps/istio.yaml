@@ -32,6 +32,11 @@ spec:
         chart: istiod
         helm:
           releaseName: 'istio-istiod-{{env}}'
+      - repoURL: https://istio-release.storage.googleapis.com/charts
+        targetRevision: 1.23.3
+        chart: gateway
+        helm:
+          releaseName: 'istio-gateway-{{env}}'
       syncPolicy:
         automated:
           prune: true
