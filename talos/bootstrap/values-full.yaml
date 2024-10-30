@@ -899,206 +899,206 @@ argocd-apps:
   #       - web:
   #           url: https://github.com/argoproj-labs/rollout-extension/releases/download/v0.3.4/extension.tar
   applications:
-  - name: argocd
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    project: argocd
-    source:
-      helm:
-        valueFiles:
-          - values-full.yaml
-        version: v3
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
-      targetRevision: main
-      path: talos/bootstrap
-    destination:
-      server: https://kubernetes.default.svc
+    argocd:
       namespace: argocd
-    syncPolicy:
-      automated:
-        prune: false
-        selfHeal: false
-      syncOptions:
-        - Validate=true
-        - PruneLast=false
-        - RespectIgnoreDifferences=true
-        - Replace=false
-        - ApplyOutOfSyncOnly=true
-    ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-      - /spec/replicas
-    info:
-    - name: url
-      value: https://argoproj.github.io/
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      project: argocd
+      source:
+        helm:
+          valueFiles:
+            - values-full.yaml
+          version: v3
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: main
+        path: talos/bootstrap
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/replicas
+      info:
+      - name: url
+        value: https://argoproj.github.io/
 
-  - name: argocd-apps
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    project: argocd
-    source:
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
-      targetRevision: main
-      path: talos/argoApps
-      directory:
-        recurse: true
-    destination:
-      server: https://kubernetes.default.svc
+    argocd-apps:
       namespace: argocd
-    syncPolicy:
-      automated:
-        prune: true
-        selfHeal: true
-      syncOptions:
-        - Validate=true
-        - PruneLast=false
-        - RespectIgnoreDifferences=true
-        - Replace=false
-        - ApplyOutOfSyncOnly=true
-        - CreateNamespace=true
-        - ServerSideApply=true
-    ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-      - /spec/replicas
-    info:
-    - name: url
-      value: https://argoproj.github.io/
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      project: argocd
+      source:
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: main
+        path: talos/argoApps
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/replicas
+      info:
+      - name: url
+        value: https://argoproj.github.io/
 
-  - name: argocd-projects
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    project: argocd
-    source:
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
-      targetRevision: main
-      path: talos/argoProjects
-      directory:
-        recurse: true
-    destination:
-      server: https://kubernetes.default.svc
+    argocd-projects:
       namespace: argocd
-    syncPolicy:
-      automated:
-        prune: true
-        selfHeal: true
-      syncOptions:
-        - Validate=true
-        - PruneLast=false
-        - RespectIgnoreDifferences=true
-        - Replace=false
-        - ApplyOutOfSyncOnly=true
-        - CreateNamespace=true
-        - ServerSideApply=true
-    ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-      - /spec/replicas
-    info:
-    - name: url
-      value: https://argoproj.github.io/
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      project: argocd
+      source:
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: main
+        path: talos/argoProjects
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/replicas
+      info:
+      - name: url
+        value: https://argoproj.github.io/
 
-  - name: argocd-repos
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    project: argocd
-    source:
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
-      targetRevision: main
-      path: talos/argoRepositories
-      directory:
-        recurse: true
-    destination:
-      server: https://kubernetes.default.svc
+    argocd-repos:
       namespace: argocd
-    syncPolicy:
-      automated:
-        prune: true
-        selfHeal: true
-      syncOptions:
-        - Validate=true
-        - PruneLast=false
-        - RespectIgnoreDifferences=true
-        - Replace=false
-        - ApplyOutOfSyncOnly=true
-        - CreateNamespace=true
-        - ServerSideApply=true
-    ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-      - /spec/replicas
-    info:
-    - name: url
-      value: https://argoproj.github.io/
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      project: argocd
+      source:
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: main
+        path: talos/argoRepositories
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/replicas
+      info:
+      - name: url
+        value: https://argoproj.github.io/
 
-  - name: argocd-clusters
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    project: argocd
-    source:
-      repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
-      targetRevision: main
-      path: talos/argoClusters
-      directory:
-        recurse: true
-    destination:
-      server: https://kubernetes.default.svc
+    argocd-clusters:
       namespace: argocd
-    syncPolicy:
-      automated:
-        prune: true
-        selfHeal: true
-      syncOptions:
-        - Validate=true
-        - PruneLast=false
-        - RespectIgnoreDifferences=true
-        - Replace=false
-        - ApplyOutOfSyncOnly=true
-        - CreateNamespace=true
-        - ServerSideApply=true
-    ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-      - /spec/replicas
-    info:
-    - name: url
-      value: https://argoproj.github.io/
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      project: argocd
+      source:
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: main
+        path: talos/argoClusters
+        directory:
+          recurse: true
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: argocd
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - PruneLast=false
+          - RespectIgnoreDifferences=true
+          - Replace=false
+          - ApplyOutOfSyncOnly=true
+          - CreateNamespace=true
+          - ServerSideApply=true
+      ignoreDifferences:
+      - group: apps
+        kind: Deployment
+        jsonPointers:
+        - /spec/replicas
+      info:
+      - name: url
+        value: https://argoproj.github.io/
 
 
 
   projects:
-  - name: argocd
-    namespace: argocd
-    additionalLabels: {}
-    additionalAnnotations: {}
-    finalizers: []
-    description: Argocd Project
-    sourceRepos:
-    - '*'
-    destinations:
-    - namespace: '*'
-      server: https://kubernetes.default.svc
-    clusterResourceWhitelist:
-    - group: '*'
-      kind: '*'
-    namespaceResourceWhitelist:
-    - group: '*'
-      kind: '*'
+    argocd:
+      namespace: argocd
+      additionalLabels: {}
+      additionalAnnotations: {}
+      finalizers: []
+      description: Argocd Project
+      sourceRepos:
+      - '*'
+      destinations:
+      - namespace: '*'
+        server: https://kubernetes.default.svc
+      clusterResourceWhitelist:
+      - group: '*'
+        kind: '*'
+      namespaceResourceWhitelist:
+      - group: '*'
+        kind: '*'
 
 argocd-image-updater:
   image:
