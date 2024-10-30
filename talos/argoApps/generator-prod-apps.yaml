@@ -28,7 +28,7 @@ spec:
         argocd-image-updater.argoproj.io/app.update-strategy: semver
         # argocd-image-updater.argoproj.io/git-branch: main
         # argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}-{{`{{ .OldTag }}`}}-{{`{{ .NewTag }}`}}{{`{{end}}`}}'
-        argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{`{{ .AppName }}`}}/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}{{`{{end}}`}}'
+        argocd-image-updater.argoproj.io/git-branch: 'main:auto/{{ index .path.segments 1 }}-{{ index .path.segments 3 }}-{{ .path.basenameNormalized }}/{{`{{ range .Images }}`}}{{`{{ .Name }}`}}{{`{{end}}`}}'
         argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
         argocd-image-updater.argoproj.io/app.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git
