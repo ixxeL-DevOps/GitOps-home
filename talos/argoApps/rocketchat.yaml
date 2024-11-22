@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://rocketchat.github.io/helm-charts
-        targetRevision: 6.21.1
+        targetRevision: 6.23.2
         chart: rocketchat
         helm:
           releaseName: 'rocketchat-{{env}}'
