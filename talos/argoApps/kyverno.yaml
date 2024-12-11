@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://kyverno.github.io/kyverno/
-        targetRevision: 3.2.7
+        targetRevision: 3.3.4
         chart: kyverno
         helm:
           releaseName: 'kyverno-{{env}}'
