@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       sources:
       - repoURL: https://istio-release.storage.googleapis.com/charts
-        targetRevision: 1.23.3
+        targetRevision: 1.24.2
         chart: base
         helm:
           releaseName: 'istio-base-{{env}}'
