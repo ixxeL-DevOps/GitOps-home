@@ -27,7 +27,7 @@ spec:
         namespace: '{{.values.namespace}}'
       source:
         repoURL: https://charts.loft.sh
-        targetRevision: 0.20.4
+        targetRevision: 0.22.3
         chart: vcluster
         helm:
           releaseName: '{{.values.release}}'
