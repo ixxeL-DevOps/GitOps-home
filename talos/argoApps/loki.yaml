@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://grafana.github.io/helm-charts
-        targetRevision: 6.16.0
+        targetRevision: 6.25.0
         chart: loki
         helm:
           releaseName: 'loki-{{env}}'
