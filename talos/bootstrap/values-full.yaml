@@ -737,6 +737,7 @@ argo-cd:
             - url: http://argocd-metrics-server.argocd.svc.cluster.local:9003
       accounts.fred: "apiKey, login"
       accounts.pipeline: "apiKey"
+      accounts.rbac: "apiKey, login"
       # -- Argo CD's externally facing base URL (optional). Required when configuring SSO
       url: "https://argocd.k8s-app.fredcorp.com"
       application.instanceLabelKey: argocd.argoproj.io/instance
