@@ -774,10 +774,12 @@ argo-cd:
         p, role:test, applicationsets, sync, -*, allow
         p, role:test, applicationsets, update, *, deny
         p, role:test, applicationsets, delete, *, deny
+        p, role:test, applicationsets, delete/*, *, allow
         p, role:test, applications, get, *, allow
         p, role:test, applications, sync, *, allow
         p, role:test, applications, update, *, deny
         p, role:test, applications, delete, *, deny
+        p, role:test, applications, delete/*, *, allow
         p, role:test, applications, action/*, *, allow
         p, role:test, repositories, create, *, allow
         p, role:test, repositories, get, *, allow
