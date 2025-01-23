@@ -764,10 +764,35 @@ argo-cd:
     rbac:
       create: true
       policy.csv: |
+        g, rbac, role:test
         g, fred, role:admin
         g, pipeline, role:admin
         p, role:readonly, extensions, invoke, metrics, allow
         p, role:admin, extensions, invoke, metrics, allow
+        p, role:test, applicationsets, get, *, allow
+        p, role:test, applicationsets, sync, -*, allow
+        p, role:test, applicationsets, update, *, deny
+        p, role:test, applicationsets, delete, *, deny
+        p, role:test, applications, get, *, allow
+        p, role:test, applications, sync, *, allow
+        p, role:test, applications, update, *, deny
+        p, role:test, applications, delete, *, deny
+        p, role:test, applications, action/*, *, allow
+        p, role:test, repositories, create, *, allow
+        p, role:test, repositories, get, *, allow
+        p, role:test, repositories, update, *, allow
+        p, role:test, repositories, delete, *, deny
+        p, role:test, projects, get, *, allow
+        p, role:test, projects, update, *, allow
+        p, role:test, projects, create, *, deny
+        p, role:test, projects, delete, *, deny
+        p, role:test, clusters, get, *, allow
+        p, role:test, clusters, delete, *, deny
+        p, role:test, clusters, update, *, deny
+        p, role:test, clusters, create, *, deny
+        p, role:test, logs, get, *, allow
+        p, role:test, exec, create, *, allow
+        
       # See : https://github.com/argoproj-labs/argocd-extension-metrics#install-ui-extension
     params:
       otlp.address: ''
