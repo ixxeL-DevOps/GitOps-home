@@ -49,7 +49,7 @@ argo-cd:
         cert-manager.io/common-name: argocd.k8s-app.fredcorp.com
         # traefik.ingress.kubernetes.io/router.tls: true
       labels: {}
-      ingressClassName: "cilium"
+      ingressClassName: "nginx"
       hostname: argocd.k8s-app.fredcorp.com
       # hosts:
       #   - argocd.k8s-app.fredcorp.com
