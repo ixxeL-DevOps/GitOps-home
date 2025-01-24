@@ -33,11 +33,9 @@ spec:
               image:
                 registry: quay.io
                 repository: argoproj/argo-rollouts
-                tag: "v1.7.0-rc1"
               trafficRouterPlugins:
-                trafficRouterPlugins: |-
-                  - name: "argoproj-labs/gatewayAPI"
-                    location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.2.0/gateway-api-plugin-linux-amd64"
+                - name: "argoproj-labs/gatewayAPI"
+                  location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.5.0/gatewayapi-plugin-linux-amd64"
               metrics:
                 enabled: true
                 serviceMonitor:
