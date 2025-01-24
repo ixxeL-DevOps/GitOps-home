@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-        targetRevision: v4.9.0
+        targetRevision: v4.10.0
         chart: csi-driver-nfs
         helm:
           releaseName: 'csi-driver-nfs-{{env}}'
