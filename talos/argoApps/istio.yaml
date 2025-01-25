@@ -33,7 +33,7 @@ spec:
         helm:
           releaseName: 'istio-istiod-{{env}}'
       - repoURL: https://istio-release.storage.googleapis.com/charts
-        targetRevision: 1.23.3
+        targetRevision: 1.24.2
         chart: gateway
         helm:
           releaseName: 'istio-gateway-{{env}}'
