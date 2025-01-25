@@ -1,5 +1,4 @@
 argo-rollouts:
-  fullnameOverride: argo-rollouts-talos
   installCRDs: true
   keepCRDs: true
   controller:
@@ -16,7 +15,7 @@ argo-rollouts:
         additionalLabels:
           release: prom-stack-talos
   dashboard:
-    enabled: true
+    enabled: false
     readonly: false
     ingress:
       enabled: false
