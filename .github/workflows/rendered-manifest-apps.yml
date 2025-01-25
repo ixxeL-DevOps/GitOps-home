@@ -68,7 +68,6 @@ jobs:
             mkdir -p "$suffix"
 
             local kind=$(detect_kind "$file")
-            echo -e "${YELLOW}[ EXECUTING ] > Processing template for ${PURPLE}${suffix}${CYAN} branch${BLANK}"
             if [ "$kind" = "Application" ]
             then
               if [ $(yq e '.spec | has("source")' "$file") == 'true' ]
@@ -105,7 +104,6 @@ jobs:
                 done
               fi
             fi
-            echo -e "${CYAN}[ INFO ] > Templating done for ${PURPLE}${suffix}${CYAN} branch${BLANK}"
           }
 
           generate_single_source() {
