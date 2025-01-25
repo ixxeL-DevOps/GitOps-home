@@ -23,7 +23,7 @@ spec:
           repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
           revision: '{{ .branch }}'
           directories:
-            - path: 'talos/applications/argo-rollouts/{{ .branch | replace "deploy/" "" }}/*'
+            - path: 'talos/applications/argo-rollouts/{{ .branch | replace "deploy/" "" }}'
               exclude: false
   template:
     metadata:
