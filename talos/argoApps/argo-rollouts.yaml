@@ -37,6 +37,8 @@ spec:
         repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
         targetRevision: '{{ .branch }}'
         path: '{{.path.path}}'
+        directory:
+          recurse: true
       syncPolicy:
         automated:
           prune: true
