@@ -74,9 +74,9 @@ jobs:
               DEP_REPO=$(echo "$dep" | jq -r '.repository')
               echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
               helm repo add "$DEP_NAME" "$DEP_REPO"
+              helm repo update "$DEP_NAME"
             done
             
-            helm repo update
             helm dependency update "$CHART_DIR"
             if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]; then
               VALUES_FILE="values.yaml"

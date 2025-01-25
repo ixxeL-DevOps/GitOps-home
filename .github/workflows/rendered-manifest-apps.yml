@@ -108,13 +108,29 @@ jobs:
                 fi
               fi
             fi
-            helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
-            helm repo update
+
+            if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
+              echo -e "${CYAN}[ INFO ] > Detected standard Helm repository: ${PURPLE}${APP_CHART_REPO}${BLANK}"
+              helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
+              helm repo update "${APP_CHART_NAME}"
+            else
+              echo -e "${CYAN}[ INFO ] > Detected OCI registry: ${PURPLE}${APP_CHART_REPO}${BLANK}"
+              OCI_CHART="${APP_CHART_REPO}/${APP_CHART_NAME}"
+            fi
+
             APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
 
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
-            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${APP_CHART_NAME}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
-            helm template "${APP_CHART_RELEASE}" "${APP_CHART_NAME}/${APP_CHART_NAME}" --version ${APP_CHART_VERSION} -f ${VALUES_FILE} > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
+
+            if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
+              echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${APP_CHART_NAME}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
+              helm template "${APP_CHART_RELEASE}" "${APP_CHART_NAME}/${APP_CHART_NAME}" --version "${APP_CHART_VERSION}" -f "${VALUES_FILE}" > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
+            else
+              echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${OCI_CHART}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
+              helm pull "oci://${OCI_CHART}" --version "${APP_CHART_VERSION}" --untar --untardir "${suffix}/oci_temp"
+              helm template "${APP_CHART_RELEASE}" "${suffix}/oci_temp/${APP_CHART_NAME}" -f "${VALUES_FILE}" > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
+              rm -rf "${suffix}/oci_temp"
+            fi
           }
 
           for file in ${ALL_CHANGED_FILES}
