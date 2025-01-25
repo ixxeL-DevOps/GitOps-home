@@ -161,15 +161,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const maxCommentLength = 64000;  # Adjust this value as needed
-            const dyffResults = process.env.DYFF_RESULTS.substring(0, maxCommentLength);
+            const fs = require('fs');
+            const tmpFile = '/tmp/dyff_results.txt';
+            fs.writeFileSync(tmpFile, process.env.DYFF_RESULTS);
+            
             const output = `
-              #### Dyff helm: \`chart helm dyff\`
-              \`\`\`py
-              ${dyffResults}
-              \`\`\`
+            #### Dyff helm: \`chart helm dyff\`
+            \`\`\`py
+            ${fs.readFileSync(tmpFile, 'utf8')}
+            \`\`\`
             `;
-          
+      
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
