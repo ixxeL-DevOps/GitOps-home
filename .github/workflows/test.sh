@@ -1,8 +1,8 @@
-file="talos/argoApps/cert-manager.yaml"
-if [ $(yq e 'has(".spec.template.spec.sources[*]")' "$file") == 'true' ]
-then
-    echo -e "[ INFO ] > Application has single source"
-else
-    echo "multiple"
 
-fi
+
+source_count="2"
+for (( i=0; i<$source_count; i++ ))
+do
+    echo "${sources_count}"
+    echo $i
+done
