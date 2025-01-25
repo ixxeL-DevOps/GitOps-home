@@ -21,43 +21,13 @@ jobs:
           apps=$(git show --name-only --pretty=format: HEAD | xargs -n1 dirname | sort -u | uniq | awk -F'/' '{if (NF > 1) print $(NF-1)}')
           echo "apps=$apps" >> $GITHUB_OUTPUT
 
-      - name: Generate Helm Templates
-        env:
-          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
-        run: |
-            helm dep update "talos/applications/$CHANGED_APPS/talos"
-            helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" > "$CHANGED_APPS-template.yaml"
-  
-      - name: Push to Deployment Branch
-        env:
-          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
-          GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-          if ! git ls-remote --heads origin "deploy/talos" | grep "refs/heads/deploy/talos"; then
-            echo "Branch deploy/talos does not exist. Creating it."
-            git checkout -b "deploy/talos"
-            git push --set-upstream origin "deploy/talos"
-          else
-            echo "Branch deploy/talos exists. Checking it out."
-            git checkout "deploy/talos"
-          fi
-
-          cp "$CHANGED_APPS-template.yaml" "talos/applications/$CHANGED_APPS/talos"
-          
-          git add "talos/applications/$CHANGED_APPS/talos/$CHANGED_APPS-template.yaml"
-          git commit -m "Update $CHANGED_APPS template for talos environment"
-          git push
-
       # - name: Generate Helm Templates
       #   env:
       #     CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
       #   run: |
       #       helm dep update "talos/applications/$CHANGED_APPS/talos"
-      #       helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" --output-dir $CHANGED_APPS/render
-
+      #       helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" > "$CHANGED_APPS-template.yaml"
+  
       # - name: Push to Deployment Branch
       #   env:
       #     CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
@@ -75,9 +45,42 @@ jobs:
       #       git checkout "deploy/talos"
       #     fi
 
-      #     cp $CHANGED_APPS/render/**/*.yaml talos/applications/$CHANGED_APPS/talos
-
-      #     git add "talos/applications/$CHANGED_APPS/talos/*.yaml"
+      #     cp "$CHANGED_APPS-template.yaml" "talos/applications/$CHANGED_APPS/talos"
+          
+      #     git add "talos/applications/$CHANGED_APPS/talos/$CHANGED_APPS-template.yaml"
       #     git commit -m "Update $CHANGED_APPS template for talos environment"
       #     git push
+
+      - name: Generate Helm Templates
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+        run: |
+            helm dep update "talos/applications/$CHANGED_APPS/talos"
+            helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" --output-dir $CHANGED_APPS
+
+      - name: Push to Deployment Branch
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+          GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          if ! git ls-remote --heads origin "deploy/talos" | grep "refs/heads/deploy/talos"; then
+            echo "Branch deploy/talos does not exist. Creating it."
+            git checkout -b "deploy/talos"
+            git push --set-upstream origin "deploy/talos"
+          else
+            echo "Branch deploy/talos exists. Checking it out."
+            git checkout "deploy/talos"
+          fi
+
+          pwd
+          ls -la
+          ls -la $CHANGED_APPS
+          mv $CHANGED_APPS/**/*.yaml talos/applications/$CHANGED_APPS/talos
+
+          git add "talos/applications/$CHANGED_APPS/talos/*.yaml"
+          git commit -m "Update $CHANGED_APPS template for talos environment"
+          git push
             
