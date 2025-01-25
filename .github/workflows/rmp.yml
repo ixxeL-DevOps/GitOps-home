@@ -25,6 +25,7 @@ jobs:
         env:
           CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
         run: |
+            helm dep update "talos/applications/$CHANGED_APPS/talos"
             helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" > "$CHANGED_APPS-template.yaml"
 
       - name: Push to Deployment Branch
