@@ -7,19 +7,27 @@ metadata:
 spec:
   goTemplate: true
   generators:
-    - pullRequest:
-        github:
-          owner: ixxeL-DevOps
-          repo: GitOps-home
-          tokenRef:
-            key: github_token
-            secretName: github-creds
-          labels:
-          - deploy
-          - gitops
+  - matrix:
+      generators:
+      - pullRequest:
+          github:
+            owner: ixxeL-DevOps
+            repo: GitOps-home
+            tokenRef:
+              key: github_token
+              secretName: github-creds
+            labels:
+            - deploy
+            - gitops
+      - git:
+          repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+          revision: '{{ .branch }}'
+          directories:
+            - path: 'talos/applications/argo-rollouts/*'
+              exclude: false
   template:
     metadata:
-      name: 'argo-rollouts-{{ .path.basenameNormalized }}'
+      name: 'argo-rollouts'
     spec:
       project: infra-pipelines
       destination:
@@ -28,7 +36,7 @@ spec:
       source:
         repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
         targetRevision: '{{ .branch }}'
-        path: 'manifests' 
+        path: '{{.path.path}}'
       syncPolicy:
         automated:
           prune: true
