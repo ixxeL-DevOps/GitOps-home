@@ -27,11 +27,11 @@ spec:
               exclude: false
   template:
     metadata:
-      name: 'argo-rollouts-{{ index .path.segments 1 }}'
+      name: 'argo-rollouts-{{ index .path.segments 3 }}'
     spec:
       project: infra-pipelines
       destination:
-        name: '{{ index .path.segments 1 }}'
+        name: '{{ index .path.segments 3 }}'
         namespace: argo-rollouts
       source:
         repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
