@@ -5,61 +5,30 @@ metadata:
   name: argo-rollouts
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: argocd
+    - pullRequest:
+        github:
+          owner: ixxeL-DevOps
+          repo: GitOps-home
+          tokenRef:
+            key: github_token
+            secretName: github-creds
+          labels:
+          - deploy
+          - gitops
   template:
     metadata:
-      name: 'argo-rollouts-{{env}}'
-      finalizers: []
+      name: 'argo-rollouts-{{ .path.basenameNormalized }}'
     spec:
       project: infra-pipelines
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: argo-rollouts
       source:
-        repoURL: https://argoproj.github.io/argo-helm
-        targetRevision: 2.38.2
-        chart: argo-rollouts
-        helm:
-          releaseName: 'argo-rollouts-{{env}}'
-          valuesObject:
-            fullnameOverride: argo-rollouts-{{env}}
-            installCRDs: true
-            keepCRDs: true
-            controller:
-              image:
-                registry: quay.io
-                repository: argoproj/argo-rollouts
-              trafficRouterPlugins:
-                - name: "argoproj-labs/gatewayAPI" 
-                  location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.5.0/gatewayapi-plugin-linux-amd64"
-              metrics:
-                enabled: true
-                serviceMonitor:
-                  enabled: true
-                  additionalLabels:
-                    release: prom-stack-{{env}}
-            dashboard:
-              enabled: true
-              readonly: false
-              ingress:
-                enabled: true
-                annotations:
-                  cert-manager.io/cluster-issuer: vault-issuer
-                  cert-manager.io/common-name: argo-rollouts.k8s-app.fredcorp.com
-                ingressClassName: "cilium"
-                hosts: 
-                  - argo-rollouts.k8s-app.fredcorp.com
-                paths:
-                  - /
-                pathType: Prefix
-                tls:
-                  - secretName: argorollouts-tls-cert
-                    hosts:
-                      - argo-rollouts.k8s-app.fredcorp.com
+        repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
+        targetRevision: '{{ .branch }}'
+        path: 'manifests' 
       syncPolicy:
         automated:
           prune: true
@@ -72,3 +41,79 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
+
+
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: argo-rollouts
+#   namespace: argocd
+# spec:
+#   generators:
+#   - list:
+#       elements:
+#       - env: talos
+#         namespace: argocd
+#   template:
+#     metadata:
+#       name: 'argo-rollouts-{{env}}'
+#       finalizers: []
+#     spec:
+#       project: infra-pipelines
+#       destination:
+#         name: '{{env}}'
+#         namespace: '{{namespace}}'
+#       source:
+#         repoURL: https://argoproj.github.io/argo-helm
+#         targetRevision: 2.38.2
+#         chart: argo-rollouts
+#         helm:
+#           releaseName: 'argo-rollouts-{{env}}'
+#           valuesObject:
+#             fullnameOverride: argo-rollouts-{{env}}
+#             installCRDs: true
+#             keepCRDs: true
+#             controller:
+#               image:
+#                 registry: quay.io
+#                 repository: argoproj/argo-rollouts
+#               trafficRouterPlugins:
+#                 - name: "argoproj-labs/gatewayAPI" 
+#                   location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.5.0/gatewayapi-plugin-linux-amd64"
+#               metrics:
+#                 enabled: true
+#                 serviceMonitor:
+#                   enabled: true
+#                   additionalLabels:
+#                     release: prom-stack-{{env}}
+#             dashboard:
+#               enabled: true
+#               readonly: false
+#               ingress:
+#                 enabled: true
+#                 annotations:
+#                   cert-manager.io/cluster-issuer: vault-issuer
+#                   cert-manager.io/common-name: argo-rollouts.k8s-app.fredcorp.com
+#                 ingressClassName: "cilium"
+#                 hosts: 
+#                   - argo-rollouts.k8s-app.fredcorp.com
+#                 paths:
+#                   - /
+#                 pathType: Prefix
+#                 tls:
+#                   - secretName: argorollouts-tls-cert
+#                     hosts:
+#                       - argo-rollouts.k8s-app.fredcorp.com
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true
