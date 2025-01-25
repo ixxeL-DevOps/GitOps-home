@@ -72,6 +72,7 @@ jobs:
             if [ "$kind" = "Application" ]; then
               if yq e 'has(".spec.source")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > Application has single source"
                 APP_NAME=$(yq e '.metadata.name' "$file")
                 APP_CHART_REPO=$(yq e '.spec.source.repoURL' "$file")
                 APP_CHART_NAME=$(yq e '.spec.source.chart' "$file")
@@ -89,8 +90,10 @@ jobs:
                 fi
               fi
             
-              if yq e 'has(".spec.sources")' "$file"; then
+              if yq e 'has(".spec.sources")' "$file"
+              then
                 sources_count=$(yq e '.spec.sources | length' "$file")
+                echo -e "${CYAN}[ INFO ] > Application has multiple sources (${sources_count})"
                 for ((i=0; i<sources_count; i++))
                 do
                   APP_NAME=$(yq e '.metadata.name' "$file")
@@ -114,6 +117,7 @@ jobs:
             then
               if yq e 'has(".spec.template.spec.source")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > ApplicationSet has single source"
                 APPSET_NAME=$(yq e '.metadata.name' "$file")
                 APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
                 APP_CHART_REPO=$(yq e '.spec.template.spec.source.repoURL' "$file")
@@ -135,6 +139,7 @@ jobs:
               if yq e 'has(".spec.template.spec.sources")' "$file"
               then
                 sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
+                echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
                 for ((i=0; i<sources_count; i++))
                 do
                   APPSET_NAME=$(yq e '.metadata.name' "$file")
