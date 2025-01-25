@@ -23,15 +23,15 @@ spec:
           repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
           revision: '{{ .branch }}'
           directories:
-            - path: 'talos/applications/argo-rollouts/{{ .branch | replace "deploy/" "" }}/*'
+            - path: 'talos/applications/argo-rollouts/{{ .branch | replace "deploy/" "" }}'
               exclude: false
   template:
     metadata:
-      name: 'argo-rollouts-{{ .path.basenameNormalized }}'
+      name: 'argo-rollouts-{{ index .path.segments 3 }}'
     spec:
       project: infra-pipelines
       destination:
-        name: '{{ .path.basenameNormalized }}'
+        name: '{{ index .path.segments 3 }}'
         namespace: argo-rollouts
       source:
         repoURL: https://github.com/ixxeL-DevOps/GitOps-home.git
