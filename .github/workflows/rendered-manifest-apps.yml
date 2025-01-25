@@ -161,10 +161,17 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `
+            const maxCommentLength = 65536; // Limite pour les commentaires GitHub
+            let output = process.env.DYFF_RESULTS || '';
+
+            if (output.length > maxCommentLength) {
+              output = `${output.substring(0, maxCommentLength - 1000)}\n\n...Output truncated due to size.`;
+            }
+
+            const commentBody = `
             #### Dyff helm: \`chart helm dyff\`
             \`\`\`py
-            ${process.env.DYFF_RESULTS}
+            ${output}
             \`\`\`
             `;
 
@@ -172,5 +179,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: output
-            })
+              body: commentBody
+            });
