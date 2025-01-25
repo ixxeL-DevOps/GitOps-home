@@ -10,8 +10,8 @@ spec:
     name: talos
     namespace: kargo
   source:
-    repoURL: ghcr.io/akuity/kargo-charts
-    targetRevision: 0.8.8
+    repoURL: oci://ghcr.io/akuity/kargo-charts
+    targetRevision: 0.9.0
     chart: kargo
     helm:
       releaseName: kargo

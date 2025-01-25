@@ -109,7 +109,7 @@ jobs:
               fi
             fi
             helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
-            helm repo update
+            helm repo update "${APP_CHART_NAME}"
             APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
 
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
