@@ -70,7 +70,7 @@ jobs:
             local kind=$(detect_kind "$file")
             
             if [ "$kind" = "Application" ]; then
-              if yq e 'has(".spec.source")' "$file"
+              if [ $(yq e 'has(".spec.source")' "$file") == 'true' ]
               then
                 echo -e "${CYAN}[ INFO ] > Application has single source"
                 APP_NAME=$(yq e '.metadata.name' "$file")
@@ -82,7 +82,7 @@ jobs:
                 echo -e "${CYAN}[ INFO ] > Application ${PURPLE}${APP_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
                 
                 VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
-                if yq e 'has(".spec.source.helm.valuesObject")' "$file"
+                if [ $(yq e 'has(".spec.source.helm.valuesObject")' "$file") == 'true' ]
                 then
                   echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                   yq e '.spec.source.helm.valuesObject' "$file" > "$VALUES_FILE"
@@ -90,7 +90,7 @@ jobs:
                 fi
               fi
             
-              if yq e 'has(".spec.sources")' "$file"
+              if [ $(yq e 'has(".spec.sources")' "$file") == 'true' ]
               then
                 sources_count=$(yq e '.spec.sources | length' "$file")
                 echo -e "${CYAN}[ INFO ] > Application has multiple sources (${sources_count})"
@@ -115,7 +115,7 @@ jobs:
             
             elif [ "$kind" = "ApplicationSet" ]
             then
-              if yq e 'has(".spec.template.spec.source")' "$file"
+              if [ $(yq e 'has(".spec.template.spec.source")' "$file") == 'true' ]
               then
                 echo -e "${CYAN}[ INFO ] > ApplicationSet has single source"
                 APPSET_NAME=$(yq e '.metadata.name' "$file")
@@ -128,7 +128,7 @@ jobs:
                 echo -e "${CYAN}[ INFO ] > ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
                 
                 VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
-                if yq e 'has(".spec.template.spec.source.helm.valuesObject")' "$file"
+                if [ $(yq e 'has(".spec.template.spec.source.helm.valuesObject")' "$file") == 'true' ]
                 then
                   echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
                   yq e '.spec.template.spec.source.helm.valuesObject' "$file" > "$VALUES_FILE"
@@ -136,7 +136,7 @@ jobs:
                 fi
               fi
             
-              if yq e 'has(".spec.template.spec.sources")' "$file"
+              if [ $(yq e 'has(".spec.template.spec.sources")' "$file") == 'true' ]
               then
                 sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
                 echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
