@@ -103,7 +103,7 @@ jobs:
                   APP_CHART_VERSION=$(yq e ".spec.sources[$i].targetRevision" "$file")
                   APP_CHART_RELEASE=$(yq e ".spec.sources[$i].helm.releaseName" "$file")
                   
-                  echo -e "${CYAN}[ INFO ] > Multi-source Application ${PURPLE}${APP_NAME}${CYAN} source ${i+1}${BLANK}"
+                  echo -e "${CYAN}[ INFO ] > Multi-source Application ${PURPLE}${APP_NAME}${CYAN} source $((i + 1)) chart ${PURPLE}${APP_CHART_NAME}${BLANK}"
                   
                   VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                   if yq e ".spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1; then
@@ -150,7 +150,7 @@ jobs:
                   APP_CHART_VERSION=$(yq e ".spec.template.spec.sources[$i].targetRevision" "$file")
                   APP_CHART_RELEASE=$(yq e ".spec.template.spec.sources[$i].helm.releaseName" "$file")
                   
-                  echo -e "${CYAN}[ INFO ] > Multi-source ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} source ${i+1}${BLANK}"
+                  echo -e "${CYAN}[ INFO ] > Multi-source ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} source $((i + 1)) chart ${PURPLE}${APP_CHART_NAME}${BLANK}"
                   
                   VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                   if yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1
