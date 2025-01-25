@@ -22,9 +22,8 @@ spec:
       - git:
           repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
           revision: '{{ .branch }}'
-          directories:
-            - path: 'talos/applications/argo-rollouts/*'
-              exclude: false
+          files:
+            - path: 'talos/applications/argo-rollouts/*/Chart.yaml'
   template:
     metadata:
       name: 'argo-rollouts-{{ .path.basenameNormalized }}'
