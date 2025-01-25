@@ -27,7 +27,7 @@ spec:
               exclude: false
   template:
     metadata:
-      name: 'argo-rollouts'
+      name: 'argo-rollouts-{{ .path.basenameNormalized }}'
     spec:
       project: infra-pipelines
       destination:
