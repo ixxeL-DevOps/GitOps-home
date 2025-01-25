@@ -70,14 +70,14 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
-          if ! git ls-remote --heads origin "deploy/$ENVIRONMENT/${GITHUB_SHA::7}" | grep "refs/heads/deploy/$ENVIRONMENT/${GITHUB_SHA::7}"
+          if ! git ls-remote --heads origin "deploy/$ENVIRONMENT/$CHANGED_APPS" | grep "refs/heads/deploy/$ENVIRONMENT/$CHANGED_APPS"
           then
-            echo "Branch deploy/$ENVIRONMENT/${GITHUB_SHA::7} does not exist. Creating it."
-            git checkout -b "deploy/$ENVIRONMENT/${GITHUB_SHA::7}"
-            git push --set-upstream origin "deploy/$ENVIRONMENT/${GITHUB_SHA::7}"
+            echo "Branch deploy/$ENVIRONMENT/$CHANGED_APPS does not exist. Creating it."
+            git checkout -b "deploy/$ENVIRONMENT/$CHANGED_APPS"
+            git push --set-upstream origin "deploy/$ENVIRONMENT/$CHANGED_APPS"
           else
-            echo "Branch deploy/$ENVIRONMENT/${GITHUB_SHA::7} exists. Checking it out."
-            git checkout "deploy/$ENVIRONMENT/${GITHUB_SHA::7}"
+            echo "Branch deploy/$ENVIRONMENT/$CHANGED_APPS exists. Checking it out."
+            git checkout "deploy/$ENVIRONMENT/$CHANGED_APPS"
           fi
 
           rm -rf "talos/applications/$CHANGED_APPS/$ENVIRONMENT/Chart.yaml" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/values.yaml" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/Chart.lock" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/charts"
@@ -87,7 +87,7 @@ jobs:
           git commit -m "Update $CHANGED_APPS template for $ENVIRONMENT environment"
           git push
 
-          echo "pr_branch=deploy/$ENVIRONMENT/${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          echo "pr_branch=deploy/$ENVIRONMENT/$CHANGED_APPS" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         id: cpr
