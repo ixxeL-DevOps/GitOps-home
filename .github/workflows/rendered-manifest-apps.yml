@@ -162,10 +162,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const maxCommentLength = 65536; // Limite pour les commentaires GitHub
-            let output = process.env.DYFF_RESULTS;
+            let output = process.env.DYFF_RESULTS || '';
 
             if (output.length > maxCommentLength) {
-              output = output.substring(0, maxCommentLength - 1000) + '\n\n...Output truncated due to size. See full results in the artifact.';
+              output = `${output.substring(0, maxCommentLength - 1000)}\n\n...Output truncated due to size.`;
             }
 
             const commentBody = `
