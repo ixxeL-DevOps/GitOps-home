@@ -35,10 +35,20 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          
-          git checkout "deploy/talos"
+
+          if ! git ls-remote --heads origin "deploy/talos" | grep "refs/heads/deploy/talos"; then
+            echo "Branch deploy/talos does not exist. Creating it."
+            git checkout -b "deploy/talos"
+            git push --set-upstream origin "deploy/talos"
+          else
+            echo "Branch deploy/talos exists. Checking it out."
+            git checkout "deploy/talos"
+          fi
+
+          # Copy the generated template to the correct location
           cp "$CHANGED_APPS-template.yaml" "talos/applications/$CHANGED_APPS/talos"
-          
+
+          # Commit and push the changes
           git add "talos/applications/$CHANGED_APPS/talos/$CHANGED_APPS-template.yaml"
           git commit -m "Update $CHANGED_APPS template for talos environment"
           git push
