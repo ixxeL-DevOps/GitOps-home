@@ -161,14 +161,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const tmpFile = '/tmp/dyff_results.txt';
-            fs.writeFileSync(tmpFile, process.env.DYFF_RESULTS);
-            
+            const truncatedResults = process.env.DYFF_RESULTS.slice(0, 65000);
             const output = `
             #### Dyff helm: \`chart helm dyff\`
             \`\`\`py
-            ${fs.readFileSync(tmpFile, 'utf8')}
+            ${truncatedResults}
+            ${process.env.DYFF_RESULTS.length > 65000 ? '\n... (results truncated)' : ''}
             \`\`\`
             `;
       
