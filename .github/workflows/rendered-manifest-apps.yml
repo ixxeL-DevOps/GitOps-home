@@ -153,13 +153,6 @@ jobs:
           target: pr/*_manifest_pr.yaml
           exclude-regexp: "spec.template.metadata.annotations.checksum"
 
-      - name: Debug dyff results
-        env:
-          DYFF_RESULTS: ${{ steps.dyff-helm.outputs.DYFF_RESULT }}
-        run: |
-          echo "Dyff results length: ${#DYFF_RESULTS}"
-          echo "$DYFF_RESULTS" | wc -c
-
       - name: Comment on PR for helm dyff
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
@@ -168,15 +161,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const truncatedResults = process.env.DYFF_RESULTS.slice(0, 65000);
             const output = `
             #### Dyff helm: \`chart helm dyff\`
             \`\`\`py
-            ${truncatedResults}
-            ${process.env.DYFF_RESULTS.length > 65000 ? '\n... (results truncated)' : ''}
+            ${process.env.DYFF_RESULTS}
             \`\`\`
             `;
-      
+
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
