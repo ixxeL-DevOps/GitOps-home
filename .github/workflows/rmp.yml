@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'talos/applications/*/talos'
+      - 'talos/applications/*/talos/*'
 
 jobs:
   generate-helm-templates:
