@@ -44,9 +44,9 @@ jobs:
           PURPLE="\033[1;35m"
           CYAN="\033[1;36m"
           BLANK="\033[0m"
-
+          
           echo "CHART_FILES=${ALL_CHANGED_FILES}"
-
+          
           detect_kind() {
             local file=$1
             kind=$(yq e '.kind' "$file")
@@ -62,86 +62,132 @@ jobs:
                 ;;
             esac
           }
-
+          
           template_version() {
             local suffix=$1
-            mkdir -p $suffix
-
+            mkdir -p "$suffix"
+            
             local kind=$(detect_kind "$file")
-
-            if [ "$kind" = "Application" ]
-            then
+            
+            if [ "$kind" = "Application" ]; then
               if yq e 'has(".spec.source")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > Application has single source"
                 APP_NAME=$(yq e '.metadata.name' "$file")
                 APP_CHART_REPO=$(yq e '.spec.source.repoURL' "$file")
                 APP_CHART_NAME=$(yq e '.spec.source.chart' "$file")
                 APP_CHART_VERSION=$(yq e '.spec.source.targetRevision' "$file")
                 APP_CHART_RELEASE=$(yq e '.spec.source.helm.releaseName' "$file")
+                
                 echo -e "${CYAN}[ INFO ] > Application ${PURPLE}${APP_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
+                
                 VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                 if yq e 'has(".spec.source.helm.valuesObject")' "$file"
                 then
                   echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
-                  yq e '.spec.source.helm.valuesObject' $file > $VALUES_FILE
+                  yq e '.spec.source.helm.valuesObject' "$file" > "$VALUES_FILE"
                   sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                 fi
               fi
+            
+              if yq e 'has(".spec.sources")' "$file"
+              then
+                sources_count=$(yq e '.spec.sources | length' "$file")
+                echo -e "${CYAN}[ INFO ] > Application has multiple sources (${sources_count})"
+                for ((i=0; i<sources_count; i++))
+                do
+                  APP_NAME=$(yq e '.metadata.name' "$file")
+                  APP_CHART_REPO=$(yq e ".spec.sources[$i].repoURL" "$file")
+                  APP_CHART_NAME=$(yq e ".spec.sources[$i].chart" "$file")
+                  APP_CHART_VERSION=$(yq e ".spec.sources[$i].targetRevision" "$file")
+                  APP_CHART_RELEASE=$(yq e ".spec.sources[$i].helm.releaseName" "$file")
+                  
+                  echo -e "${CYAN}[ INFO ] > Multi-source Application ${PURPLE}${APP_NAME}${CYAN} source ${i+1}${BLANK}"
+                  
+                  VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
+                  if yq e ".spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1; then
+                    echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
+                    yq e ".spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
+                    sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
+                  fi
+                done
+              fi
+            
             elif [ "$kind" = "ApplicationSet" ]
             then
               if yq e 'has(".spec.template.spec.source")' "$file"
               then
+                echo -e "${CYAN}[ INFO ] > ApplicationSet has single source"
                 APPSET_NAME=$(yq e '.metadata.name' "$file")
-                APPSET_NAMESPACE=$(yq e '.metadata.namespace' "$file")
                 APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
                 APP_CHART_REPO=$(yq e '.spec.template.spec.source.repoURL' "$file")
                 APP_CHART_NAME=$(yq e '.spec.template.spec.source.chart' "$file")
                 APP_CHART_VERSION=$(yq e '.spec.template.spec.source.targetRevision' "$file")
                 APP_CHART_RELEASE=$(yq e '.spec.template.spec.source.helm.releaseName' "$file")
+                
                 echo -e "${CYAN}[ INFO ] > ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} release ${PURPLE}${APP_CHART_RELEASE}${CYAN} chart ${PURPLE}${APP_CHART_NAME}${CYAN} version ${PURPLE}${APP_CHART_VERSION}${CYAN} repo ${PURPLE}${APP_CHART_REPO}${BLANK}"
+                
                 VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                 if yq e 'has(".spec.template.spec.source.helm.valuesObject")' "$file"
                 then
                   echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
-                  yq e '.spec.template.spec.source.helm.valuesObject' $file > $VALUES_FILE
+                  yq e '.spec.template.spec.source.helm.valuesObject' "$file" > "$VALUES_FILE"
                   sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                 fi
               fi
+            
+              if yq e 'has(".spec.template.spec.sources")' "$file"
+              then
+                sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
+                echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
+                for ((i=0; i<sources_count; i++))
+                do
+                  APPSET_NAME=$(yq e '.metadata.name' "$file")
+                  APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
+                  APP_CHART_REPO=$(yq e ".spec.template.spec.sources[$i].repoURL" "$file")
+                  APP_CHART_NAME=$(yq e ".spec.template.spec.sources[$i].chart" "$file")
+                  APP_CHART_VERSION=$(yq e ".spec.template.spec.sources[$i].targetRevision" "$file")
+                  APP_CHART_RELEASE=$(yq e ".spec.template.spec.sources[$i].helm.releaseName" "$file")
+                  
+                  echo -e "${CYAN}[ INFO ] > Multi-source ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} source ${i+1}${BLANK}"
+                  
+                  VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
+                  if yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1
+                  then
+                    echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
+                    yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
+                    sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
+                  fi
+                done
+              fi
             fi
-
-            if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
-              echo -e "${CYAN}[ INFO ] > Detected standard Helm repository: ${PURPLE}${APP_CHART_REPO}${BLANK}"
+            
+            APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
+            
+            echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
+            
+            if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]
+            then
               helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
               helm repo update "${APP_CHART_NAME}"
-            else
-              echo -e "${CYAN}[ INFO ] > Detected OCI registry: ${PURPLE}${APP_CHART_REPO}${BLANK}"
-              OCI_CHART="${APP_CHART_REPO}/${APP_CHART_NAME}"
-            fi
-
-            APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
-
-            echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
-
-            if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
-              echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${APP_CHART_NAME}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
               helm template "${APP_CHART_RELEASE}" "${APP_CHART_NAME}/${APP_CHART_NAME}" --version "${APP_CHART_VERSION}" -f "${VALUES_FILE}" > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
             else
-              echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${OCI_CHART}${YELLOW} version ${GREEN}${APP_CHART_VERSION}${YELLOW} to file ${GREEN}${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml${BLANK}"
+              OCI_CHART="${APP_CHART_REPO}/${APP_CHART_NAME}"
               helm pull "oci://${OCI_CHART}" --version "${APP_CHART_VERSION}" --untar --untardir "${suffix}/oci_temp"
               helm template "${APP_CHART_RELEASE}" "${suffix}/oci_temp/${APP_CHART_NAME}" -f "${VALUES_FILE}" > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
               rm -rf "${suffix}/oci_temp"
             fi
           }
-
+          
           for file in ${ALL_CHANGED_FILES}
           do
             echo -e "${BLUE}[ STEP ] > Processing file ${YELLOW}${file}${BLANK}"
             CHART_DIR=$(dirname "$file")
 
             template_version "pr"
-
+            
             git checkout origin/main -- "$file"
-
+            
             template_version "main"
             echo ""
           done
