@@ -26,7 +26,7 @@ jobs:
           CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
         run: |
             helm dep update "talos/applications/$CHANGED_APPS/talos"
-            helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" --output-dir talos/applications/$CHANGED_APPS/talos/render
+            helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/talos" --output-dir $CHANGED_APPS/render
 
       - name: Push to Deployment Branch
         env:
@@ -45,7 +45,7 @@ jobs:
             git checkout "deploy/talos"
           fi
 
-          mv talos/applications/$CHANGED_APPS/talos/render/**/*.yaml talos/applications/$CHANGED_APPS/talos
+          cp $CHANGED_APPS/render/**/*.yaml talos/applications/$CHANGED_APPS/talos
 
           git add "talos/applications/$CHANGED_APPS/talos/*.yaml"
           git commit -m "Update $CHANGED_APPS template for talos environment"
