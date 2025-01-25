@@ -91,7 +91,8 @@ jobs:
             
               if yq e 'has(".spec.sources")' "$file"; then
                 sources_count=$(yq e '.spec.sources | length' "$file")
-                for ((i=0; i<sources_count; i++)); do
+                for ((i=0; i<sources_count; i++))
+                do
                   APP_NAME=$(yq e '.metadata.name' "$file")
                   APP_CHART_REPO=$(yq e ".spec.sources[$i].repoURL" "$file")
                   APP_CHART_NAME=$(yq e ".spec.sources[$i].chart" "$file")
@@ -106,7 +107,7 @@ jobs:
                     yq e ".spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
                     sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                   fi
-                fi
+                done
               fi
             
             elif [ "$kind" = "ApplicationSet" ]
@@ -134,7 +135,8 @@ jobs:
               if yq e 'has(".spec.template.spec.sources")' "$file"
               then
                 sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
-                for ((i=0; i<sources_count; i++)); do
+                for ((i=0; i<sources_count; i++))
+                do
                   APPSET_NAME=$(yq e '.metadata.name' "$file")
                   APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
                   APP_CHART_REPO=$(yq e ".spec.template.spec.sources[$i].repoURL" "$file")
@@ -151,7 +153,7 @@ jobs:
                     yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
                     sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                   fi
-                fi
+                done
               fi
             fi
             
