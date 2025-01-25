@@ -13,7 +13,7 @@ argo-rollouts:
       serviceMonitor:
         enabled: true
         additionalLabels:
-          release: prom-stack-test1
+          release: prom-stack-test2
   dashboard:
     enabled: false
     readonly: false
