@@ -1,0 +1,34 @@
+---
+# Source: argo-rollouts/charts/argo-rollouts/templates/dashboard/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: "vault-issuer"
+    cert-manager.io/common-name: "argo-rollouts.k8s-app.fredcorp.com"
+  name: argo-rollouts-talos-dashboard
+  namespace: "argocd"
+  labels:
+    helm.sh/chart: argo-rollouts-2.38.2
+    app.kubernetes.io/name: argo-rollouts
+    app.kubernetes.io/instance: argo-rollouts-talos
+    app.kubernetes.io/version: "v1.7.2"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-rollouts
+spec:
+  ingressClassName: cilium
+  rules:
+    - host: argo-rollouts.k8s-app.fredcorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argo-rollouts-talos-dashboard
+                port:
+                  number: 3100
+  tls:
+    - hosts:
+      - argo-rollouts.k8s-app.fredcorp.com
+      secretName: argorollouts-tls-cert
