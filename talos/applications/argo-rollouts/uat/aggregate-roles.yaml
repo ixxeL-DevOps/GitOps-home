@@ -1,5 +1,5 @@
 ---
-# Source: argo-rollouts/charts/argo-rollouts/templates/aggregate-roles.yaml
+# Source: argo-rollouts/charts/argo-rollouts/templates/aggregate-roles.yaml 
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
