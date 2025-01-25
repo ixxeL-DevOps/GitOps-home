@@ -107,7 +107,7 @@ jobs:
                   
                   VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                   if yq e ".spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1; then
-                    echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
+                    echo -e "${CYAN}[ INFO ] > Generating values file ${PURPLE}${VALUES_FILE}${CYAN} from valuesObject key"
                     yq e ".spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
                     sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                   fi
@@ -155,7 +155,7 @@ jobs:
                   VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
                   if yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1
                   then
-                    echo -e "${CYAN}[ INFO ] > Generating values file from valuesObject key"
+                    echo -e "${CYAN}[ INFO ] > Generating values file ${PURPLE}${VALUES_FILE}${CYAN} from valuesObject key"
                     yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
                     sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
                   fi
