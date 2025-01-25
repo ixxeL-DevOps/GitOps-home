@@ -45,10 +45,8 @@ jobs:
             git checkout "deploy/talos"
           fi
 
-          # Copy the generated template to the correct location
           cp "$CHANGED_APPS-template.yaml" "talos/applications/$CHANGED_APPS/talos"
-
-          # Commit and push the changes
+          
           git add "talos/applications/$CHANGED_APPS/talos/$CHANGED_APPS-template.yaml"
           git commit -m "Update $CHANGED_APPS template for talos environment"
           git push
