@@ -161,7 +161,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const maxCommentLength = 65535;  # Adjust this value as needed
+            const maxCommentLength = 64000;  # Adjust this value as needed
             const dyffResults = process.env.DYFF_RESULTS.substring(0, maxCommentLength);
             const output = `
               #### Dyff helm: \`chart helm dyff\`
