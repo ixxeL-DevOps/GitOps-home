@@ -153,10 +153,6 @@ jobs:
           target: pr/*_manifest_pr.yaml
           exclude-regexp: "spec.template.metadata.annotations.checksum"
 
-      - name: Truncate dyff result
-        run: |
-          echo "${{ steps.dyff-helm.outputs.DYFF_RESULT }}" | head -c 65000 > truncated_dyff_result.txt
-  
       - name: Comment on PR for helm dyff
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
@@ -165,18 +161,18 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const fs = require('fs');
-            const dyffResult = fs.readFileSync('truncated_dyff_result.txt', 'utf-8');
-            const commentBody = `
-            #### Dyff helm: \`chart helm dyff\`
-            \`\`\`py
-            ${dyffResult}
-            \`\`\`
+            const maxCommentLength = 65535;  # Adjust this value as needed
+            const dyffResults = process.env.DYFF_RESULTS.substring(0, maxCommentLength);
+            const output = `
+              #### Dyff helm: \`chart helm dyff\`
+              \`\`\`py
+              ${dyffResults}
+              \`\`\`
             `;
-
+          
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: commentBody.trim()
-            });
+              body: output
+            })
