@@ -75,7 +75,7 @@ jobs:
             git checkout "deploy/talos"
           fi
 
-          rm -f "talos/applications/$CHANGED_APPS/talos/Chart.yaml" "talos/applications/$CHANGED_APPS/talos/values.yaml" "talos/applications/$CHANGED_APPS/talos/Chart.lock" "talos/applications/$CHANGED_APPS/talos/charts"
+          rm -rf "talos/applications/$CHANGED_APPS/talos/Chart.yaml" "talos/applications/$CHANGED_APPS/talos/values.yaml" "talos/applications/$CHANGED_APPS/talos/Chart.lock" "talos/applications/$CHANGED_APPS/talos/charts"
           find "$CHANGED_APPS" -name "*.yaml" -exec mv {} "talos/applications/$CHANGED_APPS/talos/" \;
 
           git add "talos/applications/$CHANGED_APPS/talos/"
