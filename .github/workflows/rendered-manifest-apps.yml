@@ -44,9 +44,9 @@ jobs:
           PURPLE="\033[1;35m"
           CYAN="\033[1;36m"
           BLANK="\033[0m"
-          
+
           echo "CHART_FILES=${ALL_CHANGED_FILES}"
-          
+
           detect_kind() {
             local file=$1
             kind=$(yq e '.kind' "$file")
@@ -62,66 +62,50 @@ jobs:
                 ;;
             esac
           }
-          
+
           template_version() {
             local suffix=$1
             mkdir -p "$suffix"
 
             local kind=$(detect_kind "$file")
-
-            if [ "$kind" = "Application" ]; then
-              if [ $(yq e '.spec | has("source")' "$file") == 'true' ]; then
+            echo -e "${YELLOW}[ EXECUTING ] > Processing template for ${PURPLE}${suffix}${CYAN} branch${BLANK}"
+            if [ "$kind" = "Application" ]
+            then
+              if [ $(yq e '.spec | has("source")' "$file") == 'true' ]
+              then
                 echo -e "${CYAN}[ INFO ] > Application has single source"
                 generate_single_source "$file" "$suffix" ""
               fi
 
-              if [ $(yq e '.spec | has("sources")' "$file") == 'true' ]; then
+              if [ $(yq e '.spec | has("sources")' "$file") == 'true' ]
+              then
                 sources_count=$(yq e '.spec.sources | length' "$file")
-                echo -e "${CYAN}[ INFO ] > Application has multiple sources (${sources_count})"
-                for ((i = 0; i < $sources_count; i++)); do
+                echo -e "${CYAN}[ INFO ] > Application has multiple sources (${PURPLE}${sources_count}${CYAN})${BLANK}"
+                for ((i = 0; i < $sources_count; i++))
+                do
                   generate_single_source "$file" "$suffix" ".spec.sources[$i]"
                 done
               fi
 
-            elif [ "$kind" = "ApplicationSet" ]; then
-              if [ $(yq e '.spec.template.spec | has("source")' "$file") == 'true' ]; then
+            elif [ "$kind" = "ApplicationSet" ]
+            then
+              if [ $(yq e '.spec.template.spec | has("source")' "$file") == 'true' ]
+              then
                 echo -e "${CYAN}[ INFO ] > ApplicationSet has single source"
                 generate_single_source "$file" "$suffix" ".spec.template.spec.source"
               fi
 
-              if [ $(yq e '.spec.template.spec | has("sources")' "$file") == 'true' ]; then
-                sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
-                echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
-                for ((i = 0; i < $sources_count; i++)); do
-                  generate_single_source "$file" "$suffix" ".spec.template.spec.sources[$i]"
-                done
-              fi
-            
               if [ $(yq e '.spec.template.spec | has("sources")' "$file") == 'true' ]
               then
                 sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
-                echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
-                for (( i=0; i<$sources_count; i++ ))
+                echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${PURPLE}${sources_count}${CYAN})${BLANK}"
+                for ((i = 0; i < $sources_count; i++))
                 do
-                  APPSET_NAME=$(yq e '.metadata.name' "$file")
-                  APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
-                  APP_CHART_REPO=$(yq e ".spec.template.spec.sources[$i].repoURL" "$file")
-                  APP_CHART_NAME=$(yq e ".spec.template.spec.sources[$i].chart" "$file")
-                  APP_CHART_VERSION=$(yq e ".spec.template.spec.sources[$i].targetRevision" "$file")
-                  APP_CHART_RELEASE=$(yq e ".spec.template.spec.sources[$i].helm.releaseName" "$file")
-                  
-                  echo -e "${CYAN}[ INFO ] > Multi-source ApplicationSet ${PURPLE}${APPSET_NAME}${CYAN} source $((i + 1)) chart ${PURPLE}${APP_CHART_NAME}${BLANK}"
-                  
-                  VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
-                  if yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > /dev/null 2>&1
-                  then
-                    echo -e "${CYAN}[ INFO ] > Generating values file ${PURPLE}${VALUES_FILE}${CYAN} from valuesObject key"
-                    yq e ".spec.template.spec.sources[$i].helm.valuesObject" "$file" > "$VALUES_FILE"
-                    sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
-                  fi
+                  generate_single_source "$file" "$suffix" ".spec.template.spec.sources[$i]"
                 done
               fi
             fi
+            echo -e "${CYAN}[ INFO ] > Templating done for ${PURPLE}${suffix}${CYAN} branch${BLANK}"
           }
 
           generate_single_source() {
@@ -138,14 +122,15 @@ jobs:
             echo -e "${CYAN}[ INFO ] > Processing source for chart ${PURPLE}${APP_CHART_NAME}${CYAN} with release ${PURPLE}${APP_CHART_RELEASE}${BLANK}"
 
             VALUES_FILE="${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_values.yaml"
-            if yq e "$source_path.helm | has(\"valuesObject\")" "$file" > /dev/null 2>&1; then
+            if yq e "$source_path.helm | has(\"valuesObject\")" "$file" > /dev/null 2>&1
+            then
               echo -e "${CYAN}[ INFO ] > Generating values file ${PURPLE}${VALUES_FILE}${CYAN} from valuesObject key"
               yq e "$source_path.helm.valuesObject" "$file" > "$VALUES_FILE"
               sed -i 's/{{\([^}]*\)}}/\1/g' "$VALUES_FILE"
             fi
 
             APP_CHART_RELEASE=$(echo "${APP_CHART_RELEASE}" | sed 's/[^a-zA-Z0-9._-]//g')
-            
+
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
 
             if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
@@ -165,9 +150,9 @@ jobs:
             CHART_DIR=$(dirname "$file")
 
             template_version "pr"
-            
+
             git checkout origin/main -- "$file"
-            
+
             template_version "main"
             echo ""
           done
