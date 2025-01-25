@@ -1,0 +1,57 @@
+name: Helm Template Generation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'talos/applications/**'
+
+jobs:
+  generate-helm-templates:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect Changed Applications
+        id: changed-apps
+        run: |
+          changed_files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'talos/applications/[^/]*/[^/]*/Chart.yaml')
+          apps=$(echo "$changed_files" | awk -F'/' '{print $3}' | uniq)
+          echo "apps=$apps" >> $GITHUB_OUTPUT
+
+      - name: Generate Helm Templates
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+        run: |
+          for app in $CHANGED_APPS; do
+            env=$(echo "$app" | cut -d'/' -f1)
+            app_name=$(echo "$app" | cut -d'/' -f2)
+            
+            helm template "$app_name" "talos/applications/$env/$app_name" \
+              > "$app_name-template.yaml"
+          done
+
+      - name: Push to Deployment Branch
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+          GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          
+          for app in $CHANGED_APPS; do
+            env=$(echo "$app" | cut -d'/' -f1)
+            app_name=$(echo "$app" | cut -d'/' -f2)
+            
+            git checkout "deploy/$env"
+            cp "$app_name-template.yaml" "path/to/deployment/directory/"
+            
+            git add "path/to/deployment/directory/$app_name-template.yaml"
+            git commit -m "Update $app_name template for $env"
+            git push
+            
+            git checkout main
+          done
