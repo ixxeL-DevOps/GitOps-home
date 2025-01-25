@@ -66,6 +66,7 @@ jobs:
           CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
           ENVIRONMENT: ${{ steps.changed-apps.outputs.env }}
           GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        id: prepare
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
@@ -89,13 +90,21 @@ jobs:
 
           echo "pr_branch=rmp/$ENVIRONMENT/$CHANGED_APPS" >> $GITHUB_OUTPUT
 
-      - name: Create Pull Request
-        id: cpr
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.SUPER_ADMIN_TOKEN }}
-          commit-message: Update report
-          branch: ${{ steps.changed-apps.outputs.pr_branch }}
-          base: 'deploy/${{ steps.changed-apps.outputs.env }}'
+      - name: Create PR
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+          ENVIRONMENT: ${{ steps.changed-apps.outputs.env }}
+          GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        run: |
+          gh pr create --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --title "Update $CHANGED_APPS template for $ENVIRONMENT environment"
+
+      # - name: Create Pull Request
+      #   id: cpr
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #     token: ${{ secrets.SUPER_ADMIN_TOKEN }}
+      #     commit-message: Update report
+      #     branch: ${{ steps.changed-apps.outputs.pr_branch }}
+      #     base: 'deploy/${{ steps.changed-apps.outputs.env }}'
 
             
