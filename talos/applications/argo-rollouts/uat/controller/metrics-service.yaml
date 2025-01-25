@@ -1,0 +1,26 @@
+---
+# Source: argo-rollouts/charts/argo-rollouts/templates/controller/metrics-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: argo-rollouts-uat-metrics
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/component: rollouts-controller
+    helm.sh/chart: argo-rollouts-2.38.2
+    app.kubernetes.io/name: argo-rollouts
+    app.kubernetes.io/instance: argo-rollouts-uat
+    app.kubernetes.io/version: "v1.7.2"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-rollouts
+  annotations:
+spec:
+  ports:
+  - name: metrics
+    protocol: TCP
+    port: 8090
+    targetPort: metrics
+  selector:
+    app.kubernetes.io/component: rollouts-controller
+    app.kubernetes.io/name: argo-rollouts
+    app.kubernetes.io/instance: argo-rollouts-uat

@@ -1,0 +1,16 @@
+---
+# Source: argo-rollouts/charts/argo-rollouts/templates/controller/notifications-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-rollouts-notification-configmap
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/component: rollouts-controller
+    helm.sh/chart: argo-rollouts-2.38.2
+    app.kubernetes.io/name: argo-rollouts
+    app.kubernetes.io/instance: argo-rollouts-uat
+    app.kubernetes.io/version: "v1.7.2"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argo-rollouts
+data:
