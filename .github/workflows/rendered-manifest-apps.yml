@@ -95,7 +95,7 @@ jobs:
               then
                 sources_count=$(yq e '.spec.sources | length' "$file")
                 echo -e "${CYAN}[ INFO ] > Application has multiple sources (${sources_count})"
-                for ((i=0; i<sources_count; i++))
+                for ((i=0; i<${sources_count}; i++))
                 do
                   APP_NAME=$(yq e '.metadata.name' "$file")
                   APP_CHART_REPO=$(yq e ".spec.sources[$i].repoURL" "$file")
@@ -141,7 +141,7 @@ jobs:
               then
                 sources_count=$(yq e '.spec.template.spec.sources | length' "$file")
                 echo -e "${CYAN}[ INFO ] > ApplicationSet has multiple sources (${sources_count})"
-                for ((i=0; i<sources_count; i++))
+                for ((i=0; i<${sources_count}; i++))
                 do
                   APPSET_NAME=$(yq e '.metadata.name' "$file")
                   APP_NAME=$(yq e '.spec.template.metadata.name' "$file")
