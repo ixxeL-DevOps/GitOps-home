@@ -73,6 +73,27 @@
       "matchFileNames": ["talos/bootstrap/**"],
       "addLabels": ["MANUAL-REVIEW"],
       "automerge": false
+    },
+    {
+      "description": "Automerge for Tooling instance patch updates",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["patch"],
+      "additionalBranchPrefix": "helm/",      
+      "matchFileNames": ["talos/apps/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for Tooling instance major and minor updates",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["major", "minor"],
+      "additionalBranchPrefix": "helm/", 
+      "matchFileNames": ["talos/apps/**"],
+      "addLabels": ["MANUAL-REVIEW"],
+      "automerge": false
     }
   ]
 }
