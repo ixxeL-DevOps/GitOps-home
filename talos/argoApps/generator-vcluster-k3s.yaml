@@ -6,96 +6,25 @@ metadata:
   namespace: argocd
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
   generators:
-    - git:
-        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
-        revision: main
-        files: 
-        - path: 'envs/talos/vcluster/*/config/config.json'
-        values:
-          namespace: 'vk-{{ index .path.segments 3 }}'
-          release: 'vk-k3s-{{ index .path.segments 3 }}'
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/vcluster/*'
+          exclude: false
   template:
     metadata:
-      name: '{{.values.release}}'
-      finalizers: []
+      name: 'vk-k3s-{{ index .path.segments 3 }}'
     spec:
       project: vcluster
       destination:
-        name: '{{ index .path.segments 1 }}'
-        namespace: '{{.values.namespace}}'
+        name: prod
+        namespace: 'vk-{{ index .path.segments 3 }}'
       source:
-        repoURL: https://charts.loft.sh
-        targetRevision: 0.20.4
-        chart: vcluster
-        helm:
-          releaseName: '{{.values.release}}'
-          valuesObject:
-            telemetry:
-              enabled: false
-            sync:
-              toHost:
-                ingresses:
-                  enabled: true
-            networking:
-              replicateServices:
-                toHost: []
-                fromHost: []
-              advanced:
-                clusterDomain: "cluster.local"
-                fallbackHostCluster: true
-            exportKubeConfig:
-              context: '{{.values.release}}'
-            controlPlane:
-              statefulSet:
-                persistence:
-                  volumeClaim:
-                    enabled: false
-              distro:
-                k3s:
-                  enabled: true
-                  command: []
-                  extraArgs:
-                  - --write-kubeconfig=/data/k3s-config/kube-config.yaml
-                  - --data-dir=/data
-                  - --disable=traefik,servicelb,metrics-server,local-storage,coredns
-                  - --disable-network-policy
-                  - --disable-agent
-                  - --disable-cloud-controller
-                  - --egress-selector-mode=disabled
-                  - --flannel-backend=none
-                  - --kube-apiserver-arg=bind-address=127.0.0.1
-                  imagePullPolicy: ""
-                  image:
-                    repository: "rancher/k3s"
-                    tag: '{{.tag}}'
-                  resources:
-                    limits:
-                      cpu: 750m
-                      memory: 768Mi
-                    requests:
-                      cpu: 100m
-                      memory: 128Mi
-              ingress:
-                enabled: true
-                host: '{{.values.release}}.vcluster.fredcorp.com'
-                pathType: ImplementationSpecific
-                annotations:
-                  # ingress.cilium.io/force-https: "true"
-                  # ingress.cilium.io/tls-passthrough: "true"
-                  nginx.ingress.kubernetes.io/backend-protocol: HTTPS
-                  nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
-                  nginx.ingress.kubernetes.io/ssl-redirect: "true"
-                spec:
-                  ingressClassName: "nginx"
-                    # tls: []
-              proxy:
-                bindAddress: "0.0.0.0"
-                port: 8443
-                extraSANs: 
-                - '{{.values.release}}.vcluster.fredcorp.com'
-                - '{{.values.release}}.{{.values.namespace}}.svc.cluster.local'
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
@@ -108,3 +37,114 @@ spec:
           - ApplyOutOfSyncOnly=true
           - CreateNamespace=true
           - ServerSideApply=true
+
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: vcluster-k3s
+#   namespace: argocd
+# spec:
+#   goTemplate: true
+#   goTemplateOptions: ["missingkey=error"]
+#   generators:
+#     - git:
+#         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
+#         revision: main
+#         files: 
+#         - path: 'envs/talos/vcluster/*/config/config.json'
+#         values:
+#           namespace: 'vk-{{ index .path.segments 3 }}'
+#           release: 'vk-k3s-{{ index .path.segments 3 }}'
+#   template:
+#     metadata:
+#       name: '{{.values.release}}'
+#       finalizers: []
+#     spec:
+#       project: vcluster
+#       destination:
+#         name: '{{ index .path.segments 1 }}'
+#         namespace: '{{.values.namespace}}'
+#       source:
+#         repoURL: https://charts.loft.sh
+#         targetRevision: 0.20.4
+#         chart: vcluster
+#         helm:
+#           releaseName: '{{.values.release}}'
+#           valuesObject:
+#             telemetry:
+#               enabled: false
+#             sync:
+#               toHost:
+#                 ingresses:
+#                   enabled: true
+#             networking:
+#               replicateServices:
+#                 toHost: []
+#                 fromHost: []
+#               advanced:
+#                 clusterDomain: "cluster.local"
+#                 fallbackHostCluster: true
+#             exportKubeConfig:
+#               context: '{{.values.release}}'
+#             controlPlane:
+#               statefulSet:
+#                 persistence:
+#                   volumeClaim:
+#                     enabled: false
+#               distro:
+#                 k3s:
+#                   enabled: true
+#                   command: []
+#                   extraArgs:
+#                   - --write-kubeconfig=/data/k3s-config/kube-config.yaml
+#                   - --data-dir=/data
+#                   - --disable=traefik,servicelb,metrics-server,local-storage,coredns
+#                   - --disable-network-policy
+#                   - --disable-agent
+#                   - --disable-cloud-controller
+#                   - --egress-selector-mode=disabled
+#                   - --flannel-backend=none
+#                   - --kube-apiserver-arg=bind-address=127.0.0.1
+#                   imagePullPolicy: ""
+#                   image:
+#                     repository: "rancher/k3s"
+#                     tag: '{{.tag}}'
+#                   resources:
+#                     limits:
+#                       cpu: 750m
+#                       memory: 768Mi
+#                     requests:
+#                       cpu: 100m
+#                       memory: 128Mi
+#               ingress:
+#                 enabled: true
+#                 host: '{{.values.release}}.vcluster.fredcorp.com'
+#                 pathType: ImplementationSpecific
+#                 annotations:
+#                   # ingress.cilium.io/force-https: "true"
+#                   # ingress.cilium.io/tls-passthrough: "true"
+#                   nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+#                   nginx.ingress.kubernetes.io/ssl-passthrough: "true" # must be passthrough, or check doc for other methods
+#                   nginx.ingress.kubernetes.io/ssl-redirect: "true"
+#                 spec:
+#                   ingressClassName: "nginx"
+#                     # tls: []
+#               proxy:
+#                 bindAddress: "0.0.0.0"
+#                 port: 8443
+#                 extraSANs: 
+#                 - '{{.values.release}}.vcluster.fredcorp.com'
+#                 - '{{.values.release}}.{{.values.namespace}}.svc.cluster.local'
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true
