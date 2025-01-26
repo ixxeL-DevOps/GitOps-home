@@ -147,8 +147,8 @@ jobs:
 
       - name: Post diff as comment
         run: |
-          git config user.name github-actions-diff
-          git config user.email github-actions-diff@github.com
+          git config user.name "test"
+          git config user.email "test@users.noreply.com"
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md --edit-last || \
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md
         env:
@@ -232,8 +232,8 @@ jobs:
 
       - name: Post kubeconform as comment
         run: |
-          git config user.name github-actions-kubeconform
-          git config user.email github-actions-kubeconform@github.com
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md --edit-last || \
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md
         env:
