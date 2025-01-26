@@ -1,130 +1,130 @@
----
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata:
-  name: kargo-creds-chartmuseum
-  namespace: kargo-demo
-spec:
-  refreshInterval: "60s"
-  secretStoreRef:
-    name: admin
-    kind: ClusterSecretStore
-  target:
-    name: kargo-creds-chartmuseum
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    template:
-      engineVersion: v2
-      metadata:
-        labels:
-          kargo.akuity.io/cred-type: helm
-      data:
-        repoURL: https://chartmuseum.k8s-app.fredcorp.com/.*
-        repoURLIsRegex: 'true'
-        username: root
-        password: "{{ .password }}"
-  data:
-  - secretKey: password
-    remoteRef:
-      key: chartmuseum/k0s
-      property: PWD
-      conversionStrategy: Default
-      decodingStrategy: None
-      metadataPolicy: None
----
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata:
-  name: kargo-creds-dockerhubv2
-  namespace: kargo-demo
-spec:
-  refreshInterval: "60s"
-  secretStoreRef:
-    name: admin
-    kind: ClusterSecretStore
-  target:
-    name: kargo-creds-dockerhubv2
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    template:
-      engineVersion: v2
-      metadata:
-        labels:
-          kargo.akuity.io/cred-type: image
-      data:
-        repoURL: https://index.docker.io/.*
-        repoURLIsRegex: 'true'
-        username: ixxel
-        password: "{{ .token }}"
-  data:
-  - secretKey: token
-    remoteRef:
-      conversionStrategy: Default
-      decodingStrategy: None
-      key: dockerhub/raw
-      metadataPolicy: None
-      property: TOKEN
----
-apiVersion: external-secrets.io/v1beta1
-kind: ExternalSecret
-metadata:
-  name: kargo-creds-github
-  namespace: kargo-demo
-spec:
-  refreshInterval: "60s"
-  secretStoreRef:
-    name: admin
-    kind: ClusterSecretStore
-  target:
-    name: kargo-creds-github
-    creationPolicy: Owner
-    deletionPolicy: Retain
-    template:
-      engineVersion: v2
-      metadata:
-        labels:
-          kargo.akuity.io/cred-type: git
-      data:
-        repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-        # repoURLIsRegex: 'true'
-        username: ixxeL2097
-        password: "{{ .token }}"
-  data:
-  - secretKey: token
-    remoteRef:
-      conversionStrategy: Default
-      decodingStrategy: None
-      key: github
-      metadataPolicy: None
-      property: DEVOPS_ORG_PAT
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Project
-metadata:
-  name: kargo-demo
-  namespace: kargo-demo
-spec:
-  promotionPolicies:
-  - stage: dev
-    autoPromotionEnabled: true
-  - stage: uat
-    autoPromotionEnabled: true
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Warehouse
-metadata:
-  name: kargo-demo
-  namespace: kargo-demo
-spec:
-  subscriptions:
-  - image:
-      repoURL: docker.io/ixxel/demo-web
-      discoveryLimit: 5
-      imageSelectionStrategy: SemVer
-  - chart:
-      repoURL: https://chartmuseum.k8s-app.fredcorp.com
-      name: demo-web
-      discoveryLimit: 20
+# ---
+# apiVersion: external-secrets.io/v1beta1
+# kind: ExternalSecret
+# metadata:
+#   name: kargo-creds-chartmuseum
+#   namespace: kargo-demo
+# spec:
+#   refreshInterval: "60s"
+#   secretStoreRef:
+#     name: admin
+#     kind: ClusterSecretStore
+#   target:
+#     name: kargo-creds-chartmuseum
+#     creationPolicy: Owner
+#     deletionPolicy: Retain
+#     template:
+#       engineVersion: v2
+#       metadata:
+#         labels:
+#           kargo.akuity.io/cred-type: helm
+#       data:
+#         repoURL: https://chartmuseum.k8s-app.fredcorp.com/.*
+#         repoURLIsRegex: 'true'
+#         username: root
+#         password: "{{ .password }}"
+#   data:
+#   - secretKey: password
+#     remoteRef:
+#       key: chartmuseum/k0s
+#       property: PWD
+#       conversionStrategy: Default
+#       decodingStrategy: None
+#       metadataPolicy: None
+# ---
+# apiVersion: external-secrets.io/v1beta1
+# kind: ExternalSecret
+# metadata:
+#   name: kargo-creds-dockerhubv2
+#   namespace: kargo-demo
+# spec:
+#   refreshInterval: "60s"
+#   secretStoreRef:
+#     name: admin
+#     kind: ClusterSecretStore
+#   target:
+#     name: kargo-creds-dockerhubv2
+#     creationPolicy: Owner
+#     deletionPolicy: Retain
+#     template:
+#       engineVersion: v2
+#       metadata:
+#         labels:
+#           kargo.akuity.io/cred-type: image
+#       data:
+#         repoURL: https://index.docker.io/.*
+#         repoURLIsRegex: 'true'
+#         username: ixxel
+#         password: "{{ .token }}"
+#   data:
+#   - secretKey: token
+#     remoteRef:
+#       conversionStrategy: Default
+#       decodingStrategy: None
+#       key: dockerhub/raw
+#       metadataPolicy: None
+#       property: TOKEN
+# ---
+# apiVersion: external-secrets.io/v1beta1
+# kind: ExternalSecret
+# metadata:
+#   name: kargo-creds-github
+#   namespace: kargo-demo
+# spec:
+#   refreshInterval: "60s"
+#   secretStoreRef:
+#     name: admin
+#     kind: ClusterSecretStore
+#   target:
+#     name: kargo-creds-github
+#     creationPolicy: Owner
+#     deletionPolicy: Retain
+#     template:
+#       engineVersion: v2
+#       metadata:
+#         labels:
+#           kargo.akuity.io/cred-type: git
+#       data:
+#         repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+#         # repoURLIsRegex: 'true'
+#         username: ixxeL2097
+#         password: "{{ .token }}"
+#   data:
+#   - secretKey: token
+#     remoteRef:
+#       conversionStrategy: Default
+#       decodingStrategy: None
+#       key: github
+#       metadataPolicy: None
+#       property: DEVOPS_ORG_PAT
+# ---
+# apiVersion: kargo.akuity.io/v1alpha1
+# kind: Project
+# metadata:
+#   name: kargo-demo
+#   namespace: kargo-demo
+# spec:
+#   promotionPolicies:
+#   - stage: dev
+#     autoPromotionEnabled: true
+#   - stage: uat
+#     autoPromotionEnabled: true
+# ---
+# apiVersion: kargo.akuity.io/v1alpha1
+# kind: Warehouse
+# metadata:
+#   name: kargo-demo
+#   namespace: kargo-demo
+# spec:
+#   subscriptions:
+#   - image:
+#       repoURL: docker.io/ixxel/demo-web
+#       discoveryLimit: 5
+#       imageSelectionStrategy: SemVer
+#   - chart:
+#       repoURL: https://chartmuseum.k8s-app.fredcorp.com
+#       name: demo-web
+#       discoveryLimit: 20
   # - git:
   #     repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
   #     branch: main
@@ -132,86 +132,86 @@ spec:
   #     discoveryLimit: 20
   #     includePaths:
   #     - talos/kargo/stages
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: dev
-  namespace: kargo-demo
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      direct: true
-  promotionMechanisms:
-    gitRepoUpdates:
-    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: deploy/dev
-      helm:
-        charts:
-        - repository: https://chartmuseum.k8s-app.fredcorp.com
-          name: demo-web
-          chartPath: kargo-test/stages/dev/kargo-demo
-        images:
-        - image: docker.io/ixxel/demo-web
-          key: 'demo-web.image.tag'
-          value: Tag
-          valuesFilePath: kargo-test/stages/dev/kargo-demo/values.yaml
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: uat
-  namespace: kargo-demo
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - dev
-  promotionMechanisms:
-    gitRepoUpdates:
-    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: deploy/uat
-      helm:
-        charts:
-        - repository: https://chartmuseum.k8s-app.fredcorp.com
-          name: demo-web
-          chartPath: kargo-test/stages/uat/kargo-demo
-        images:
-        - image: docker.io/ixxel/demo-web
-          key: 'demo-web.image.tag'
-          value: Tag
-          valuesFilePath: kargo-test/stages/uat/kargo-demo/values.yaml
----
-apiVersion: kargo.akuity.io/v1alpha1
-kind: Stage
-metadata:
-  name: prod
-  namespace: kargo-demo
-spec:
-  requestedFreight:
-  - origin:
-      kind: Warehouse
-      name: kargo-demo
-    sources:
-      stages:
-      - uat
-  promotionMechanisms:
-    gitRepoUpdates:
-    - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
-      writeBranch: deploy/prod
-      helm:
-        charts:
-        - repository: https://chartmuseum.k8s-app.fredcorp.com
-          name: demo-web
-          chartPath: kargo-test/stages/prod/kargo-demo
-        images:
-        - image: docker.io/ixxel/demo-web
-          key: 'demo-web.image.tag'
-          value: Tag
-          valuesFilePath: kargo-test/stages/prod/kargo-demo/values.yaml
+# ---
+# apiVersion: kargo.akuity.io/v1alpha1
+# kind: Stage
+# metadata:
+#   name: dev
+#   namespace: kargo-demo
+# spec:
+#   requestedFreight:
+#   - origin:
+#       kind: Warehouse
+#       name: kargo-demo
+#     sources:
+#       direct: true
+#   promotionMechanisms:
+#     gitRepoUpdates:
+#     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+#       writeBranch: deploy/dev
+#       helm:
+#         charts:
+#         - repository: https://chartmuseum.k8s-app.fredcorp.com
+#           name: demo-web
+#           chartPath: kargo-test/stages/dev/kargo-demo
+#         images:
+#         - image: docker.io/ixxel/demo-web
+#           key: 'demo-web.image.tag'
+#           value: Tag
+#           valuesFilePath: kargo-test/stages/dev/kargo-demo/values.yaml
+# ---
+# apiVersion: kargo.akuity.io/v1alpha1
+# kind: Stage
+# metadata:
+#   name: uat
+#   namespace: kargo-demo
+# spec:
+#   requestedFreight:
+#   - origin:
+#       kind: Warehouse
+#       name: kargo-demo
+#     sources:
+#       stages:
+#       - dev
+#   promotionMechanisms:
+#     gitRepoUpdates:
+#     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+#       writeBranch: deploy/uat
+#       helm:
+#         charts:
+#         - repository: https://chartmuseum.k8s-app.fredcorp.com
+#           name: demo-web
+#           chartPath: kargo-test/stages/uat/kargo-demo
+#         images:
+#         - image: docker.io/ixxel/demo-web
+#           key: 'demo-web.image.tag'
+#           value: Tag
+#           valuesFilePath: kargo-test/stages/uat/kargo-demo/values.yaml
+# ---
+# apiVersion: kargo.akuity.io/v1alpha1
+# kind: Stage
+# metadata:
+#   name: prod
+#   namespace: kargo-demo
+# spec:
+#   requestedFreight:
+#   - origin:
+#       kind: Warehouse
+#       name: kargo-demo
+#     sources:
+#       stages:
+#       - uat
+#   promotionMechanisms:
+#     gitRepoUpdates:
+#     - repoURL: https://github.com/ixxeL-DevOps/GitOps-apps.git
+#       writeBranch: deploy/prod
+#       helm:
+#         charts:
+#         - repository: https://chartmuseum.k8s-app.fredcorp.com
+#           name: demo-web
+#           chartPath: kargo-test/stages/prod/kargo-demo
+#         images:
+#         - image: docker.io/ixxel/demo-web
+#           key: 'demo-web.image.tag'
+#           value: Tag
+#           valuesFilePath: kargo-test/stages/prod/kargo-demo/values.yaml
