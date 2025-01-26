@@ -147,8 +147,8 @@ jobs:
 
       - name: Post diff as comment
         run: |
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md --edit-last || \
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body "Diff" --body-file diff.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body "Diff" --body-file diff.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -230,7 +230,7 @@ jobs:
 
       - name: Post kubeconform as comment
         run: |
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md --edit-last || \
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body "Kubeconform" --body-file kubeconform-clean.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body "Kubeconform" --body-file kubeconform-clean.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
