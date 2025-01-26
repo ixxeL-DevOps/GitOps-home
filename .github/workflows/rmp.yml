@@ -35,6 +35,28 @@ jobs:
             helm dep update "talos/applications/$CHANGED_APPS/$ENVIRONMENT"
             helm template "$CHANGED_APPS" "talos/applications/$CHANGED_APPS/$ENVIRONMENT" --output-dir $CHANGED_APPS
 
+      - name: Create deploy branch
+        env:
+          CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
+          ENVIRONMENT: ${{ steps.changed-apps.outputs.env }}
+          GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          if ! git ls-remote --heads origin "deploy/$ENVIRONMENT" | grep "refs/heads/deploy/$ENVIRONMENT"
+          then
+            echo "Branch deploy/$ENVIRONMENT does not exist. Creating it."
+            git checkout -b "deploy/$ENVIRONMENT"
+            git push --set-upstream origin "deploy/$ENVIRONMENT"
+            rm -rf "talos/applications/$CHANGED_APPS/$ENVIRONMENT/Chart.yaml" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/values.yaml" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/Chart.lock" "talos/applications/$CHANGED_APPS/$ENVIRONMENT/charts"
+          
+            git add "talos/applications/$CHANGED_APPS/$ENVIRONMENT/"
+            git commit -m "Cleaning $CHANGED_APPS directory for $ENVIRONMENT environment"
+            git push
+          fi
+
+
       # - name: Push to Deployment Branch
       #   env:
       #     CHANGED_APPS: ${{ steps.changed-apps.outputs.apps }}
