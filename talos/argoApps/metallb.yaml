@@ -5,33 +5,26 @@ metadata:
   name: metallb
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: metallb-system
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/metallb/*'
+          exclude: false
   template:
     metadata:
-      name: 'metallb-{{env}}'
-      finalizers: []
+      name: 'metallb-{{ .path.basenameNormalized }}'
     spec:
       project: infra-network
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: metallb-system
       source:
-        repoURL: https://metallb.github.io/metallb
-        targetRevision: 0.14.9
-        chart: metallb
-        helm:
-          releaseName: 'metallb-{{env}}'
-          valuesObject:
-            fullnameOverride: "metallb"
-            rbac:
-              create: true
-            crds:
-              enabled: true
-              validationFailurePolicy: Fail
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
