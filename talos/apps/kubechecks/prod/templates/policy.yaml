@@ -15,13 +15,12 @@ spec:
               app.kubernetes.io/instance: kubechecks-prod
               app.kubernetes.io/name: kubechecks
       mutate:
-        foreach:
-          - list: "request.object.spec.containers"
-            patchStrategicMerge:
-              spec:
-                containers:
-                  - name: kubechecks
-                    envFrom:
-                      - secretRef:
-                          name: kubechecks-creds
-                      - $patch: retain
+        patchStrategicMerge:
+          spec:
+            containers:
+              - name: kubechecks
+                envFrom:
+                  - configMapRef:
+                      name: "{{ request.object.spec.containers[0].envFrom[0].configMapRef.name }}"
+                  - secretRef:
+                      name: kubechecks-creds
