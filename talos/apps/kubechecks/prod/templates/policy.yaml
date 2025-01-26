@@ -14,10 +14,10 @@ spec:
             matchLabels:
               app.kubernetes.io/instance: kubechecks-prod
               app.kubernetes.io/name: kubechecks
-    mutate:
-      patchesJson6902: |-
-        - op: add
-          path: "/spec/containers/0/envFrom/-"
-          value:
-            secretRef:
-              name: kubechecks-creds
+      mutate:
+        patchesJson6902: |-
+          - op: add
+            path: "/spec/containers/0/envFrom/-"
+            value:
+              secretRef:
+                name: kubechecks-creds
