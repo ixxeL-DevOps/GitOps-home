@@ -1,5 +1,5 @@
 ---
-name: Helm Rendered Manifest (Chart.yaml)
+name: Helm Dynamic Rendered Manifest (Chart.yaml)
 on:
   pull_request:
     types:
