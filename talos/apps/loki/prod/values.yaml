@@ -8,7 +8,7 @@ loki:
     storage:
       type: filesystem
   singleBinary:
-    replicas: 1
+    replicas: 2
   gateway:
     enabled: false
   ingress:
