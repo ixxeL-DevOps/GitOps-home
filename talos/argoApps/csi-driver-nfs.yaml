@@ -5,31 +5,26 @@ metadata:
   name: csi-driver-nfs
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: kube-system
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/csi-driver-nfs/*'
+          exclude: false
   template:
     metadata:
-      name: 'csi-driver-nfs-{{env}}'
-      finalizers: []
+      name: 'csi-driver-nfs-{{ .path.basenameNormalized }}'
     spec:
       project: infra-core
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: kube-system
       source:
-        repoURL: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-        targetRevision: v4.10.0
-        chart: csi-driver-nfs
-        helm:
-          releaseName: 'csi-driver-nfs-{{env}}'
-          valuesObject:
-            controller:
-              logLevel: 4
-            node:
-              logLevel: 4
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
