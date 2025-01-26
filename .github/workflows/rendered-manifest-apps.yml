@@ -1,5 +1,5 @@
 ---
-name: Helm Rendered Manifest (ArgoCD apps)
+name: Helm Dynamic Rendered Manifest (ArgoCD apps)
 on:
   pull_request:
     types:
