@@ -172,7 +172,7 @@ jobs:
           CYAN="\033[1;36m"
           BLANK="\033[0m"
 
-          OUTPUT_FILE="render.md"
+          OUTPUT_FILE="kubeconform-clean.md"
           
           VALID_SECTION=""
           INVALID_SECTION=""
@@ -230,7 +230,7 @@ jobs:
 
       - name: Post kubeconform as comment
         run: |
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform.md --edit-last || \
-          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform.md
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
