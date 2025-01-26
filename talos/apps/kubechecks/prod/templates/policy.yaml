@@ -2,8 +2,7 @@
 apiVersion: kyverno.io/v1
 kind: Policy
 metadata:
-  name: add-secret-envfrom-kubechecks
-  namespace: kubechecks
+  name: add-vcs-token
 spec:
   rules:
     - name: add-secret-envfrom
