@@ -79,7 +79,8 @@ jobs:
               DEP_VERSION=$(echo "$dep" | jq -r '.version')
               DEP_REPO=$(echo "$dep" | jq -r '.repository')
           
-              if [[ "$DEP_REPO" =~ ^oci:// ]]; then
+              if [[ "$DEP_REPO" =~ ^oci:// ]]
+              then
                 echo -e "${CYAN}[ INFO ] > OCI chart detected for ${PURPLE}${DEP_NAME}${CYAN} with repository ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
                 OCI_CHART="${DEP_REPO}/${DEP_NAME}"
                 helm pull "$OCI_CHART" --version "$DEP_VERSION" --untar --untardir "$suffix/oci_temp"
@@ -92,16 +93,23 @@ jobs:
             done
           
             helm dependency update "$path" --skip-refresh
-          
-            if [ ! -f "${path}/${VALUES_FILE}" ]; then
+
+            VALUES_FILE=$(find "$path" -maxdepth 1 -type f -name '*values.yaml' | head -n 1 | awk -F '/' '{print $NF}')
+
+            if [ ! -f "${path}/${VALUES_FILE}" ]
+            then
               VALUES_FILE="values.yaml"
+              echo -e "${YELLOW}[ WARNING ] > No specific values.yaml file found. Using default: ${VALUES_FILE}${BLANK}"
+            else
+              echo -e "${CYAN}[ INFO ] > Detected values file: ${PURPLE}${VALUES_FILE}${BLANK}"
             fi
-          
+
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
             echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} with values file ${GREEN}${path}/${VALUES_FILE}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${path//\//_}_manifest_${suffix}.yaml${BLANK}"
             helm template "$CHART_NAME" "$path" -f ${path}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${path//\//_}_manifest_${suffix}.yaml"
           
-            if [ -d "$suffix/oci_temp" ]; then
+            if [ -d "$suffix/oci_temp" ]
+            then
               rm -rf "$suffix/oci_temp"
               echo -e "${CYAN}[ INFO ] > Cleaned up temporary OCI chart directory${BLANK}"
             fi
