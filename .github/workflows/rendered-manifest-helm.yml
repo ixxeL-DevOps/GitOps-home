@@ -73,11 +73,11 @@ jobs:
               DEP_VERSION=$(echo "$dep" | jq -r '.version')
               DEP_REPO=$(echo "$dep" | jq -r '.repository')
               echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
-              helm repo add "$DEP_NAME" "$DEP_REPO"
+              helm repo add "$DEP_NAME" "$DEP_REPO" --force-update
               helm repo update "$DEP_NAME"
             done
             
-            helm dependency update "$CHART_DIR"
+            helm dependency build "$CHART_DIR" --skip-refresh
             if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]; then
               VALUES_FILE="values.yaml"
             fi
@@ -98,7 +98,7 @@ jobs:
             template_version "main"
             echo ""
           done
-          
+
       - name: Generate dyff on release
         id: dyff-helm
         uses: ixxeL-DevOps/gha-templates/.github/actions/dyff@main
