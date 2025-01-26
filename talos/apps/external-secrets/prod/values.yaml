@@ -3,6 +3,6 @@ external-secrets:
   crds:
     createClusterExternalSecret: true
     createClusterSecretStore: true
-    createPushSecret: true
+    createPushSecret: false
     conversion:
       enabled: true
