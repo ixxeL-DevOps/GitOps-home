@@ -41,7 +41,7 @@ kubechecks:
     hosts:
       kubechecks.k8s-app.fredcorp.com:
         paths:
-          - path: "/hooks"
+          - path: "/"
             pathType: Prefix
     tls:
      - secretName: kubechecks-tls-cert
