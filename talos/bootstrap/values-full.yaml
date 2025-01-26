@@ -46,11 +46,11 @@ argo-cd:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: vault-issuer
-        cert-manager.io/common-name: argocd.k8s-app.fredcorp.com
+        cert-manager.io/common-name: argocd.k8s-infra.fredcorp.com
         # traefik.ingress.kubernetes.io/router.tls: true
       labels: {}
       ingressClassName: "nginx"
-      hostname: argocd.k8s-app.fredcorp.com
+      hostname: argocd.k8s-infra.fredcorp.com
       # hosts:
       #   - argocd.k8s-app.fredcorp.com
       path: /
