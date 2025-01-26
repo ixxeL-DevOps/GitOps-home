@@ -51,7 +51,7 @@ jobs:
           BLANK="\033[0m"
 
           echo "CHART_FILES=${ALL_CHANGED_FILES}"
-          UNIQ_PATHS_CHANGED=$(echo "$CHART_FILES" | tr ' ' '\n' | awk -F/ '{NF--; print $0}' OFS='/' | sort -u)
+          UNIQ_PATHS_CHANGED=$(echo "$CHART_FILES" | tr ' ' '\n' | grep -v '^$' | awk -F/ '{if (NF > 1) {NF--; print $0}}' OFS='/' | sort -u)
           echo "UNIQ_PATHS_CHANGED=$UNIQ_PATHS_CHANGED"
 
           get_latest_version() {
