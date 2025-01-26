@@ -5,51 +5,26 @@ metadata:
   name: loki
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: loki
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/loki/*'
+          exclude: false
   template:
     metadata:
-      name: 'loki-{{env}}'
-      finalizers: []
+      name: 'loki-{{ .path.basenameNormalized }}'
     spec:
       project: infra-monitoring
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: loki
       source:
-        repoURL: https://grafana.github.io/helm-charts
-        targetRevision: 6.16.0
-        chart: loki
-        helm:
-          releaseName: 'loki-{{env}}'
-          valuesObject:
-            fullnameOverride: 'loki-{{env}}'
-            deploymentMode: SingleBinary<->SimpleScalable
-            loki:
-              auth_enabled: false
-              commonConfig:
-                replication_factor: 1
-              storage:
-                type: filesystem
-            singleBinary:
-              replicas: 1
-            gateway:
-              enabled: false
-            ingress:
-              enabled: true
-              annotations:
-                cert-manager.io/cluster-issuer: vault-issuer
-                cert-manager.io/common-name: loki.k8s-app.fredcorp.com
-              ingressClassName: cilium
-              hosts:
-                - loki.k8s-app.fredcorp.com
-              tls:
-                - hosts:
-                    - loki.k8s-app.fredcorp.com
-                  secretName: loki-tls-cert
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true

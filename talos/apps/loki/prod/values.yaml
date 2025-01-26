@@ -1,0 +1,24 @@
+loki:
+  deploymentMode: SingleBinary<->SimpleScalable
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+  singleBinary:
+    replicas: 1
+  gateway:
+    enabled: false
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+      cert-manager.io/common-name: loki.k8s-app.fredcorp.com
+    ingressClassName: cilium
+    hosts:
+      - loki.k8s-app.fredcorp.com
+    tls:
+      - hosts:
+          - loki.k8s-app.fredcorp.com
+        secretName: loki-tls-cert
