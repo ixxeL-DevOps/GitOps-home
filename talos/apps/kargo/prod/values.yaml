@@ -1,0 +1,23 @@
+kargo:
+  api:
+    tls:
+      enabled: false
+      selfSignedCert: false
+    host: kargo.k8s-app.fredcorp.com
+    ingress:
+      enabled: false
+      # annotations:
+      #   cert-manager.io/cluster-issuer: vault-issuer
+      #   cert-manager.io/common-name: kargo.k8s-app.fredcorp.com
+      ingressClassName: cilium
+      tls:
+        enabled: true
+        selfSignedCert: true
+      pathType: ImplementationSpecific
+    adminAccount:
+      ## @param api.adminAccount.enabled Whether to enable the admin account.
+      enabled: true
+      ## @param api.adminAccount.passwordHash Bcrypt password hash for the admin account. A value **must** be provided for this field unless `api.secret.name` is specified.
+      passwordHash: "$2y$10$X/IS722e.E3vj3zcX8QIc.wCVC8HRmyIWGhxcWSa./DVtP28VIWqa"
+      ## @param api.adminAccount.tokenSigningKey Key used to sign ID tokens (JWTs) for the admin account. It is suggested that you generate this using a password manager or a command like: `openssl rand -base64 29 \| tr -d "=+/" \| cut`. A value **must** be provided for this field, unless `api.secret.name` is specified.
+      tokenSigningKey: "VYGlZhMUBEsS0j55L4ToMOJ9ue/4WyEjGRqK8XGFAGA="
