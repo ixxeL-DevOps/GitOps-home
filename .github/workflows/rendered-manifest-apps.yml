@@ -181,7 +181,7 @@ jobs:
           if [ -f "${SOURCE}" ] && [ -f "${TARGET}" ]
           then
             echo -e "${CYAN}[ INFO ] > Files one to one${BLANK}"
-            diff ${SOURCE} ${TARGET} --color=never > diff.md || true
+            diff ${SOURCE} ${TARGET} --color=never --unified > diff.md || true
 
           elif [[ "${SOURCE}" == *"*"* ]] && [[ "${TARGET}" == *"*"* ]]
           then
@@ -200,7 +200,7 @@ jobs:
 
               if [ -f "$target_file" ]
               then
-                diff ${source_file} ${target_file} --color=never >> diff.md || true
+                diff ${source_file} ${target_file} --color=never --unified >> diff.md || true
               else
                 echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
               fi
