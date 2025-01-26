@@ -1,60 +1,60 @@
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: awx-operator
-  namespace: argocd
-spec:
-  generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: awx
-  template:
-    metadata:
-      name: 'awx-operator-{{env}}'
-      finalizers: []
-    spec:
-      project: infra-core
-      destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
-      source:
-        repoURL: https://ansible-community.github.io/awx-operator-helm/
-        targetRevision: 2.19.1
-        chart: awx-operator
-        helm:
-          releaseName: 'awx-operator-{{env}}'
-          valuesObject:
-            AWX:
-              enabled: true
-              name: awx
-              spec:
-                postgres_data_volume_init: true
-                postgres_init_container_commands: |
-                  chown 26:0 /var/lib/pgsql/data
-                  chmod 700 /var/lib/pgsql/data
-                postgres_storage_class: nfs-csi-delete
-                admin_user: admin
-                ingress_type: ingress
-                ingress_class_name: cilium
-                ingress_hosts:
-                  - hostname: awx.k8s-app.fredcorp.com
-                    tls_secret: awx-tls-cert
-                ingress_annotations: |
-                  cert-manager.io/cluster-issuer: vault-issuer
-                  cert-manager.io/common-name: awx.k8s-app.fredcorp.com
-              postgres:
-                enabled: false
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - Validate=true
-          - PruneLast=false
-          - RespectIgnoreDifferences=true
-          - Replace=false
-          - ApplyOutOfSyncOnly=true
-          - CreateNamespace=true
-          - ServerSideApply=true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: awx-operator
+#   namespace: argocd
+# spec:
+#   generators:
+#   - list:
+#       elements:
+#       - env: talos
+#         namespace: awx
+#   template:
+#     metadata:
+#       name: 'awx-operator-{{env}}'
+#       finalizers: []
+#     spec:
+#       project: infra-core
+#       destination:
+#         name: '{{env}}'
+#         namespace: '{{namespace}}'
+#       source:
+#         repoURL: https://ansible-community.github.io/awx-operator-helm/
+#         targetRevision: 2.19.1
+#         chart: awx-operator
+#         helm:
+#           releaseName: 'awx-operator-{{env}}'
+#           valuesObject:
+#             AWX:
+#               enabled: true
+#               name: awx
+#               spec:
+#                 postgres_data_volume_init: true
+#                 postgres_init_container_commands: |
+#                   chown 26:0 /var/lib/pgsql/data
+#                   chmod 700 /var/lib/pgsql/data
+#                 postgres_storage_class: nfs-csi-delete
+#                 admin_user: admin
+#                 ingress_type: ingress
+#                 ingress_class_name: cilium
+#                 ingress_hosts:
+#                   - hostname: awx.k8s-app.fredcorp.com
+#                     tls_secret: awx-tls-cert
+#                 ingress_annotations: |
+#                   cert-manager.io/cluster-issuer: vault-issuer
+#                   cert-manager.io/common-name: awx.k8s-app.fredcorp.com
+#               postgres:
+#                 enabled: false
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true
