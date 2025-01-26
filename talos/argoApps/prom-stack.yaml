@@ -5,219 +5,26 @@ metadata:
   name: prom-stack
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: prom-stack
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/prom-stack/*'
+          exclude: false
   template:
     metadata:
-      name: 'prom-stack-{{env}}'
-      finalizers: []
+      name: 'prom-stack-{{ .path.basenameNormalized }}'
     spec:
       project: infra-monitoring
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: prom-stack
       source:
-        repoURL: https://prometheus-community.github.io/helm-charts
-        targetRevision: 68.3.2
-        chart: kube-prometheus-stack
-        helm:
-          releaseName: 'prom-stack-{{env}}'
-          valuesObject:
-            prometheus-node-exporter:
-              prometheus:
-                monitor:
-                  relabelings:
-                  - action: replace
-                    sourceLabels: [__meta_kubernetes_pod_node_name]
-                    targetLabel: nodename
-            fullnameOverride: 'prom-stack-{{env}}'
-            prometheus:
-              enabled: true
-              prometheusSpec:
-                retention: 7d
-                scrapeInterval: "30s"
-                logLevel: info
-                serviceMonitorSelector:
-                  matchLabels:
-                    release: 'prom-stack-{{env}}'
-                podMonitorSelector:
-                  matchLabels:
-                    release: 'prom-stack-{{env}}'
-              ingress:
-                enabled: true
-                annotations:
-                  cert-manager.io/cluster-issuer: vault-issuer
-                  cert-manager.io/common-name: prometheus.k8s-app.fredcorp.com
-                ingressClassName: cilium
-                pathType: Prefix
-                hosts:
-                  - prometheus.k8s-app.fredcorp.com
-                path: /
-                tls:
-                  - hosts:
-                      - prometheus.k8s-app.fredcorp.com
-                    secretName: prometheus-tls-cert
-            kubeApiServer:
-              enabled: true
-            kubelet:
-              enabled: true
-            kubeControllerManager:
-              enabled: true
-            coreDns:
-              enabled: true
-            kubeDns:
-              enabled: false
-            kubeEtcd:
-              enabled: false
-            kubeScheduler:
-              enabled: true
-            kubeProxy:
-              enabled: true
-            kubeStateMetrics:
-              enabled: true
-            nodeExporter:
-              enabled: true
-            defaultRules:
-              create: true
-              rules:
-                alertmanager: true
-                etcd: true
-                configReloaders: true
-                general: true
-                k8sContainerCpuUsageSecondsTotal: true
-                k8sContainerMemoryCache: true
-                k8sContainerMemoryRss: true
-                k8sContainerMemorySwap: true
-                k8sContainerResource: true
-                k8sContainerMemoryWorkingSetBytes: true
-                k8sPodOwner: true
-                kubeApiserverAvailability: true
-                kubeApiserverBurnrate: true
-                kubeApiserverHistogram: true
-                kubeApiserverSlos: true
-                kubeControllerManager: true
-                kubelet: true
-                kubeProxy: true
-                kubePrometheusGeneral: true
-                kubePrometheusNodeRecording: true
-                kubernetesApps: true
-                kubernetesResources: true
-                kubernetesStorage: true
-                kubernetesSystem: true
-                kubeSchedulerAlerting: true
-                kubeSchedulerRecording: true
-                kubeStateMetrics: true
-                network: true
-                node: true
-                nodeExporterAlerting: true
-                nodeExporterRecording: true
-                prometheus: true
-                prometheusOperator: true
-                windows: true
-            grafana:
-              enabled: true
-              adminPassword: password
-              defaultDashboardsEnabled: true
-              defaultDashboardsEditable: true
-              defaultDashboardsTimezone: Europe/Paris
-              persistence:
-                enabled: false
-                accessModes:
-                  - ReadWriteMany
-                finalizers:
-                  - kubernetes.io/pvc-protection
-                size: 10Gi
-                type: pvc
-              plugins:
-                - grafana-piechart-panel
-                - grafana-polystat-panel
-                - grafana-clock-panel
-              dashboardProviders:
-                dashboardproviders.yaml:
-                  apiVersion: 1
-                  providers:
-                  - name: 'grafana-dashboards-kubernetes'
-                    orgId: 1
-                    folder: 'k8s'
-                    type: file
-                    disableDeletion: true
-                    editable: false
-                    options:
-                      path: /var/lib/grafana/dashboards/grafana-dashboards-kubernetes
-                  - name: 'grafana-dashboards-argocd'
-                    orgId: 1
-                    folder: 'argocd'
-                    type: file
-                    disableDeletion: true
-                    editable: false
-                    options:
-                      path: /var/lib/grafana/dashboards/grafana-dashboards-argocd
-              dashboards:
-                grafana-dashboards-argocd:
-                  operational:
-                    url: https://raw.githubusercontent.com/adinhodovic/argo-cd-mixin/main/dashboards_out/argo-cd-operational-overview.json
-                    token: ''
-                  application:
-                    url: https://raw.githubusercontent.com/adinhodovic/argo-cd-mixin/main/dashboards_out/argo-cd-application-overview.json
-                    token: ''
-                  notification:
-                    url: https://raw.githubusercontent.com/adinhodovic/argo-cd-mixin/main/dashboards_out/argo-cd-notifications-overview.json
-                    token: ''
-                grafana-dashboards-kubernetes:
-                  k8s-system-api-server:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-api-server.json
-                    token: ''
-                  k8s-system-coredns:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-system-coredns.json
-                    token: ''
-                  k8s-views-global:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-global.json
-                    token: ''
-                  k8s-views-namespaces:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-namespaces.json
-                    token: ''
-                  k8s-views-nodes:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-nodes.json
-                    token: ''
-                  k8s-views-pods:
-                    url: https://raw.githubusercontent.com/dotdc/grafana-dashboards-kubernetes/master/dashboards/k8s-views-pods.json
-                    token: ''
-              sidecar:
-                dashboards:
-                  SCProvider: true
-                  defaultFolderName: null
-                  enabled: true
-                  folder: /tmp/dashboards
-                  folderAnnotation: grafana_folder
-                  label: grafana_dashboard
-                  labelValue: 1
-                  provider:
-                    allowUiUpdates: true
-                    disableDelete: false
-                    folder: ''
-                    foldersFromFilesStructure: true
-                    name: sidecarProvider
-                    orgid: 1
-                    type: file
-                  resource: both
-                  searchNamespace: ALL
-                enableUniqueFilenames: false
-              ingress:
-                enabled: true
-                annotations:
-                  cert-manager.io/cluster-issuer: vault-issuer
-                  cert-manager.io/common-name: grafana.k8s-app.fredcorp.com
-                ingressClassName: cilium
-                hosts:
-                  - grafana.k8s-app.fredcorp.com
-                path: /
-                tls:
-                  - hosts:
-                      - grafana.k8s-app.fredcorp.com
-                    secretName: grafana-tls-cert
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
