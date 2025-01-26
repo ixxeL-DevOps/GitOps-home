@@ -27,6 +27,55 @@ spec:
           releaseName: 'kyverno-{{env}}'
           valuesObject:
             fullnameOverride: 'kyverno-{{env}}'
+            admissionController:
+              rbac:
+                clusterRole:
+                  extraResources:
+                    - apiGroups:
+                        - '*'
+                      resources:
+                        - '*'
+                      verbs:
+                        - get
+                        - list
+                        - watch
+                        - create
+                        - update
+                        - patch
+                        - delete
+            backgroundController:
+              rbac:
+                clusterRole:
+                  extraResources:
+                    - apiGroups:
+                        - '*'
+                      resources:
+                        - '*'
+                      verbs:
+                        - get
+                        - list
+                        - watch
+                        - create
+                        - update
+                        - patch
+                        - delete
+            reportsController:
+              rbac:
+                clusterRole:
+                  extraResources:
+                    - apiGroups:
+                        - '*'
+                      resources:
+                        - '*'
+                      verbs:
+                        - get
+                        - list
+                        - watch
+                        - create
+                        - update
+                        - patch
+                        - delete
+
             # backgroundController:
             #   rbac:
             #     coreClusterRole:
