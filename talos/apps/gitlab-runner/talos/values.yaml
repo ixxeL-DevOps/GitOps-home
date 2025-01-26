@@ -1,0 +1,44 @@
+gitlab-runner:
+  gitlabUrl: 'https://gitlab.com/'
+  image: 
+    registry: docker.io
+    image: gitlab/gitlab-runner
+    tag: alpine3.18-v16.5.0
+  imagePullPolicy: IfNotPresent
+  fullnameOverride: gitlab-runner-fredcorp-talos
+  # runnerRegistrationToken: GR1348941a7dYG_7u6CCXBG6Hz-n2
+  runnerToken: glrt-8ZFfu5Wgx3wDrQHWThLH
+  concurrent: 15
+  checkInterval: 15
+  rbac:
+    serviceAccountName: gitlab-runner-fredcorp-talos
+    clusterWideAccess: false
+    create: true
+    rules:
+    - apiGroups: ["*"]
+      resources: ["*"]
+      verbs: ["*"]
+    - apiGroups: ["batch"]
+      resources: ["cronjobs","jobs"]
+      verbs: ["*"]
+  runners:
+    config: |
+      [[runners]]
+        name = "runner-fredcorp"
+        request_concurrency = 6
+        limit = 0
+        [runners.kubernetes]
+          namespace = "{{.Release.Namespace}}"
+          privileged = true
+          pull_policy = ["always"]
+          tls_verify = false
+          # helper_image = "harbor.fredcorp.com/hubproxy/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
+          # helper_image = "nexus-hub.fredcorp.com/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
+          # extra_hosts = ["harbor.fredcorp.com:192.168.0.146"]
+          service_account = "gitlab-runner-fredcorp-{{env}}"
+    name: talos-fredcorp-runner
+    # tags: talos-cluster
+    # runUntagged: true
+  service:
+    enabled: true
+    type: ClusterIP  

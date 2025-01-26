@@ -1,0 +1,7 @@
+actions-runner-controller:
+  serviceAccount:
+    create: true
+  authSecret:
+    enabled: true
+    create: false
+    name: "github-creds"
