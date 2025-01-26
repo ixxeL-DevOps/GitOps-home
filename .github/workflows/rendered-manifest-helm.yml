@@ -94,14 +94,17 @@ jobs:
           
             helm dependency update "$path" --skip-refresh
 
-            VALUES_FILE=$(find "$path" -maxdepth 1 -type f -name '*values.yaml' | head -n 1 | awk -F '/' '{print $NF}')
-
             if [ ! -f "${path}/${VALUES_FILE}" ]
             then
-              VALUES_FILE="values.yaml"
-              echo -e "${YELLOW}[ WARNING ] > No specific values.yaml file found. Using default: ${VALUES_FILE}${BLANK}"
+              VALUES_FILE=$(find "$path" -maxdepth 1 -type f -name '*values*.yaml' | head -n 1 | awk -F '/' '{print $NF}')
+              if [ ! -f "${path}/${VALUES_FILE}" ]
+              then
+              echo -e "${RED}[ ERROR ] > No values.yaml file found"
+              else
+                echo -e "${CYAN}[ INFO ] > Specific values.yaml file found : ${PURPLE}${path}/${VALUES_FILE}${BLANK}"
+              fi
             else
-              echo -e "${CYAN}[ INFO ] > Detected values file: ${PURPLE}${VALUES_FILE}${BLANK}"
+              echo -e "${CYAN}[ INFO ] > Detected default values file: ${PURPLE}${path}/${VALUES_FILE}${BLANK}"
             fi
 
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
