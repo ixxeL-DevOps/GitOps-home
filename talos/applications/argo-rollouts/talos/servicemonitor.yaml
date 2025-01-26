@@ -13,7 +13,7 @@ metadata:
     app.kubernetes.io/version: "v1.7.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-rollouts
-    release: "prom-stack-talos-testdqw"
+    release: "prom-stack-talos-testdqwfw"
 spec:
   endpoints:
   - port: metrics
