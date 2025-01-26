@@ -202,7 +202,7 @@ jobs:
 
               if [ -f "$target_file" ]
               then
-                diff ${SOURCE} ${TARGET} >> diff.md
+                diff ${source_file} ${target_file} >> diff.md
               else
                 echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
               fi
