@@ -5,13 +5,13 @@ gitlab-runner:
     image: gitlab/gitlab-runner
     tag: alpine3.18-v16.5.0
   imagePullPolicy: IfNotPresent
-  fullnameOverride: gitlab-runner-fredcorp-talos
+  fullnameOverride: gitlab-runner-fredcorp-prod
   # runnerRegistrationToken: GR1348941a7dYG_7u6CCXBG6Hz-n2
   runnerToken: glrt-8ZFfu5Wgx3wDrQHWThLH
   concurrent: 15
   checkInterval: 15
   rbac:
-    serviceAccountName: gitlab-runner-fredcorp-talos
+    serviceAccountName: gitlab-runner-fredcorp-prod
     clusterWideAccess: false
     create: true
     rules:
@@ -35,8 +35,8 @@ gitlab-runner:
           # helper_image = "harbor.fredcorp.com/hubproxy/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
           # helper_image = "nexus-hub.fredcorp.com/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
           # extra_hosts = ["harbor.fredcorp.com:192.168.0.146"]
-          service_account = "gitlab-runner-fredcorp-talos"
-    name: talos-fredcorp-runner
+          service_account = "gitlab-runner-fredcorp-prod"
+    name: prod-fredcorp-runner
     # tags: talos-cluster
     # runUntagged: true
   service:
