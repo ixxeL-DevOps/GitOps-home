@@ -12,7 +12,7 @@ loki:
   gateway:
     enabled: false
   ingress:
-    enabled: true
+    enabled: false
     annotations:
       cert-manager.io/cluster-issuer: vault-issuer
       cert-manager.io/common-name: loki.k8s-app.fredcorp.com
