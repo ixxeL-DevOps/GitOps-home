@@ -5,7 +5,7 @@ kargo:
       selfSignedCert: false
     host: kargo.k8s-app.fredcorp.com
     ingress:
-      enabled: false
+      enabled: true
       # annotations:
       #   cert-manager.io/cluster-issuer: vault-issuer
       #   cert-manager.io/common-name: kargo.k8s-app.fredcorp.com
