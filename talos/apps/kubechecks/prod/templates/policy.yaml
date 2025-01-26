@@ -1,0 +1,27 @@
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: add-secret-envfrom-kubechecks
+  namespace: kubechecks
+spec:
+  rules:
+    - name: add-secret-envfrom
+      match:
+        resources:
+          kinds:
+            - Pod
+          selector:
+            matchLabels:
+              app.kubernetes.io/instance: kubechecks-prod
+              app.kubernetes.io/name: kubechecks
+      mutate:
+        foreach:
+          - list: "request.object.spec.containers"
+            patchStrategicMerge:
+              spec:
+                containers:
+                  - name: kubechecks
+                    envFrom:
+                      - secretRef:
+                          name: kubechecks-creds
