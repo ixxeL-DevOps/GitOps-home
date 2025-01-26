@@ -1,0 +1,78 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "enabledManagers": ["argocd", "helmv3", "github-actions"],
+  "dependencyDashboard": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 0,
+  "branchConcurrentLimit": 0,
+  "automergeStrategy": "squash",
+  "ignorePaths": [
+    "k0s/**",
+    "rke2/**",
+    "src/**",
+    "talos/saveapps/**"
+  ],
+  "helmv3": {
+    "fileMatch": [
+        "(^|/)Chart\\.ya?ml$"
+    ]
+  },
+  "argocd": {
+    "fileMatch": [
+      "talos/argoApps/.+\\.ya?ml$"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Global rules for version detection",
+      "matchManagers": ["argocd", "helmv3"],
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "labels": ["{{updateType}}-update"]
+    },
+    {
+      "description": "Automerge apps for patch release",
+      "matchManagers": ["argocd"],
+      "matchUpdateTypes": ["patch"],
+      "additionalBranchPrefix": "app/",
+      "matchFileNames": ["talos/argoApps/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge apps for major and minor releases",
+      "matchManagers": ["argocd"],
+      "matchUpdateTypes": ["major", "minor"],
+      "additionalBranchPrefix": "app/",
+      "matchFileNames": ["talos/argoApps/**"],
+      "addLabels": ["MANUAL-REVIEW"],
+      "automerge": false
+    },
+    {
+      "description": "Automerge for ArgoCD instance patch updates",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["patch"],
+      "additionalBranchPrefix": "helm/",      
+      "matchFileNames": ["talos/bootstrap/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
+      "description": "Manual merge for ArgoCD instance major and minor updates",
+      "matchManagers": ["helmv3"],
+      "matchUpdateTypes": ["major", "minor"],
+      "additionalBranchPrefix": "helm/", 
+      "matchFileNames": ["talos/bootstrap/**"],
+      "addLabels": ["MANUAL-REVIEW"],
+      "automerge": false
+    }
+  ]
+}
