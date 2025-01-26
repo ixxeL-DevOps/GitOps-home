@@ -5,31 +5,26 @@ metadata:
   name: otel-operator
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: opentelemetry
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/otel-operator/*'
+          exclude: false
   template:
     metadata:
-      name: 'otel-operator-{{env}}'
-      finalizers: []
+      name: 'otel-operator-{{ .path.basenameNormalized }}'
     spec:
       project: infra-monitoring
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: opentelemetry
       source:
-        repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
-        targetRevision: 0.78.2
-        chart: opentelemetry-operator
-        helm:
-          releaseName: 'otel-operator-{{env}}'
-          valuesObject:
-            fullnameOverride: otel-operator-{{env}}
-            manager:
-              collectorImage:
-                repository: otel/opentelemetry-collector-k8s
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
