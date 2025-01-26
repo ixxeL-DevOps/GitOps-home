@@ -96,6 +96,8 @@ jobs:
           if ! git ls-remote --heads origin "rmp/$ENVIRONMENT/$CHANGED_APPS" | grep "refs/heads/rmp/$ENVIRONMENT/$CHANGED_APPS"
           then
             echo "Branch rmp/$ENVIRONMENT/$CHANGED_APPS does not exist. Creating it."
+            git fetch origin deploy/talos
+            git checkout deploy/talos
             git checkout -b "rmp/$ENVIRONMENT/$CHANGED_APPS"
             git push --set-upstream origin "rmp/$ENVIRONMENT/$CHANGED_APPS"
           else
