@@ -4,7 +4,7 @@ gitlab-runner:
     registry: docker.io
     image: gitlab/gitlab-runner
     tag: alpine3.18-v16.5.0
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
   fullnameOverride: gitlab-runner-fredcorp-prod
   # runnerRegistrationToken: GR1348941a7dYG_7u6CCXBG6Hz-n2
   runnerToken: glrt-8ZFfu5Wgx3wDrQHWThLH
