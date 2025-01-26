@@ -35,7 +35,7 @@ gitlab-runner:
           # helper_image = "harbor.fredcorp.com/hubproxy/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
           # helper_image = "nexus-hub.fredcorp.com/gitlab/gitlab-runner-helper:x86_64-${CI_RUNNER_REVISION}"
           # extra_hosts = ["harbor.fredcorp.com:192.168.0.146"]
-          service_account = "gitlab-runner-fredcorp-{{env}}"
+          service_account = "gitlab-runner-fredcorp-talos"
     name: talos-fredcorp-runner
     # tags: talos-cluster
     # runUntagged: true
