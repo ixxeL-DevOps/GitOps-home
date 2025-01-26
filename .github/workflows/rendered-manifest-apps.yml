@@ -162,24 +162,68 @@ jobs:
           target: pr/*_manifest_pr.yaml
           exclude-regexp: "spec.template.metadata.annotations.checksum"
 
-      - name: Comment on PR for helm dyff
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
+      - name: Using diff for MD
+        id: diff
         env:
-          DYFF_RESULTS: ${{ steps.dyff-helm.outputs.DYFF_RESULT }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const output = `
-            #### Dyff helm: \`chart helm dyff\`
-            \`\`\`py
-            ${process.env.DYFF_RESULTS}
-            \`\`\`
-            `;
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          source: main/*_manifest_main.yaml
+          target: pr/*_manifest_pr.yaml
+          exclude-regexp: "spec.template.metadata.annotations.checksum"
+        run: |
+          if [ -f "${source}" ] && [ -f "${target}" ]
+          then
+            echo -e "${CYAN}[ INFO ] > Files one to one${BLANK}"
+            diff ${source} ${target} > diff.md
 
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: output
-            })
+          elif [[ "${source}" == *"*"* ]] && [[ "${target}" == *"*"* ]]
+          then
+            echo -e "${CYAN}[ INFO ] > Pattern${BLANK}"
+            SOURCE_SUFFIX=$(echo "${source}" | sed 's/.*\*//')
+            TARGET_PREFIX=$(echo "${target}" | sed 's/\*.*//')
+            TARGET_SUFFIX=$(echo "${target}" | sed 's/.*\*//')
+
+            for source_file in ${source}
+            do
+              echo -e "${CYAN}[ INFO ] > found file ${PURPLE}$source_file${BLANK}"
+              base_name=$(basename "$source_file" "$SOURCE_SUFFIX")
+              echo -e "${CYAN}[ INFO ] > Base name extracted ${PURPLE}$base_name${BLANK}"
+              target_file="${TARGET_PREFIX}${base_name}${TARGET_SUFFIX}"
+              echo -e "${CYAN}[ INFO ] > Target file ${PURPLE}$target_file${BLANK}"
+
+              if [ -f "$target_file" ]
+              then
+                diff ${source} ${target} >> diff.md
+              else
+                echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
+              fi
+            done
+          fi
+
+      - name: Post diff as comment
+        run: |
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md --edit-last || \
+          gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Comment on PR for helm dyff
+      #   uses: actions/github-script@v7
+      #   if: github.event_name == 'pull_request'
+      #   env:
+      #     DYFF_RESULTS: ${{ steps.dyff-helm.outputs.DYFF_RESULT }}
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     script: |
+      #       const output = `
+      #       #### Dyff helm: \`chart helm dyff\`
+      #       \`\`\`py
+      #       ${process.env.DYFF_RESULTS}
+      #       \`\`\`
+      #       `;
+
+      #       github.rest.issues.createComment({
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         issue_number: context.issue.number,
+      #         body: output
+      #       })
