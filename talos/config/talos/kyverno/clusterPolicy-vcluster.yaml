@@ -4,7 +4,7 @@ kind: ClusterPolicy
 metadata:
   name: vcluster-sync
 spec:
-  generateExistingOnPolicyUpdate: true
+  # generateExistingOnPolicyUpdate: true
   rules:
   - name: sync-secret
     skipBackgroundRequests: true
@@ -53,6 +53,7 @@ spec:
       name: "{{ vclusterName }}"
       namespace: argocd
       synchronize: true
+      generateExisting: true
       data:
         kind: Secret
         metadata:
