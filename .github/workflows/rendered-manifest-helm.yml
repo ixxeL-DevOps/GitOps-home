@@ -10,6 +10,8 @@ on:
     paths:
       - '**/Chart.yaml'
       - '**/Chart.yml'
+      - '**/values.yaml'
+      - '**/values.yml'
 
 concurrency:
   group: auto-${{ github.event.pull_request.number }}
@@ -31,73 +33,125 @@ jobs:
           files: |
             **/Chart.yaml
             **/Chart.yml
+            **/values.yaml
+            **/values.yml
 
-      - name: Generate diffs for each Chart
+      - name: Process Charts and Values
         id: gen-pr-chart
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-          VALUES_FILE: values-full.yaml
+          VALUES_FILE: values.yaml
         run: |
           RED="\033[1;31m"
           GREEN="\033[1;32m"
           YELLOW="\033[1;33m"
-          BLUE="\033[1;34m"
-          PURPLE="\033[1;35m"
           CYAN="\033[1;36m"
           BLANK="\033[0m"
 
-          echo "CHART_FILES=${ALL_CHANGED_FILES}"
+          echo "CHANGED_FILES=${ALL_CHANGED_FILES}"
+          mkdir -p main pr
 
-          get_latest_version() {
-            local repo=$1
-            local chart=$2
-            local pattern=$3
-            helm search repo "$repo/$chart" --versions | awk 'NR>1 {print $2}' | sed 's/^v//' | grep -E "^${pattern//./\\.}" | sort -V | tail -n1
-          }
+          get_chart_and_values() {
+            local file=$1
+            local dir=$(dirname "$file")
+            local chart_file="${dir}/Chart.yaml"
+            local values_file="${dir}/values.yaml"
 
-          template_version() {
-            local suffix=$1
-            mkdir -p $suffix
-
-            CHART_NAME=$(yq e '.name' "$file")
-            CHART_VERSION=$(yq e '.version' "$file")
-            
-            echo -e "${CYAN}[ INFO ] > Directory --> ${PURPLE}${CHART_DIR}${BLANK}"
-            echo -e "${CYAN}[ INFO ] > Chart name --> ${PURPLE}${CHART_NAME}${BLANK}"
-            echo -e "${CYAN}[ INFO ] > Chart version --> ${PURPLE}${CHART_VERSION}${BLANK}"
-
-            for dep in $(yq e -o=j -I=0 '.dependencies[]' "$file")
-            do
-              echo "$dep" | jq -C
-              DEP_NAME=$(echo "$dep" | jq -r '.name')
-              DEP_VERSION=$(echo "$dep" | jq -r '.version')
-              DEP_REPO=$(echo "$dep" | jq -r '.repository')
-              echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
-              helm repo add "$DEP_NAME" "$DEP_REPO" --force-update
-              helm repo update "$DEP_NAME"
-            done
-            
-            helm dependency update "$CHART_DIR" --skip-refresh
-            if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]; then
-              VALUES_FILE="values.yaml"
+            if [[ -f "$chart_file" ]]; then
+              echo "$chart_file $values_file"
             fi
-            echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
-            echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} with values file ${GREEN}${CHART_DIR}/${VALUES_FILE}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml${BLANK}"
-            helm template "$CHART_NAME" "$CHART_DIR" -f ${CHART_DIR}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml"
           }
 
-          for file in ${ALL_CHANGED_FILES}
-          do
-            echo -e "${BLUE}[ STEP ] > Processing file ${YELLOW}${file}${BLANK}"
-            CHART_DIR=$(dirname "$file")
+          for file in ${ALL_CHANGED_FILES}; do
+            echo -e "${CYAN}[ INFO ] Processing file ${YELLOW}${file}${BLANK}"
+            CHART_VALUES_PAIR=$(get_chart_and_values "$file")
 
-            template_version "pr"
+            if [[ -n "$CHART_VALUES_PAIR" ]]; then
+              CHART_FILE=$(echo "$CHART_VALUES_PAIR" | awk '{print $1}')
+              VALUES_FILE=$(echo "$CHART_VALUES_PAIR" | awk '{print $2}')
+              CHART_DIR=$(dirname "$CHART_FILE")
 
-            git checkout origin/main -- "$file"
+              # Generate for PR version
+              echo -e "${GREEN}[ INFO ] Rendering for PR version${BLANK}"
+              helm dependency update "$CHART_DIR"
+              helm template "$(yq e '.name' "$CHART_FILE")" "$CHART_DIR" -f "$VALUES_FILE" > "pr/$(basename "$CHART_DIR")_manifest_pr.yaml"
 
-            template_version "main"
-            echo ""
+              # Generate for Main version
+              echo -e "${GREEN}[ INFO ] Rendering for Main version${BLANK}"
+              git checkout origin/main -- "$CHART_FILE" "$VALUES_FILE" || true
+              helm dependency update "$CHART_DIR"
+              helm template "$(yq e '.name' "$CHART_FILE")" "$CHART_DIR" -f "$VALUES_FILE" > "main/$(basename "$CHART_DIR")_manifest_main.yaml"
+            fi
           done
+
+
+      # - name: Generate diffs for each Chart
+      #   id: gen-pr-chart
+      #   env:
+      #     ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+      #     VALUES_FILE: values-full.yaml
+      #   run: |
+      #     RED="\033[1;31m"
+      #     GREEN="\033[1;32m"
+      #     YELLOW="\033[1;33m"
+      #     BLUE="\033[1;34m"
+      #     PURPLE="\033[1;35m"
+      #     CYAN="\033[1;36m"
+      #     BLANK="\033[0m"
+
+      #     echo "CHART_FILES=${ALL_CHANGED_FILES}"
+
+      #     get_latest_version() {
+      #       local repo=$1
+      #       local chart=$2
+      #       local pattern=$3
+      #       helm search repo "$repo/$chart" --versions | awk 'NR>1 {print $2}' | sed 's/^v//' | grep -E "^${pattern//./\\.}" | sort -V | tail -n1
+      #     }
+
+      #     template_version() {
+      #       local suffix=$1
+      #       mkdir -p $suffix
+
+      #       CHART_NAME=$(yq e '.name' "$file")
+      #       CHART_VERSION=$(yq e '.version' "$file")
+            
+      #       echo -e "${CYAN}[ INFO ] > Directory --> ${PURPLE}${CHART_DIR}${BLANK}"
+      #       echo -e "${CYAN}[ INFO ] > Chart name --> ${PURPLE}${CHART_NAME}${BLANK}"
+      #       echo -e "${CYAN}[ INFO ] > Chart version --> ${PURPLE}${CHART_VERSION}${BLANK}"
+
+      #       for dep in $(yq e -o=j -I=0 '.dependencies[]' "$file")
+      #       do
+      #         echo "$dep" | jq -C
+      #         DEP_NAME=$(echo "$dep" | jq -r '.name')
+      #         DEP_VERSION=$(echo "$dep" | jq -r '.version')
+      #         DEP_REPO=$(echo "$dep" | jq -r '.repository')
+      #         echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
+      #         helm repo add "$DEP_NAME" "$DEP_REPO" --force-update
+      #         helm repo update "$DEP_NAME"
+      #       done
+            
+      #       helm dependency update "$CHART_DIR" --skip-refresh
+      #       if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]
+      #       then
+      #         VALUES_FILE="values.yaml"
+      #       fi
+      #       echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
+      #       echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} with values file ${GREEN}${CHART_DIR}/${VALUES_FILE}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml${BLANK}"
+      #       helm template "$CHART_NAME" "$CHART_DIR" -f ${CHART_DIR}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${CHART_DIR//\//_}_manifest_${suffix}.yaml"
+      #     }
+
+      #     for file in ${ALL_CHANGED_FILES}
+      #     do
+      #       echo -e "${BLUE}[ STEP ] > Processing file ${YELLOW}${file}${BLANK}"
+      #       CHART_DIR=$(dirname "$file")
+
+      #       template_version "pr"
+
+      #       git checkout origin/main -- "$file"
+
+      #       template_version "main"
+      #       echo ""
+      #     done
 
       - name: Generate dyff on release
         id: dyff-helm
