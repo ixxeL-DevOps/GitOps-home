@@ -151,3 +151,9 @@ jobs:
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file diff.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Kubeconform helm template
+        id: kubeconform
+        uses: ixxeL-DevOps/gha-templates/.github/actions/kubeconform@main
+        with:
+          target: pr
