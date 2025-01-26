@@ -176,12 +176,12 @@ jobs:
           CYAN="\033[1;36m"
           BLANK="\033[0m"
 
-          diff --version
+          echo '```diff' > diff.md
 
           if [ -f "${SOURCE}" ] && [ -f "${TARGET}" ]
           then
             echo -e "${CYAN}[ INFO ] > Files one to one${BLANK}"
-            diff ${SOURCE} ${TARGET} --color=always > diff.md || true
+            diff ${SOURCE} ${TARGET} --color=never > diff.md || true
 
           elif [[ "${SOURCE}" == *"*"* ]] && [[ "${TARGET}" == *"*"* ]]
           then
@@ -200,13 +200,13 @@ jobs:
 
               if [ -f "$target_file" ]
               then
-                echo "diff ${source_file} ${target_file} --color=always >> diff.md"
-                diff ${source_file} ${target_file} --color=always >> diff.md || true
+                diff ${source_file} ${target_file} --color=never >> diff.md || true
               else
                 echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
               fi
             done
           fi
+          echo '```' >> diff.md
 
       - name: Post diff as comment
         run: |
