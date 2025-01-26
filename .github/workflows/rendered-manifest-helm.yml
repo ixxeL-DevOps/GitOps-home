@@ -64,33 +64,47 @@ jobs:
           template_version() {
             local suffix=$1
             mkdir -p $suffix
-
+          
             CHART_NAME=$(yq e '.name' "$path/Chart.yaml")
             CHART_VERSION=$(yq e '.version' "$path/Chart.yaml")
             
             echo -e "${CYAN}[ INFO ] > Directory --> ${PURPLE}${path}${BLANK}"
             echo -e "${CYAN}[ INFO ] > Chart name --> ${PURPLE}${CHART_NAME}${BLANK}"
             echo -e "${CYAN}[ INFO ] > Chart version --> ${PURPLE}${CHART_VERSION}${BLANK}"
-
+          
             for dep in $(yq e -o=j -I=0 '.dependencies[]' "$path/Chart.yaml")
             do
               echo "$dep" | jq -C
               DEP_NAME=$(echo "$dep" | jq -r '.name')
               DEP_VERSION=$(echo "$dep" | jq -r '.version')
               DEP_REPO=$(echo "$dep" | jq -r '.repository')
-              echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
-              helm repo add "$DEP_NAME" "$DEP_REPO" --force-update
-              helm repo update "$DEP_NAME"
+          
+              if [[ "$DEP_REPO" =~ ^oci:// ]]; then
+                echo -e "${CYAN}[ INFO ] > OCI chart detected for ${PURPLE}${DEP_NAME}${CYAN} with repository ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
+                OCI_CHART="${DEP_REPO}/${DEP_NAME}"
+                helm pull "$OCI_CHART" --version "$DEP_VERSION" --untar --untardir "$suffix/oci_temp"
+                echo -e "${CYAN}[ INFO ] > Extracted OCI chart to $suffix/oci_temp${BLANK}"
+              else
+                echo -e "${CYAN}[ INFO ] > Adding dependency ${PURPLE}${DEP_NAME}${CYAN} with repo ${PURPLE}${DEP_REPO}${CYAN}${BLANK}"
+                helm repo add "$DEP_NAME" "$DEP_REPO" --force-update
+                helm repo update "$DEP_NAME"
+              fi
             done
-            
+          
             helm dependency update "$path" --skip-refresh
-            if [ ! -f "${path}/${VALUES_FILE}" ]
-            then
+          
+            if [ ! -f "${path}/${VALUES_FILE}" ]; then
               VALUES_FILE="values.yaml"
             fi
+          
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
             echo -e "${YELLOW}[ EXECUTING ] > Generating template for ${GREEN}${CHART_NAME}${YELLOW} version ${GREEN}${CHART_VERSION}${YELLOW} with values file ${GREEN}${path}/${VALUES_FILE}${YELLOW} to file ${GREEN}${suffix}/${CHART_NAME}_${path//\//_}_manifest_${suffix}.yaml${BLANK}"
             helm template "$CHART_NAME" "$path" -f ${path}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${path//\//_}_manifest_${suffix}.yaml"
+          
+            if [ -d "$suffix/oci_temp" ]; then
+              rm -rf "$suffix/oci_temp"
+              echo -e "${CYAN}[ INFO ] > Cleaned up temporary OCI chart directory${BLANK}"
+            fi
           }
 
           for path in ${UNIQ_PATHS_CHANGED}
