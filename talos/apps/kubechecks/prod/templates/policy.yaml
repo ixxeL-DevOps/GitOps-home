@@ -17,7 +17,7 @@ spec:
       mutate:
         patchesJson6902: |-
           - op: add
-            path: "/spec/containers/1/envFrom/-"
+            path: "/spec/containers/0/envFrom/-"
             value:
               secretRef:
                 name: kubechecks-creds
