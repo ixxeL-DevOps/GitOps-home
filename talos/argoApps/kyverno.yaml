@@ -5,193 +5,26 @@ metadata:
   name: kyverno
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: kyverno
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/kyverno/*'
+          exclude: false
   template:
     metadata:
-      name: 'kyverno-{{env}}'
-      finalizers: []
+      name: 'kyverno-{{ .path.basenameNormalized }}'
     spec:
       project: infra-security
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: kyverno
       source:
-        repoURL: https://kyverno.github.io/kyverno/
-        targetRevision: 3.3.4
-        chart: kyverno
-        helm:
-          releaseName: 'kyverno-{{env}}'
-          valuesObject:
-            fullnameOverride: 'kyverno-{{env}}'
-            admissionController:
-              rbac:
-                clusterRole:
-                  extraResources:
-                    - apiGroups:
-                        - '*'
-                      resources:
-                        - '*'
-                      verbs:
-                        - get
-                        - list
-                        - watch
-                        - create
-                        - update
-                        - patch
-                        - delete
-            backgroundController:
-              rbac:
-                clusterRole:
-                  extraResources:
-                    - apiGroups:
-                        - '*'
-                      resources:
-                        - '*'
-                      verbs:
-                        - get
-                        - list
-                        - watch
-                        - create
-                        - update
-                        - patch
-                        - delete
-            reportsController:
-              rbac:
-                clusterRole:
-                  extraResources:
-                    - apiGroups:
-                        - '*'
-                      resources:
-                        - '*'
-                      verbs:
-                        - get
-                        - list
-                        - watch
-                        - create
-                        - update
-                        - patch
-                        - delete
-
-            # backgroundController:
-            #   rbac:
-            #     coreClusterRole:
-            #       extraResources:
-            #         - apiGroups:
-            #             - '*'
-            #           resources:
-            #             - '*'
-            #           verbs:
-            #             - get
-            #             - list
-            #             - watch
-            #         - apiGroups:
-            #             - networking.k8s.io
-            #           resources:
-            #             - ingresses
-            #             - ingressclasses
-            #             - networkpolicies
-            #           verbs:
-            #             - create
-            #             - update
-            #             - patch
-            #             - delete
-            #         - apiGroups:
-            #             - rbac.authorization.k8s.io
-            #           resources:
-            #             - rolebindings
-            #             - roles
-            #             - clusterrolebindings
-            #           verbs:
-            #             - create
-            #             - update
-            #             - patch
-            #             - delete
-            #         - apiGroups:
-            #             - ''
-            #           resources:
-            #             - configmaps
-            #             - secrets
-            #             - resourcequotas
-            #             - limitranges
-            #           verbs:
-            #             - create
-            #             - update
-            #             - patch
-            #             - delete
-            #   # rbac:
-            #   #   create: true
-            #   #   clusterRole:
-            #   #     extraResources:
-            #   #     - apiGroups:
-            #   #         - rbac.authorization.k8s.io
-            #   #       resources:
-            #   #         - clusterroles
-            #   #         - clusterrolebindings
-            #   #       verbs:
-            #   #         - create
-            #   #         - update
-            #   #         - delete
-            #   #         - patch
-            cleanupController:
-              featuresOverride: {}
-              enabled: true
-            reportsController:
-              featuresOverride: {}
-              enabled: true
-            crds:
-              install: true
-            features:
-              admissionReports:
-                enabled: true
-              aggregateReports:
-                enabled: true
-              policyReports:
-                enabled: true
-              validatingAdmissionPolicyReports:
-                enabled: false
-              autoUpdateWebhooks:
-                enabled: true
-              backgroundScan:
-                enabled: true
-                backgroundScanWorkers: 2
-                backgroundScanInterval: 24h
-                skipResourceFilters: true
-              configMapCaching:
-                enabled: true
-              deferredLoading:
-                enabled: true
-              dumpPayload:
-                enabled: false
-              forceFailurePolicyIgnore:
-                enabled: false
-              generateValidatingAdmissionPolicy:
-                enabled: false
-              logging:
-                format: text
-                verbosity: 2
-              omitEvents:
-                eventTypes: []
-              policyExceptions:
-                enabled: true
-                namespace: ''
-              protectManagedResources:
-                enabled: false
-              registryClient:
-                allowInsecure: true
-                credentialHelpers:
-                - default
-                - google
-                - amazon
-                - azure
-                - github
-              reports:
-                chunkSize: 1000
-              ttlController:
-                reconciliationInterval: 1m
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
