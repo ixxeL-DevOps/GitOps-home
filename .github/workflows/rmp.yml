@@ -120,7 +120,16 @@ jobs:
           ENVIRONMENT: ${{ steps.changed-apps.outputs.env }}
           GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
         run: |
-          gh pr create --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --title "Update $CHANGED_APPS template for $ENVIRONMENT environment" --body ""
+          pr_exists=$(gh pr list --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --json number --jq 'length')
+
+          if [[ "$pr_exists" -gt 0 ]]
+          then
+            echo "PR already exists. Skipping further steps."
+            exit 0
+          else
+            echo "No PR found. Proceeding with the step."
+            gh pr create --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --title "Update $CHANGED_APPS template for $ENVIRONMENT environment" --body ""
+          fi  
 
       # - name: Create Pull Request
       #   id: cpr
