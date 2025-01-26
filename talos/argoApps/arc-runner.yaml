@@ -5,33 +5,26 @@ metadata:
   name: gha-runner-ctrl
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: github-runner
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/arc-runner/*'
+          exclude: false
   template:
     metadata:
-      name: 'gha-runner-ctrl-{{env}}'
-      finalizers: []
+      name: 'gha-runner-ctrl-{{ .path.basenameNormalized }}'
     spec:
       project: infra-pipelines
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: github-runner
       source:
-        repoURL: https://actions-runner-controller.github.io/actions-runner-controller
-        targetRevision: 0.23.7
-        chart: actions-runner-controller
-        helm:
-          releaseName: 'gha-runner-ctrl-{{env}}'
-          valuesObject:
-            serviceAccount:
-              create: true
-            authSecret:
-              enabled: true
-              create: false
-              name: "github-creds"
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
