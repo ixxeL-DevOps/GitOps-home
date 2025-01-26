@@ -12,8 +12,8 @@ on:
       - '**/argoApps/*.yml'
 
 concurrency:
-  group: auto
-  cancel-in-progress: false
+  group: auto-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   helm-diff-chart:
@@ -132,7 +132,7 @@ jobs:
             echo -e "${YELLOW}[ EXECUTING ] > Rendering for branch : ${GREEN}${suffix}${BLANK}"
 
             if [[ "$APP_CHART_REPO" =~ ^http(s)?:// ]]; then
-              helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}"
+              helm repo add "${APP_CHART_NAME}" "${APP_CHART_REPO}" --force-update
               helm repo update "${APP_CHART_NAME}"
               helm template "${APP_CHART_RELEASE}" "${APP_CHART_NAME}/${APP_CHART_NAME}" --version "${APP_CHART_VERSION}" -f "${VALUES_FILE}" > "${suffix}/${APP_CHART_NAME}_${APP_CHART_RELEASE}_manifest_${suffix}.yaml"
             else

@@ -12,7 +12,7 @@ on:
       - '**/Chart.yml'
 
 concurrency:
-  group: auto
+  group: auto-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
