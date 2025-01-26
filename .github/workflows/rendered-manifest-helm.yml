@@ -50,9 +50,9 @@ jobs:
           CYAN="\033[1;36m"
           BLANK="\033[0m"
 
-          CHANGED_PATHS=$(git show --name-only --pretty=format: HEAD | xargs -n1 dirname | sort -u | uniq)
-
           echo "CHART_FILES=${ALL_CHANGED_FILES}"
+          UNIQ_PATHS_CHANGED=$(echo "$CHART_FILES" | tr ' ' '\n' | awk -F/ '{NF--; print $0}' OFS='/' | sort -u)
+          echo "UNIQ_PATHS_CHANGED=$UNIQ_PATHS_CHANGED"
 
           get_latest_version() {
             local repo=$1
@@ -93,7 +93,7 @@ jobs:
             helm template "$CHART_NAME" "$path" -f ${path}/${VALUES_FILE} > "${suffix}/${CHART_NAME}_${path//\//_}_manifest_${suffix}.yaml"
           }
 
-          for path in ${CHANGED_PATHS}
+          for path in ${UNIQ_PATHS_CHANGED}
           do
             echo -e "${BLUE}[ STEP ] > Processing path ${YELLOW}${path}${BLANK}"
 
