@@ -237,3 +237,9 @@ jobs:
           gh pr comment ${{ github.event.number }} --repo ${{ github.repository }} --body-file kubeconform-clean.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: kubepug/kubepug-installer@main
+  
+      - name: Kubepug
+        run: |
+          kubepug --error-on-deprecated --error-on-deleted --input-file pr
