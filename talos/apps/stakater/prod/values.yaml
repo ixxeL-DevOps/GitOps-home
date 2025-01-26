@@ -1,0 +1,4 @@
+reloader:
+  reloader:
+    autoReloadAll: true
+    reloadStrategy: annotations

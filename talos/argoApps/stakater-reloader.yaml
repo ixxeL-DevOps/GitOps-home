@@ -5,31 +5,26 @@ metadata:
   name: stakater-reloader
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: stakater
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/stakater/*'
+          exclude: false
   template:
     metadata:
-      name: 'stakater-reloader-{{env}}'
-      finalizers: []
+      name: 'stakater-reloader-{{ .path.basenameNormalized }}'
     spec:
       project: utils
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: stakater
       source:
-        repoURL: https://stakater.github.io/stakater-charts
-        targetRevision: 1.2.1
-        chart: reloader
-        helm:
-          releaseName: 'stakater-reloader-{{env}}'
-          valuesObject:
-            fullnameOverride: stakater-reloader-{{env}}
-            reloader:
-              autoReloadAll: true
-              reloadStrategy: annotations
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
