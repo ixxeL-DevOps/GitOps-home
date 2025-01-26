@@ -1,0 +1,30 @@
+rocketchat:
+  host: rocketchat.k8s-app.fredcorp.com
+  mongodb:
+    enabled: true
+    auth:
+      passwords:
+        - rocketchat
+      rootPassword: rocketchatroot
+    persistence:
+      enabled: true
+      storageClass: "nfs-csi-retain"
+      accessMode: ReadWriteMany
+      size: 8Gi
+  ingress:
+    enabled: true
+    pathType: Prefix
+    ingressClassName: "cilium"
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+      cert-manager.io/common-name: rocketchat.k8s-app.fredcorp.com
+    path: /
+    tls: 
+      - secretName: rocketchat-tls-cert
+        hosts:
+          - rocketchat.k8s-app.fredcorp.com
+  persistence:
+    enabled: true
+    storageClass: "nfs-csi-retain"
+    accessMode: ReadWriteMany
+    size: 8Gi

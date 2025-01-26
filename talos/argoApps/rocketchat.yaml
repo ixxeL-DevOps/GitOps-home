@@ -5,56 +5,26 @@ metadata:
   name: rocketchat
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: rocketchat
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/rocketchat/*'
+          exclude: false
   template:
     metadata:
-      name: 'rocketchat-{{env}}'
-      finalizers: []
+      name: 'rocketchat-{{ .path.basenameNormalized }}'
     spec:
       project: utils
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: rocketchat
       source:
-        repoURL: https://rocketchat.github.io/helm-charts
-        targetRevision: 6.21.1
-        chart: rocketchat
-        helm:
-          releaseName: 'rocketchat-{{env}}'
-          valuesObject:
-            host: rocketchat.k8s-app.fredcorp.com
-            mongodb:
-              enabled: true
-              auth:
-                passwords:
-                  - rocketchat
-                rootPassword: rocketchatroot
-              persistence:
-                enabled: true
-                storageClass: "nfs-csi-retain"
-                accessMode: ReadWriteMany
-                size: 8Gi
-            ingress:
-              enabled: true
-              pathType: Prefix
-              ingressClassName: "cilium"
-              annotations:
-                cert-manager.io/cluster-issuer: vault-issuer
-                cert-manager.io/common-name: rocketchat.k8s-app.fredcorp.com
-              path: /
-              tls: 
-               - secretName: rocketchat-tls-cert
-                 hosts:
-                   - rocketchat.k8s-app.fredcorp.com
-            persistence:
-              enabled: true
-              storageClass: "nfs-csi-retain"
-              accessMode: ReadWriteMany
-              size: 8Gi
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
