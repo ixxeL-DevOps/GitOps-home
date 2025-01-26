@@ -77,7 +77,7 @@ jobs:
               helm repo update "$DEP_NAME"
             done
             
-            helm dependency build "$CHART_DIR" --skip-refresh
+            helm dependency update "$CHART_DIR" --skip-refresh
             if [ ! -f "${CHART_DIR}/${VALUES_FILE}" ]; then
               VALUES_FILE="values.yaml"
             fi
