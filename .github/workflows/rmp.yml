@@ -96,7 +96,7 @@ jobs:
           ENVIRONMENT: ${{ steps.changed-apps.outputs.env }}
           GITHUB_TOKEN: ${{ secrets.SUPER_ADMIN_TOKEN }}
         run: |
-          gh pr create --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --title "Update $CHANGED_APPS template for $ENVIRONMENT environment"
+          gh pr create --base deploy/${{ steps.changed-apps.outputs.env }} --head ${{ steps.prepare.outputs.pr_branch }} --title "Update $CHANGED_APPS template for $ENVIRONMENT environment" --body ""
 
       # - name: Create Pull Request
       #   id: cpr
