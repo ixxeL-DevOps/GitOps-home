@@ -154,13 +154,21 @@ jobs:
             template_version "main"
             echo ""
           done
-      # - name: Generate dyff on release
-      #   id: dyff-helm
-      #   uses: ixxeL-DevOps/gha-templates/.github/actions/dyff@main
-      #   with:
-      #     source: main/*_manifest_main.yaml
-      #     target: pr/*_manifest_pr.yaml
-      #     exclude-regexp: "spec.template.metadata.annotations.checksum"
+
+      - name: Generate dyff on release
+        id: dyff-helm
+        uses: ixxeL-DevOps/gha-templates/.github/actions/dyff@main
+        with:
+          source: main/*_manifest_main.yaml
+          target: pr/*_manifest_pr.yaml
+          exclude-regexp: "spec.template.metadata.annotations.checksum"
+
+      - name: Generate diff on release
+        id: diff-helm
+        uses: ixxeL-DevOps/gha-templates/.github/actions/diff@main
+        with:
+          source: main/*_manifest_main.yaml
+          target: pr/*_manifest_pr.yaml
 
       # - name: Using diff for MD
       #   id: diff
@@ -207,69 +215,6 @@ jobs:
       #       done
       #     fi
       #     echo '```' >> diff.md
-
-
-      - name: Using diff for MD
-        id: dyff
-        env:
-          SOURCE: main/*_manifest_main.yaml
-          TARGET: pr/*_manifest_pr.yaml
-        run: |
-          RED="\033[1;31m"
-          GREEN="\033[1;32m"
-          YELLOW="\033[1;33m"
-          BLUE="\033[1;34m"
-          PURPLE="\033[1;35m"
-          CYAN="\033[1;36m"
-          BLANK="\033[0m"
-
-          echo '```diff' > diff.md
-          echo -e "${BLUE}[ STEP - DYFF ] > Diffing files with Dyff${BLANK}"
-          echo -e "${CYAN}[ INFO ] > Using source dir/file ${PURPLE}${SOURCE}${CYAN} and target dir/file ${PURPLE}${TARGET}${BLANK}"
-  
-          if [ -f "${SOURCE}" ] && [ -f "${TARGET}" ]
-          then
-            echo -e "${CYAN}[ INFO ] > Files one to one${BLANK}"
-            RESULT=$(dyff between --color on \
-                        --output human \
-                        --truecolor on \
-                         --ignore-order-changes \
-                        ${SOURCE} ${TARGET})
-            echo "${RESULT}"
-            dyff between --color off --output human --truecolor off --ignore-order-changes ${SOURCE} ${TARGET} >> diff.md
-  
-          elif [[ "${SOURCE}" == *"*"* ]] && [[ "${TARGET}" == *"*"* ]]
-          then
-            echo -e "${CYAN}[ INFO ] > Pattern${BLANK}"
-            SOURCE_SUFFIX=$(echo "${SOURCE}" | sed 's/.*\*//')
-            TARGET_PREFIX=$(echo "${TARGET}" | sed 's/\*.*//')
-            TARGET_SUFFIX=$(echo "${TARGET}" | sed 's/.*\*//')
-  
-            for source_file in ${SOURCE}
-            do
-              echo -e "${CYAN}[ INFO ] > found file ${PURPLE}$source_file${BLANK}"
-              base_name=$(basename "$source_file" "$SOURCE_SUFFIX")
-              echo -e "${CYAN}[ INFO ] > Base name extracted ${PURPLE}$base_name${BLANK}"
-              target_file="${TARGET_PREFIX}${base_name}${TARGET_SUFFIX}"
-              echo -e "${CYAN}[ INFO ] > Target file ${PURPLE}$target_file${BLANK}"
-  
-              if [ -f "$target_file" ]; then
-                RESULT=$(dyff between --color on \
-                                      --output human \
-                                      --truecolor on \
-                                      --ignore-order-changes \
-                                      "$source_file" "$target_file")
-                echo "${RESULT}"
-                dyff between --color off --output human --truecolor off --ignore-order-changes "$source_file" "$target_file" >> diff.md
-              else
-                echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
-              fi
-            done
-          fi
-
-          echo '```' >> diff.md
-          exit 0
-
 
       - name: Post diff as comment
         run: |
