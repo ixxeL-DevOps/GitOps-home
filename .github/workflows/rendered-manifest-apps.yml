@@ -165,10 +165,8 @@ jobs:
       - name: Using diff for MD
         id: diff
         env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
           SOURCE: main/*_manifest_main.yaml
           TARGET: pr/*_manifest_pr.yaml
-          exclude-regexp: "spec.template.metadata.annotations.checksum"
         run: |
           RED="\033[1;31m"
           GREEN="\033[1;32m"
@@ -183,11 +181,11 @@ jobs:
           if [ -f "${SOURCE}" ] && [ -f "${TARGET}" ]
           then
             echo -e "${CYAN}[ INFO ] > Files one to one${BLANK}"
-            diff ${SOURCE} ${TARGET} > diff.md
+            diff ${SOURCE} ${TARGET} --color=always > diff.md
 
           elif [[ "${SOURCE}" == *"*"* ]] && [[ "${TARGET}" == *"*"* ]]
           then
-            echo -e "${CYAN}[ INFO ] > Pattern source : ${SOURCE} and target : ${TARGET}${BLANK}"
+            echo -e "${CYAN}[ INFO ] > Pattern source : ${YELLOW}${SOURCE}${CYAN} and target : ${YELLOW}${TARGET}${BLANK}"
             SOURCE_SUFFIX=$(echo "${SOURCE}" | sed 's/.*\*//')
             TARGET_PREFIX=$(echo "${TARGET}" | sed 's/\*.*//')
             TARGET_SUFFIX=$(echo "${TARGET}" | sed 's/.*\*//')
@@ -202,7 +200,8 @@ jobs:
 
               if [ -f "$target_file" ]
               then
-                diff ${source_file} ${target_file} >> diff.md
+                echo "diff ${source_file} ${target_file} --color=always >> diff.md"
+                diff ${source_file} ${target_file} --color=always >> diff.md
               else
                 echo -e "${RED}[ ERROR ] > Target file $target_file not found${BLANK}"
               fi
