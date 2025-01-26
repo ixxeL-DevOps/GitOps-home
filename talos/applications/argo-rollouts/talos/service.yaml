@@ -1,7 +1,7 @@
 ---
-# Source: argo-rollouts/charts/argo-rollouts/templates/dashboard/serviceaccount.yaml
+# Source: argo-rollouts/charts/argo-rollouts/templates/dashboard/service.yaml
 apiVersion: v1
-kind: ServiceAccount
+kind: Service
 metadata:
   name: argo-rollouts-dashboard
   namespace: "github-runner"
@@ -13,3 +13,15 @@ metadata:
     app.kubernetes.io/version: "v1.7.2"
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: argo-rollouts
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+  - name: dashboard
+    protocol: TCP
+    port: 3100
+    targetPort: 3100
+  selector:
+    app.kubernetes.io/component: rollouts-dashboard
+    app.kubernetes.io/name: argo-rollouts
+    app.kubernetes.io/instance: argo-rollouts
