@@ -80,8 +80,8 @@
       "matchUpdateTypes": ["patch"],
       "additionalBranchPrefix": "helm/",      
       "matchFileNames": ["talos/apps/**"],
-      "addLabels": ["AUTO-MERGE", "{{ lookup (split packageFileDir '/') 2 }}", "{{ lookup (split packageFileDir '/') 3 }}"],
-      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 2 }} env",
+      "addLabels": ["AUTO-MERGE", "{{ lookup (split packageFileDir '/') 3 }}"],
+      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 3 }} env",
       "groupName": "{{ lookup (split packageFileDir '/') 2 }}-{{ lookup (split packageFileDir '/') 3 }}",
       "automerge": true,
       "automergeType": "pr",
@@ -94,8 +94,8 @@
       "matchUpdateTypes": ["major", "minor"],
       "additionalBranchPrefix": "helm/", 
       "matchFileNames": ["talos/apps/**"],
-      "addLabels": ["MANUAL-REVIEW", "{{ lookup (split packageFileDir '/') 2 }}", "{{ lookup (split packageFileDir '/') 3 }}"],
-      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 2 }} env",
+      "addLabels": ["MANUAL-REVIEW", "{{ lookup (split packageFileDir '/') 3 }}"],
+      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 3 }} env",
       "groupName": "{{ lookup (split packageFileDir '/') 2 }}-{{ lookup (split packageFileDir '/') 3 }}",
       "automerge": false
     }
