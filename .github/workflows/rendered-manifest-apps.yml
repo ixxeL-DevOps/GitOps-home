@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  helm-diff-chart:
+  helm-diff-apps:
     runs-on: self-hosted
     steps:
       - name: Checkout PR

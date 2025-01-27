@@ -33,6 +33,27 @@
       "labels": ["{{updateType}}-update"]
     },
     {
+      "description": "Manual merge GHA for major release",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "additionalBranchPrefix": "gha/",
+      "matchFileNames": [".github/**"],
+      "addLabels": ["MANUAL-REVIEW"],
+      "automerge": false
+    },
+    {
+      "description": "Automerge GHA for patch/minor release",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "additionalBranchPrefix": "gha/",
+      "matchFileNames": [".github/**"],
+      "addLabels": ["AUTO-MERGE"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": null
+    },
+    {
       "description": "Automerge apps for patch release",
       "matchManagers": ["argocd"],
       "matchUpdateTypes": ["patch"],
