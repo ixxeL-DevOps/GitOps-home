@@ -5,9 +5,9 @@
   ],
   "enabledManagers": ["argocd", "helmv3", "github-actions"],
   "dependencyDashboard": true,
-  "prHourlyLimit": 0,
-  "prConcurrentLimit": 0,
-  "branchConcurrentLimit": 0,
+  "prHourlyLimit": 60,
+  "prConcurrentLimit": 60,
+  "branchConcurrentLimit": 60,
   "automergeStrategy": "squash",
   "ignorePaths": [
     "k0s/**",
@@ -80,7 +80,9 @@
       "matchUpdateTypes": ["patch"],
       "additionalBranchPrefix": "helm/",      
       "matchFileNames": ["talos/apps/**"],
-      "addLabels": ["AUTO-MERGE"],
+      "addLabels": ["AUTO-MERGE", "{{ lookup (split packageFileDir '/') 2 }}", "{{ lookup (split packageFileDir '/') 3 }}"],
+      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 2 }} env",
+      "groupName": "{{ lookup (split packageFileDir '/') 2 }}-{{ lookup (split packageFileDir '/') 3 }}",
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
@@ -92,7 +94,9 @@
       "matchUpdateTypes": ["major", "minor"],
       "additionalBranchPrefix": "helm/", 
       "matchFileNames": ["talos/apps/**"],
-      "addLabels": ["MANUAL-REVIEW"],
+      "addLabels": ["MANUAL-REVIEW", "{{ lookup (split packageFileDir '/') 2 }}", "{{ lookup (split packageFileDir '/') 3 }}"],
+      "commitMessageSuffix": "for {{ lookup (split packageFileDir '/') 2 }} env",
+      "groupName": "{{ lookup (split packageFileDir '/') 2 }}-{{ lookup (split packageFileDir '/') 3 }}",
       "automerge": false
     }
   ]
