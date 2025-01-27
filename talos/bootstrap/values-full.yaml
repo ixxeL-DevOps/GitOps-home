@@ -1132,7 +1132,7 @@ argocd-image-updater:
   image:
     repository: quay.io/argoprojlabs/argocd-image-updater
     pullPolicy: Always
-    tag: "v0.14.0"
+    # tag: "v0.14.0"
   fullnameOverride: "argocd-img-updater"
   updateStrategy:
     type: RollingUpdate
