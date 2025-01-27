@@ -9,6 +9,7 @@
   "prConcurrentLimit": 60,
   "branchConcurrentLimit": 60,
   "automergeStrategy": "squash",
+  "rebaseWhen": "auto",
   "ignorePaths": [
     "k0s/**",
     "rke2/**",
@@ -50,8 +51,7 @@
       "addLabels": ["AUTO-MERGE"],
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "requiredStatusChecks": null
+      "platformAutomerge": true
     },
     {
       "description": "Automerge apps for patch release",
@@ -62,8 +62,7 @@
       "addLabels": ["AUTO-MERGE"],
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "requiredStatusChecks": null
+      "platformAutomerge": true
     },
     {
       "description": "Manual merge apps for major and minor releases",
@@ -83,8 +82,7 @@
       "addLabels": ["AUTO-MERGE"],
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "requiredStatusChecks": null
+      "platformAutomerge": true
     },
     {
       "description": "Manual merge for ArgoCD instance major and minor updates",
@@ -106,8 +104,7 @@
       "groupName": "{{ lookup (split packageFileDir '/') 2 }}-{{ lookup (split packageFileDir '/') 3 }}",
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "requiredStatusChecks": null
+      "platformAutomerge": true
     },
     {
       "description": "Manual merge for Tooling instance major and minor updates",
