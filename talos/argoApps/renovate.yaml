@@ -21,7 +21,7 @@ spec:
         namespace: '{{namespace}}'
       source:
         repoURL: https://docs.renovatebot.com/helm-charts
-        targetRevision: 39.126.1
+        targetRevision: 39.140.1
         chart: renovate
         helm:
           releaseName: 'renovate-{{env}}'
