@@ -9,7 +9,7 @@
   "prConcurrentLimit": 60,
   "branchConcurrentLimit": 60,
   "automergeStrategy": "squash",
-  "rebaseWhen": "auto",
+  "rebaseWhen": "behind-base-branch",
   "platformAutomerge": true,
   "ignorePaths": [
     "k0s/**",
