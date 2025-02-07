@@ -1,6 +1,7 @@
 ---
 name: Helm Dynamic Rendered Manifest (Chart.yaml)
 on:
+  merge_group:
   pull_request:
     types:
       - opened
