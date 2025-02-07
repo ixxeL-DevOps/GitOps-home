@@ -10,6 +10,7 @@
   "branchConcurrentLimit": 60,
   "automergeStrategy": "squash",
   "rebaseWhen": "auto",
+  "platformAutomerge": true,
   "ignorePaths": [
     "k0s/**",
     "rke2/**",
