@@ -56,7 +56,12 @@ spec:
     name: ixxel-devops-gha-runner
   minReplicas: 1
   maxReplicas: 5
-  metrics: []
+  metrics:
+  - type: PercentageRunnersBusy
+    scaleUpThreshold: '0.75'    # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+    scaleDownThreshold: '0.3'   # The percentage of busy runners at which the number of desired runners are re-evaluated to scale down
+    scaleUpAdjustment: 2        # The scale up runner count added to desired count
+    scaleDownAdjustment: 1      # The scale down runner count subtracted from the desired count
 ---
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
