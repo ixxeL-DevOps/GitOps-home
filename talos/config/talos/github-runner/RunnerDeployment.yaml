@@ -42,6 +42,23 @@ metadata:
     kubernetes.io/service-account.name: "gh-runner-admin"
 ---
 apiVersion: actions.summerwind.dev/v1alpha1
+kind: HorizontalRunnerAutoscaler
+metadata:
+  name: example-runner-deployment-autoscaler
+spec:
+  # Runners in the targeted RunnerDeployment won't be scaled down
+  # for 5 minutes instead of the default 10 minutes now
+  scaleDownDelaySecondsAfterScaleOut: 120
+  scaleTargetRef:
+    kind: RunnerDeployment
+    # # In case the scale target is RunnerSet:
+    # kind: RunnerSet
+    name: ixxel-devops-gha-runner
+  minReplicas: 1
+  maxReplicas: 5
+  metrics: []
+---
+apiVersion: actions.summerwind.dev/v1alpha1
 kind: RunnerDeployment
 metadata:
   name: ixxel-devops-gha-runner
