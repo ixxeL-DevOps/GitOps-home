@@ -44,7 +44,8 @@ metadata:
 apiVersion: actions.summerwind.dev/v1alpha1
 kind: HorizontalRunnerAutoscaler
 metadata:
-  name: example-runner-deployment-autoscaler
+  name: ixxel-devops-gha-runner
+  namespace: github-runner
 spec:
   # Runners in the targeted RunnerDeployment won't be scaled down
   # for 5 minutes instead of the default 10 minutes now
