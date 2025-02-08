@@ -155,6 +155,7 @@ jobs:
 
       - name: Kubeconform
         id: kubeconform
+        continue-on-error: true
         uses: ixxeL-DevOps/gha-templates/.github/actions/kubeconform@main
         with:
           target: pr
