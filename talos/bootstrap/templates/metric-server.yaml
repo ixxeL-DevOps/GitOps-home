@@ -5,7 +5,6 @@ metadata:
   labels:
     app: argocd-metrics-server
   name: argocd-metrics-server
-  namespace: argocd
 spec:
   ports:
     - name: metrics
@@ -18,7 +17,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: argocd-metrics-server
-  namespace: argocd
 spec:
   selector:
     matchLabels:
