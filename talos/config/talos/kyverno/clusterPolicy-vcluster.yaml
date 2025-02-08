@@ -26,31 +26,31 @@ spec:
     context:
     - name: namespace
       variable:
-        value: '{{ "{{" }} request.object.metadata.namespace{{ "}}" }}'
+        value: "{{ request.object.metadata.namespace }}"
     - name: name
       variable:
-        value: '{{ "{{" }} request.object.metadata.name{{ "}}" }}'
+        value: "{{ request.object.metadata.name }}"
     - name: ca
       variable: 
-        value: '{{ "{{" }} request.object.data.\"certificate-authority\" {{ "}}" }}'
+        value: "{{ request.object.data.\"certificate-authority\" }}"
     - name: cert
       variable: 
-        value: '{{ "{{" }} request.object.data.\"client-certificate\" {{ "}}" }}'
+        value: "{{ request.object.data.\"client-certificate\" }}"
     - name: key
       variable: 
-        value: '{{ "{{" }} request.object.data.\"client-key\" {{ "}}" }}'
+        value: "{{ request.object.data.\"client-key\" }}"
     - name: vclusterName
       variable:
-        value: '{{ "{{" }} replace_all(namespace, 'vcluster-', '') {{ "}}" }}'
+        value: "{{ replace_all(namespace, 'vcluster-', '') }}"
         jmesPath: 'to_string(@)'
     - name: vclusterEnv
       variable:
-        value: '{{ "{{" }} replace_all(namespace, 'vk-', '') {{ "}}" }}'
+        value: "{{ replace_all(namespace, 'vk-', '') }}"
         jmesPath: 'to_string(@)'
     generate:
       kind: Secret
       apiVersion: v1
-      name: '{{ "{{" }} vclusterName {{ "}}" }}'
+      name: "{{ vclusterName }}"
       namespace: argocd
       synchronize: true
       generateExisting: true
@@ -60,14 +60,14 @@ spec:
           labels:
             argocd.argoproj.io/secret-type: cluster
         stringData:
-          name: '{{ "{{ }}vclusterName {{ }}" }}'
-          server: 'https://vk-k3s-{{ "{{"}} vclusterEnv {{"}}" }}.{{ "{{"}} namespace {{"}}" }}.svc.cluster.local:443'
+          name: "{{ vclusterName }}"
+          server: "https://vk-k3s-{{ vclusterEnv }}.{{ namespace }}.svc.cluster.local:443"
           config: |
             {
               "tlsClientConfig": {
                 "insecure": false,
-                "caData": '{{ "{{" }} ca {{ "}}" }}',
-                "certData": '{{ "{{" }} cert {{ "}}" }}',
-                "keyData": '{{ "{{" }} key {{ "}}" }}'
+                "caData": "{{ ca }}",
+                "certData": "{{ cert }}",
+                "keyData": "{{ key }}"
               }
             }
