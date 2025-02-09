@@ -9,5 +9,4 @@ spec:
   resources:
     requests:
       storage: 1Gi
-  storageClassName: "nfs-csi-delete"
-  volumeName: adguard-pv
+  storageClassName: "nfs-csi-retain"
