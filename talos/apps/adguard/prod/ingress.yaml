@@ -4,19 +4,19 @@ kind: Ingress
 metadata:
   name: adguard
   annotations:
-    # nginx.ingress.kubernetes.io/affinity: "cookie"
-    # nginx.ingress.kubernetes.io/session-cookie-name: "adguard-cookie"
-    # nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
-    # nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "adguard-cookie"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
     # nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    # nginx.ingress.kubernetes.io/affinity-mode: persistent
-    # nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    nginx.ingress.kubernetes.io/affinity-mode: persistent
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
     cert-manager.io/cluster-issuer: vault-issuer
-    cert-manager.io/common-name: adguard.k8s-app.fredcorp.com
+    cert-manager.io/common-name: adguard.k8s-infra.fredcorp.com
 spec:
-  ingressClassName: cilium
+  ingressClassName: nginx
   rules:
-    - host: adguard.k8s-app.fredcorp.com
+    - host: adguard.k8s-infra.fredcorp.com
       http:
         paths:
           - path: /
@@ -28,7 +28,7 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - adguard.k8s-app.fredcorp.com
+        - adguard.k8s-infra.fredcorp.com
       secretName: adguard-tls-cert
 ---
 apiVersion: networking.k8s.io/v1
@@ -36,19 +36,19 @@ kind: Ingress
 metadata:
   name: adguard-2
   annotations:
-    # nginx.ingress.kubernetes.io/affinity: "cookie"
-    # nginx.ingress.kubernetes.io/session-cookie-name: "adguard-2-cookie"
-    # nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
-    # nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "adguard-2-cookie"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
     # nginx.ingress.kubernetes.io/ssl-redirect: "false"
-    # nginx.ingress.kubernetes.io/affinity-mode: persistent
-    # nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    nginx.ingress.kubernetes.io/affinity-mode: persistent
+    nginx.ingress.kubernetes.io/session-cookie-hash: sha1
     cert-manager.io/cluster-issuer: vault-issuer
-    cert-manager.io/common-name: adguardhome.k8s-app.fredcorp.com
+    cert-manager.io/common-name: adguardhome.k8s-infra.fredcorp.com
 spec:
-  ingressClassName: cilium
+  ingressClassName: nginx
   rules:
-    - host: adguardhome.k8s-app.fredcorp.com
+    - host: adguardhome.k8s-infra.fredcorp.com
       http:
         paths:
           - path: /
@@ -60,6 +60,6 @@ spec:
                   number: 3000
   tls:
     - hosts:
-        - adguardhome.k8s-app.fredcorp.com
+        - adguardhome.k8s-infra.fredcorp.com
       secretName: adguardhome-tls-cert
 
