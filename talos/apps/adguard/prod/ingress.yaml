@@ -1,0 +1,65 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adguard
+  annotations:
+    # nginx.ingress.kubernetes.io/affinity: "cookie"
+    # nginx.ingress.kubernetes.io/session-cookie-name: "adguard-cookie"
+    # nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    # nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/affinity-mode: persistent
+    # nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    cert-manager.io/cluster-issuer: vault-issuer
+    cert-manager.io/common-name: adguard.k8s-app.fredcorp.com
+spec:
+  ingressClassName: cilium
+  rules:
+    - host: adguard.k8s-app.fredcorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: adguard-ing
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - adguard.k8s-app.fredcorp.com
+      secretName: adguard-tls-cert
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: adguard-2
+  annotations:
+    # nginx.ingress.kubernetes.io/affinity: "cookie"
+    # nginx.ingress.kubernetes.io/session-cookie-name: "adguard-2-cookie"
+    # nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    # nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    # nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/affinity-mode: persistent
+    # nginx.ingress.kubernetes.io/session-cookie-hash: sha1
+    cert-manager.io/cluster-issuer: vault-issuer
+    cert-manager.io/common-name: adguardhome.k8s-app.fredcorp.com
+spec:
+  ingressClassName: cilium
+  rules:
+    - host: adguardhome.k8s-app.fredcorp.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: adguard-ing
+                port:
+                  number: 3000
+  tls:
+    - hosts:
+        - adguardhome.k8s-app.fredcorp.com
+      secretName: adguardhome-tls-cert
+

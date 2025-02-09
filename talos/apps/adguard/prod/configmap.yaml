@@ -1,0 +1,368 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adguard-config
+  namespace: adguard
+data:
+  AdGuardHome.yaml: |
+    bind_host: 0.0.0.0
+    bind_port: 80
+    users:
+      - name: admin
+        password: $2a$10$Ncc6MKcD96ZbYyJPaWus9OvhxR6QefF7Hz.ZCBXQwE8SwTRWDWsia
+    auth_attempts: 5
+    block_auth_min: 15
+    http_proxy: ""
+    language: en
+    theme: auto
+    debug_pprof: false
+    web_session_ttl: 720
+    dns:
+      bind_hosts:
+        - 0.0.0.0
+      port: 53
+      statistics_interval: 30
+      querylog_enabled: true
+      querylog_file_enabled: true
+      querylog_interval: 720h
+      querylog_size_memory: 1000
+      anonymize_client_ip: false
+      protection_enabled: true
+      blocking_mode: default
+      blocking_ipv4: ""
+      blocking_ipv6: ""
+      blocked_response_ttl: 10
+      parental_block_host: family-block.dns.adguard.com
+      safebrowsing_block_host: standard-block.dns.adguard.com
+      ratelimit: 20
+      ratelimit_whitelist: []
+      refuse_any: true
+      upstream_dns:
+        - tls://1.1.1.1
+        - tls://1.0.0.1
+        - tls://1dot1dot1dot1.cloudflare-dns.com
+        - https://dns.cloudflare.com/dns-query
+        - tls://dns.quad9.net
+        - tls://dns.adguard.com
+        - https://1.1.1.1/dns-query
+        - https://1.0.0.1/dns-query
+        - https://dns.quad9.net/dns-query
+        - quic://dandelionsprout.asuscomm.com:48582
+        - quic://dns-unfiltered.adguard.com:784
+      upstream_dns_file: ""
+      bootstrap_dns:
+        - 9.9.9.10
+        - 149.112.112.10
+        - 2620:fe::10
+        - 2620:fe::fe:10
+      all_servers: false
+      fastest_addr: false
+      fastest_timeout: 1s
+      allowed_clients: []
+      disallowed_clients: []
+      blocked_hosts:
+        - version.bind
+        - id.server
+        - hostname.bind
+      trusted_proxies:
+        - 127.0.0.0/8
+        - ::1/128
+      cache_size: 4194304
+      cache_ttl_min: 0
+      cache_ttl_max: 0
+      cache_optimistic: false
+      bogus_nxdomain: []
+      aaaa_disabled: false
+      enable_dnssec: false
+      edns_client_subnet: false
+      max_goroutines: 300
+      handle_ddr: true
+      ipset: []
+      ipset_file: ""
+      filtering_enabled: true
+      filters_update_interval: 24
+      parental_enabled: false
+      safesearch_enabled: false
+      safebrowsing_enabled: false
+      safebrowsing_cache_size: 1048576
+      safesearch_cache_size: 1048576
+      parental_cache_size: 1048576
+      cache_time: 30
+      rewrites:
+        - domain: qnap.fredcorp.com
+          answer: 192.168.0.250
+        - domain: heimdall.fredcorp.com
+          answer: 192.168.0.201
+        - domain: adguard.fredcorp.com
+          answer: 192.168.0.200
+        - domain: box.fredcorp.com
+          answer: 192.168.0.1
+        - domain: istio.fredcorp.com
+          answer: 192.168.0.150
+        - domain: rollout-demo.fredcorp.com
+          answer: 192.168.0.150
+        - domain: portainer.fredcorp.com
+          answer: 192.168.0.201
+        - domain: nginx.fredcorp.com
+          answer: 192.168.0.150
+        - domain: nginx-blue-green.fredcorp.com
+          answer: 192.168.0.150
+        - domain: camunda.fredcorp.com
+          answer: 192.168.0.150
+        - domain: argo-workflows.fredcorp.com
+          answer: 192.168.0.150
+        - domain: vault.fredcorp.com
+          answer: 192.168.0.201
+        - domain: olm.fredcorp.com
+          answer: 192.168.0.150
+        - domain: hass.fredcorp.com
+          answer: 192.168.0.201
+        - domain: xo.fredcorp.com
+          answer: 192.168.0.254
+        - domain: k8s-cluster.fredcorp.com
+          answer: 192.168.0.150
+        - domain: chartmuseum.fredcorp.com
+          answer: 192.168.0.146
+        - domain: jfrog.fredcorp.com
+          answer: 192.168.0.101
+        - domain: plex.fredcorp.com
+          answer: 192.168.0.175
+        - domain: argo-rollouts.fredcorp.com
+          answer: 192.168.0.146
+        - domain: kiali.fredcorp.com
+          answer: 192.168.0.146
+        - domain: starboard.fredcorp.com
+          answer: 192.168.0.146
+        - domain: argocd.fredcorp.com
+          answer: 192.168.0.146
+        - domain: kube-dashboard.fredcorp.com
+          answer: 192.168.0.146
+        - domain: artifactory.fredcorp.com
+          answer: 192.168.0.146
+        - domain: harbor.fredcorp.com
+          answer: 192.168.0.146
+        - domain: wireguard.fredcorp.com
+          answer: 192.168.0.146
+        - domain: all-in-one.fredcorp.com
+          answer: 192.168.0.146
+        - domain: argocd.fabryk-kyndryl.com
+          answer: 20.241.209.123
+        - domain: harbor.fabryk-kyndryl.com
+          answer: 20.241.209.123
+        - domain: argocd-grpc.fabryk-kyndryl.com
+          answer: 20.241.209.123
+        - domain: frontend.fabryk-kyndryl.com
+          answer: 20.241.209.123
+        - domain: microservice.fabryk-kyndryl.com
+          answer: 20.241.209.123
+        - domain: argoroll.fredcorp.com
+          answer: 192.168.0.147
+        - domain: kong-admin.fredcorp.com
+          answer: 192.168.0.147
+        - domain: traefik-k8s.fredcorp.com
+          answer: 192.168.0.147
+        - domain: traefik-rpi.fredcorp.com
+          answer: 192.168.0.201
+        - domain: traefik.fredcorp.com
+          answer: 192.168.0.147
+        - domain: kubevela.fredcorp.com
+          answer: 192.168.0.146
+        - domain: argocd-grpc.fredcorp.com
+          answer: 192.168.0.146
+        - domain: aks-fabryk-rg-fabryk-core-k-19a7ed-d2b01769.privatelink.eastus.azmk8s.io
+          answer: 10.0.67.4
+        - domain: grafana.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: prometheus.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: argocd.fabryk-eu.kyndryl.io
+          answer: 10.0.67.9
+        - domain: harbor.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: argorollouts.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: kubecost.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: jfrog.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: gitlab.fabryk-eu.kyndryl.io
+          answer: 10.0.65.5
+        - domain: vault.fabryk-eu.kyndryl.io
+          answer: 10.0.65.4
+        - domain: argocd-grpc.fabryk-eu.kyndryl.io
+          answer: 10.0.67.9
+        - domain: keycloak.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: sra-portal.fredcorp.com
+          answer: 192.168.0.146
+        - domain: awx.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: nexus-oss.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: nexus.fredcorp.com
+          answer: 192.168.0.147
+        - domain: octant.fredcorp.com
+          answer: 192.168.0.147
+        - domain: haproxy.fredcorp.com
+          answer: 192.168.0.147
+        - domain: squid.fredcorp.com
+          answer: 192.168.0.147
+        - domain: keptn.fredcorp.com
+          answer: 192.168.0.147
+        - domain: vcluster.fredcorp.com
+          answer: 192.168.0.147
+        - domain: nexus-docker.fredcorp.com
+          answer: 192.168.0.147
+        - domain: kyverno.fredcorp.com
+          answer: 192.168.0.147
+        - domain: nexus-oss.fredcorp.com
+          answer: 192.168.0.147
+        - domain: nexus-hub.fredcorp.com
+          answer: 192.168.0.147
+        - domain: nexus.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: meshery.fredcorp.com
+          answer: 192.168.0.147
+        - domain: prometheus.fredcorp.com
+          answer: 192.168.0.147
+        - domain: grafana.fredcorp.com
+          answer: 192.168.0.147
+        - domain: kiali.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: demo-api.fabryk-eu.kyndryl.io
+          answer: 10.0.67.10
+        - domain: grafana.k3s-fredcorp.com
+          answer: 192.168.0.72
+        - domain: httpbin.k3s-fredcorp.com
+          answer: 192.168.0.72
+        - domain: aio.k3s-fredcorp.com
+          answer: 192.168.0.72
+        - domain: kiali.k3s-fredcorp.com
+          answer: 192.168.0.22
+        - domain: gitea.fabryk-eu.kyndryl.io
+          answer: 10.0.67.8
+        - domain: sonarqube.k3s-fredcorp.com
+          answer: 192.168.0.22
+        - domain: rke2.fredcorp.com
+          answer: 192.168.0.100
+        - domain: rancher.fredcorp.com
+          answer: 192.168.0.50
+      blocked_services: []
+      upstream_timeout: 10s
+      private_networks: []
+      use_private_ptr_resolvers: true
+      local_ptr_upstreams: []
+      use_dns64: false
+      dns64_prefixes: []
+      serve_http3: false
+      use_http3_upstreams: false
+    tls:
+      enabled: false
+      server_name: adguard.fredcorp.com
+      force_https: true
+      port_https: 443
+      port_dns_over_tls: 853
+      port_dns_over_quic: 784
+      port_dnscrypt: 0
+      dnscrypt_config_file: ""
+      allow_unencrypted_doh: false
+      certificate_path: ""
+      private_key_path: ""
+      strict_sni_check: false
+    filters:
+      - enabled: true
+        url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+        name: AdGuard DNS filter
+        id: 1
+      - enabled: true
+        url: https://adaway.org/hosts.txt
+        name: AdAway Default Blocklist
+        id: 2
+      - enabled: true
+        url: https://www.malwaredomainlist.com/hostslist/hosts.txt
+        name: MalwareDomainList.com Hosts List
+        id: 4
+      - enabled: true
+        url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+        name: StevenBlack
+        id: 1632659750
+      - enabled: true
+        url: https://v.firebog.net/hosts/AdguardDNS.txt
+        name: Firebog adguard
+        id: 1632659751
+      - enabled: true
+        url: https://v.firebog.net/hosts/Easyprivacy.txt
+        name: Firebog easyprivacy
+        id: 1632659752
+      - enabled: true
+        url: https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
+        name: AWS malvertising
+        id: 1632659753
+      - enabled: true
+        url: https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+        name: AWS ad
+        id: 1632659754
+      - enabled: true
+        url: https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
+        name: AWS tracking
+        id: 1632659755
+      - enabled: true
+        url: https://raw.githubusercontent.com/crazy-max/WindowsSpyBlocker/master/data/hosts/spy.txt
+        name: WindowsSpyBlocker - Hosts spy rules
+        id: 1647787052
+      - enabled: true
+        url: https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/SmartTV-AGH.txt
+        name: Perflyst and Dandelion Sprout's Smart-TV Blocklist
+        id: 1647787053
+    whitelist_filters: []
+    user_rules:
+      - '||samsungads.com^'
+      - '||www.samsung.net/advertisements^'
+      - '||www.samsung.net/ads^'
+      - '||config.samsungads.com^'
+      - '||samsungotn.net^'
+      - '||samsungacr.com^'
+      - '||log-config.samsungacr.com^'
+      - '||ads.samsung.com^'
+      - '||gpm.samsungqbe.com^'
+      - '@@||dealabs.com'
+      - '@@||dealabs.digidip.net'
+      - '@@||www.skidrowreloaded.com'
+    dhcp:
+      enabled: false
+      interface_name: ""
+      local_domain_name: lan
+      dhcpv4:
+        gateway_ip: ""
+        subnet_mask: ""
+        range_start: ""
+        range_end: ""
+        lease_duration: 86400
+        icmp_timeout_msec: 1000
+        options: []
+      dhcpv6:
+        range_start: ""
+        lease_duration: 86400
+        ra_slaac_only: false
+        ra_allow_slaac: false
+    clients:
+      runtime_sources:
+        whois: true
+        arp: true
+        rdns: true
+        dhcp: true
+        hosts: true
+      persistent: []
+    log_file: ""
+    log_max_backups: 0
+    log_max_size: 100
+    log_max_age: 3
+    log_compress: false
+    log_localtime: false
+    verbose: false
+    os:
+      group: ""
+      user: ""
+      rlimit_nofile: 0
+    schema_version: 14
