@@ -48,13 +48,13 @@ spec:
               pathType: "Prefix"
               annotations:
                 cert-manager.io/cluster-issuer: vault-issuer
-                cert-manager.io/common-name: chartmuseum.k8s-app.fredcorp.com
+                cert-manager.io/common-name: chartmuseum.k8s-infra.fredcorp.com
               hosts:
-                - name: chartmuseum.k8s-app.fredcorp.com
+                - name: chartmuseum.k8s-infra.fredcorp.com
                   path: /
                   tls: true
-                  tlsSecret: chartmuseum-tls-cert
-              ingressClassName: cilium
+                  tlsSecret: chartmuseum-infra-tls-cert
+              ingressClassName: nginx
       syncPolicy:
         automated:
           prune: true
