@@ -28,3 +28,65 @@ rocketchat:
     storageClass: "nfs-csi-retain"
     accessMode: ReadWriteMany
     size: 8Gi
+
+psmdb-db:
+  crVersion: 1.19.0
+  pause: false
+  unmanaged: false
+  unsafeFlags:
+    tls: false
+    replsetSize: false
+    mongosSize: false
+    terminationGracePeriod: false
+    backupIfUnhealthy: false
+
+  enableVolumeExpansion: false
+
+  multiCluster:
+    enabled: false
+    # DNSSuffix: svc.clusterset.local
+  updateStrategy: SmartUpdate
+  upgradeOptions:
+    versionServiceEndpoint: https://check.percona.com
+    apply: disabled
+    schedule: "0 2 * * *"
+    setFCV: false
+
+  replsets:
+    rs0:
+      name: rs0
+      size: 3
+      resources:
+        limits:
+          cpu: "300m"
+          memory: "0.5G"
+        requests:
+          cpu: "300m"
+          memory: "0.5G"
+      volumeSpec:
+        # emptyDir: {}
+        # hostPath:
+        #   path: /data
+        #   type: Directory
+        pvc:
+          # annotations:
+          #   volume.beta.kubernetes.io/storage-class: example-hostpath
+          # labels:
+          #   rack: rack-22
+          storageClassName: nfs-csi-retain
+          accessModes: [ "ReadWriteOnce" ]
+          resources:
+            requests:
+              storage: 8Gi
+
+  sharding:
+    enabled: false
+    balancer:
+      enabled: true
+    configrs:
+      size: 3
+
+  backup:
+    enabled: false
+
+
