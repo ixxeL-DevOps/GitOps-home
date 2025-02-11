@@ -1,10 +1,10 @@
-# apiVersion: v2
-# name: rocketchat
-# version: 1.0.0
-# dependencies:
-# - name: rocketchat
-#   version: 6.23.2
-#   repository: https://rocketchat.github.io/helm-charts
+apiVersion: v2
+name: rocketchat
+version: 1.0.0
+dependencies:
+- name: rocketchat
+  version: 6.23.2
+  repository: https://rocketchat.github.io/helm-charts
 # - name: psmdb-db
 #   version: 1.19.0
 #   repository: https://percona.github.io/percona-helm-charts/
