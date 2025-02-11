@@ -1,5 +1,5 @@
 rocketchat:
-  host: rocketchat.k8s-app.fredcorp.com
+  host: rocketchat.k8s-infra.fredcorp.com
   mongodb:
     enabled: true
     auth:
@@ -14,15 +14,15 @@ rocketchat:
   ingress:
     enabled: true
     pathType: Prefix
-    ingressClassName: "cilium"
+    ingressClassName: "nginx"
     annotations:
       cert-manager.io/cluster-issuer: vault-issuer
-      cert-manager.io/common-name: rocketchat.k8s-app.fredcorp.com
+      cert-manager.io/common-name: rocketchat.k8s-infra.fredcorp.com
     path: /
     tls: 
-      - secretName: rocketchat-tls-cert
+      - secretName: rocketchat-infra-tls-cert
         hosts:
-          - rocketchat.k8s-app.fredcorp.com
+          - rocketchat.k8s-infra.fredcorp.com
   persistence:
     enabled: true
     storageClass: "nfs-csi-retain"
