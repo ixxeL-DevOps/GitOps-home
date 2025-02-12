@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: dev-apps
+  name: uat-apps
   namespace: argocd
 spec:
   goTemplate: true
@@ -11,11 +11,11 @@ spec:
         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
         revision: main
         directories:
-          - path: 'envs/vk-dev/namespaces/*/apps/*'
+          - path: 'envs/vk-uat/namespaces/*/apps/*'
             exclude: false
   template:
     metadata:
-      name: '{{ .path.basenameNormalized }}-dev'
+      name: '{{ .path.basenameNormalized }}-uat'
       annotations:
         argocd-image-updater.argoproj.io/app.helm.image-tag: '{{ index .path.segments 5 }}.image.tag'
         argocd-image-updater.argoproj.io/app.update-strategy: semver
@@ -24,10 +24,10 @@ spec:
         argocd-image-updater.argoproj.io/app.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git
         notifications.argoproj.io/subscribe.sync-operation-success.github: ""
-        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#apps-dev"
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#apps-uat"
       finalizers: []
     spec:
-      project: dev-apps
+      project: uat-apps
       destination:
         name: '{{ index .path.segments 1 }}'
         namespace: '{{ index .path.segments 3 }}'
