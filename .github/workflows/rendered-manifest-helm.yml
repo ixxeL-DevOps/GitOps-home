@@ -165,6 +165,7 @@ jobs:
         with:
           webhook_url: ${{ vars.RENOVATE_ROCKETCHAT_WEBHOOK }}
           webhook_secret: ${{ secrets.RENOVATE_ROCKETCHAT_TOKEN }}
+          verify_ssl: false
           data: |
             {
               "alias": "Renovate GitOps-home update",
