@@ -744,6 +744,7 @@ argo-cd:
       server.rbac.log.enforce.enable: false
       exec.enabled: true
       admin.enabled: true
+      hydrator.enabled: "true"
       timeout.reconciliation: 180s
       timeout.hard.reconciliation: 0
       application.resourceTrackingMethod: annotation
