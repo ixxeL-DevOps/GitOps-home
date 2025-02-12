@@ -233,7 +233,7 @@ argo-cd:
       service.rocketchat: |
         email: $rocketchat-email
         password: $rocketchat-password
-        serverUrl: https://rocketchat.k8s-app.fredcorp.com
+        serverUrl: https://rocketchat.k8s-infra.fredcorp.com
 
     # subscriptions:
     #   - recipients:
