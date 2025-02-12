@@ -161,28 +161,23 @@ jobs:
           target: pr
 
       - name: Invoke deployment hook
-        uses: distributhor/workflow-webhook@v3
-        with:
-          webhook_type: 'json-extended'
-          webhook_url: ${{ vars.RENOVATE_ROCKETCHAT_WEBHOOK }}
-          webhook_secret: ${{ secrets.RENOVATE_ROCKETCHAT_TOKEN }}
-          verify_ssl: false
-          data: |
-            {
-              "alias": "Renovate GitOps-home update",
-              "avatar": "https://seeklogo.com/free-vector-logos/renovate",
-              "text": "PR-${{ github.event.number }} :  ${{ github.event.pull_request.title }}",
-              "attachments": [
-                {
-                  "title": "Rocket.Chat",
-                  "title_link": "https://rocket.chat",
-                  "text": "Rocket.Chat, the best open source chat",
-                  "image_url": "https://rocketchat.k8s-infra.fredcorp.com/images/integration-attachment-example.png",
-                  "color": "#764FA5"
-                }
-              ]
-            }
-
+        run: |
+          curl -kX POST -H "Content-Type: application/json" --data @- ${{ secrets.ROCKETCHAT_INFRA_WEBHOOK }} <<EOF
+          {
+            "alias": "Renovate GitOps-home update",
+            "avatar": "https://seeklogo.com/free-vector-logos/renovate",
+            "text": "PR-${{ github.event.pull_request.number }}--> ${{ github.event.pull_request.title }}",
+            "attachments": [
+              {
+                "title": "Rocket.Chat",
+                "title_link": "https://rocket.chat",
+                "text": "Rocket.Chat, the best open source chat",
+                "image_url": "https://rocketchat.k8s-infra.fredcorp.com/images/integration-attachment-example.png",
+                "color": "#764FA5"
+              }
+            ]
+          }
+          EOF
       # - name: Generate diffs for each Chart
       #   id: format-result
       #   env:
