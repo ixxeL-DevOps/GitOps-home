@@ -24,7 +24,7 @@ spec:
         argocd-image-updater.argoproj.io/app.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git
         notifications.argoproj.io/subscribe.sync-operation-success.github: ""
-        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-talos-prod"
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#apps-dev"
       finalizers: []
     spec:
       project: dev-apps

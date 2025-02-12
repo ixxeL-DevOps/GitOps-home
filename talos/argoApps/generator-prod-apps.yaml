@@ -32,7 +32,7 @@ spec:
         argocd-image-updater.argoproj.io/image-list: 'app=docker.io/ixxel/{{ .path.basenameNormalized }}'
         argocd-image-updater.argoproj.io/app.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git
-        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#argocd-talos-prod"
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#apps-prod"
       finalizers: []
     spec:
       project: prod-apps
