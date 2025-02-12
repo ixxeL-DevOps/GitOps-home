@@ -166,13 +166,12 @@ jobs:
           {
             "alias": "Helm chart update",
             "avatar": "https://seeklogo.com/free-vector-logos/renovate",
-            "text": "PR-${{ github.event.pull_request.number }}--> ${{ github.event.pull_request.title }}",
+            "text": "PR-${{ github.event.pull_request.number }} | ${{ github.event.pull_request.title }}",
             "attachments": [
               {
-                "title": "Helm update on infrastructure",
-                "title_link": "https://github.com/ixxeL-DevOps/GitOps-home.git",
+                "title": "Helm update on infrastructure PR#${{ github.event.pull_request.number }}",
+                "title_link": "https://github.com/ixxeL-DevOps/GitOps-home/pull/${{ github.event.pull_request.number }}",
                 "text": "GHA pipeline triggered for Helm upgrade [[ ${{ github.event.pull_request.title }} ]]",
-                "image_url": "https://rocketchat.k8s-infra.fredcorp.com/images/integration-attachment-example.png",
                 "color": "#764FA5"
               }
             ]
