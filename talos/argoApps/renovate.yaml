@@ -5,39 +5,28 @@ metadata:
   name: renovate
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements: []
-      # - env: talos
-      #   namespace: renovate
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/renovate/*'
+          exclude: false
   template:
     metadata:
-      name: 'renovate-{{env}}'
-      finalizers: []
+      name: 'renovate-{{ .path.basenameNormalized }}'
+      annotations:
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
     spec:
       project: infra-core
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: renovate
       source:
-        repoURL: https://docs.renovatebot.com/helm-charts
-        targetRevision: 39.166.0
-        chart: renovate
-        helm:
-          releaseName: 'renovate-{{env}}'
-          valuesObject:
-            fullnameOverride: 'renovate-{{env}}'
-            cronjob:
-              schedule: '0 1 * * *' # At 01:00 every day
-            existingSecret: 'github-creds'
-            renovate:
-              config: |
-                {
-                  "platform": "github",
-                  "autodiscover": "true",
-                  "automergeType": "pr",
-                  "autodiscoverFilter": ["ixxeL-DevOps/*"]
-                }
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
