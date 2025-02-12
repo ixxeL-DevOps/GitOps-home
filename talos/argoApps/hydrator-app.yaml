@@ -15,7 +15,7 @@ spec:
       path: 'envs/vk-uat/namespaces/helm-promote/apps/demp-web'
       targetRevision: main
     syncSource:
-      targetBranch: environments/uat
+      targetBranch: stage/uat
       path: 'envs/vk-uat/namespaces/helm-promote/apps/demp-web'
     hydrateTo:
-      targetBranch: environments/uat-next
+      targetBranch: stage/uat-next
