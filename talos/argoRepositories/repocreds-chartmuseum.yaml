@@ -23,7 +23,7 @@ spec:
         type: helm
         username: root
         password: "{{ .password }}"
-        url: https://chartmuseum.k8s-app.fredcorp.com
+        url: https://chartmuseum.k8s-infra.fredcorp.com
   data:
   - secretKey: password
     remoteRef:
