@@ -16,6 +16,8 @@ spec:
   template:
     metadata:
       name: 'cilium-{{ .path.basenameNormalized }}'
+      annotations:
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
     spec:
       project: infra-network
       destination:

@@ -1,39 +1,42 @@
----
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: kubechecks
-  namespace: argocd
-spec:
-  goTemplate: true
-  generators:
-  - git:
-      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
-      revision: main
-      directories:
-        - path: 'talos/apps/kubechecks/*'
-          exclude: false
-  template:
-    metadata:
-      name: 'kubechecks-{{ .path.basenameNormalized }}'
-    spec:
-      project: infra-security
-      destination:
-        name: '{{ .path.basenameNormalized }}'
-        namespace: kubechecks
-      source:
-        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
-        path: '{{.path.path}}'
-        targetRevision: main
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-          - Validate=true
-          - PruneLast=false
-          - RespectIgnoreDifferences=true
-          - Replace=false
-          - ApplyOutOfSyncOnly=true
-          - CreateNamespace=true
-          - ServerSideApply=true
+# ---
+# apiVersion: argoproj.io/v1alpha1
+# kind: ApplicationSet
+# metadata:
+#   name: kubechecks
+#   namespace: argocd
+# spec:
+#   goTemplate: true
+#   generators:
+#   - git:
+#       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+#       revision: main
+#       directories:
+#         - path: 'talos/apps/kubechecks/*'
+#           exclude: false
+#   template:
+#     metadata:
+#       name: 'kubechecks-{{ .path.basenameNormalized }}'
+#       annotations:
+#         notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
+
+#     spec:
+#       project: infra-security
+#       destination:
+#         name: '{{ .path.basenameNormalized }}'
+#         namespace: kubechecks
+#       source:
+#         repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+#         path: '{{.path.path}}'
+#         targetRevision: main
+#       syncPolicy:
+#         automated:
+#           prune: true
+#           selfHeal: true
+#         syncOptions:
+#           - Validate=true
+#           - PruneLast=false
+#           - RespectIgnoreDifferences=true
+#           - Replace=false
+#           - ApplyOutOfSyncOnly=true
+#           - CreateNamespace=true
+#           - ServerSideApply=true

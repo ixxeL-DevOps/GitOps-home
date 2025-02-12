@@ -16,6 +16,8 @@ spec:
   template:
     metadata:
       name: 'nginx-ingress-ctrl-{{ .path.basenameNormalized }}'
+      annotations:
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
     spec:
       project: infra-network
       destination:

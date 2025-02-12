@@ -16,6 +16,8 @@ spec:
   template:
     metadata:
       name: 'vk-k3s-{{ index .path.segments 3 }}'
+      annotations:
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
     spec:
       project: vcluster
       destination:
