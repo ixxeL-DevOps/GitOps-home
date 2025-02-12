@@ -42,3 +42,8 @@ spec:
         managedNamespaceMetadata:
           labels:
             pod-security.kubernetes.io/enforce: privileged
+      ignoreDifferences:
+        - group: actions.summerwind.dev
+          kind: RunnerDeployment
+          jsonPointers:
+            - /spec/replicas
