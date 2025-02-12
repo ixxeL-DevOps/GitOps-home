@@ -160,6 +160,27 @@ jobs:
         with:
           target: pr
 
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v3
+        with:
+          webhook_url: ${{ vars.RENOVATE_ROCKETCHAT_WEBHOOK }}
+          webhook_secret: ${{ secrets.RENOVATE_ROCKETCHAT_TOKEN }}
+          data: |
+            {
+              "alias": "Renovate GitOps-home update",
+              "avatar": "https://seeklogo.com/free-vector-logos/renovate",
+              "text": "PR-${{ github.event.number }} :  ${{ github.event.pull_request.title }}",
+              "attachments": [
+                {
+                  "title": "Rocket.Chat",
+                  "title_link": "https://rocket.chat",
+                  "text": "Rocket.Chat, the best open source chat",
+                  "image_url": "https://rocketchat.k8s-infra.fredcorp.com/images/integration-attachment-example.png",
+                  "color": "#764FA5"
+                }
+              ]
+            }
+
       # - name: Generate diffs for each Chart
       #   id: format-result
       #   env:
