@@ -3,5 +3,5 @@ name: actions-runner-controller
 version: 1.0.0
 dependencies:
 - name: actions-runner-controller
-  version: 0.23.7
+  version: 0.23.6
   repository: https://actions-runner-controller.github.io/actions-runner-controller
