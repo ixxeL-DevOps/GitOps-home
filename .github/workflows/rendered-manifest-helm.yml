@@ -164,14 +164,14 @@ jobs:
         run: |
           curl -kX POST -H "Content-Type: application/json" --data @- ${{ secrets.ROCKETCHAT_INFRA_WEBHOOK }} <<EOF
           {
-            "alias": "Renovate GitOps-home update",
+            "alias": "Helm chart update",
             "avatar": "https://seeklogo.com/free-vector-logos/renovate",
             "text": "PR-${{ github.event.pull_request.number }}--> ${{ github.event.pull_request.title }}",
             "attachments": [
               {
-                "title": "Rocket.Chat",
-                "title_link": "https://rocket.chat",
-                "text": "Rocket.Chat, the best open source chat",
+                "title": "Helm update on infrastructure",
+                "title_link": "https://github.com/ixxeL-DevOps/GitOps-home.git",
+                "text": "GHA pipeline triggered for Helm upgrade [[ ${{ github.event.pull_request.title }} ]]",
                 "image_url": "https://rocketchat.k8s-infra.fredcorp.com/images/integration-attachment-example.png",
                 "color": "#764FA5"
               }
