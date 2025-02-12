@@ -163,6 +163,7 @@ jobs:
       - name: Invoke deployment hook
         uses: distributhor/workflow-webhook@v3
         with:
+          webhook_type: 'json-extended'
           webhook_url: ${{ vars.RENOVATE_ROCKETCHAT_WEBHOOK }}
           webhook_secret: ${{ secrets.RENOVATE_ROCKETCHAT_TOKEN }}
           verify_ssl: false
