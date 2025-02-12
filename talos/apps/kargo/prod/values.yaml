@@ -3,13 +3,13 @@ kargo:
     tls:
       enabled: false
       selfSignedCert: false
-    host: kargo.k8s-app.fredcorp.com
+    host: kargo.k8s-infra.fredcorp.com
     ingress:
-      enabled: false
-      # annotations:
-      #   cert-manager.io/cluster-issuer: vault-issuer
-      #   cert-manager.io/common-name: kargo.k8s-app.fredcorp.com
-      ingressClassName: cilium
+      enabled: true
+      annotations:
+        cert-manager.io/cluster-issuer: vault-issuer
+        cert-manager.io/common-name: kargo.k8s-infra.fredcorp.com
+      ingressClassName: nginx
       tls:
         enabled: true
         selfSignedCert: true
