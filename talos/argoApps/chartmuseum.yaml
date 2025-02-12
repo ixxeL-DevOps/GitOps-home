@@ -5,56 +5,28 @@ metadata:
   name: chartmuseum
   namespace: argocd
 spec:
+  goTemplate: true
   generators:
-  - list:
-      elements:
-      - env: talos
-        namespace: chartmuseum
+  - git:
+      repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+      revision: main
+      directories:
+        - path: 'talos/apps/chartmuseum/*'
+          exclude: false
   template:
     metadata:
-      name: 'chartmuseum-{{env}}'
-      finalizers: []
+      name: 'chartmuseum-{{ .path.basenameNormalized }}'
+      annotations:
+        notifications.argoproj.io/subscribe.sync-operation-change.rocketchat: "#infrastructure"
     spec:
       project: infra-core
       destination:
-        name: '{{env}}'
-        namespace: '{{namespace}}'
+        name: '{{ .path.basenameNormalized }}'
+        namespace: chartmuseum
       source:
-        repoURL: https://chartmuseum.github.io/charts
-        targetRevision: 3.10.3
-        chart: chartmuseum
-        helm:
-          releaseName: 'chartmuseum-{{env}}'
-          valuesObject:
-            env:
-              open:
-                STORAGE: local
-                DISABLE_API: false
-                AUTH_ANONYMOUS_GET: true
-                DEBUG: false
-                ALLOW_OVERWRITE: false
-                DEPTH: 0
-            existingSecret: chartmuseum-creds
-            existingSecretMappings:
-              BASIC_AUTH_USER: user
-              BASIC_AUTH_PASS: password
-            persistence:
-              enabled: true
-              acessmode: ReadWriteMany
-              size: 10Gi
-              path: /storage
-            ingress:
-              enabled: true
-              pathType: "Prefix"
-              annotations:
-                cert-manager.io/cluster-issuer: vault-issuer
-                cert-manager.io/common-name: chartmuseum.k8s-infra.fredcorp.com
-              hosts:
-                - name: chartmuseum.k8s-infra.fredcorp.com
-                  path: /
-                  tls: true
-                  tlsSecret: chartmuseum-infra-tls-cert
-              ingressClassName: nginx
+        repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
+        path: '{{.path.path}}'
+        targetRevision: main
       syncPolicy:
         automated:
           prune: true
