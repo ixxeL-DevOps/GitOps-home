@@ -12,10 +12,10 @@ spec:
   sourceHydrator:
     drySource:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-apps.git'
-      path: 'envs/vk-uat/namespaces/helm-promote/apps/demp-web'
+      path: 'envs/vk-uat/namespaces/helm-promote/apps/demo-web'
       targetRevision: main
     syncSource:
       targetBranch: stage/uat
-      path: 'envs/vk-uat/namespaces/helm-promote/apps/demp-web'
+      path: 'envs/vk-uat/namespaces/helm-promote/apps/demo-web'
     hydrateTo:
       targetBranch: stage/uat-next
