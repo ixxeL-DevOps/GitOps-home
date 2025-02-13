@@ -53,7 +53,7 @@ spec:
       data:
         username: ixxel
         password: "{{ .token }}"
-        url: https://github.com
+        url: https://github.com/ixxeL-DevOps/GitOps-apps.git
         type: git
         project: argocd
   data:
