@@ -8,7 +8,6 @@ spec:
   project: argocd
   destination:
     server: https://kubernetes.default.svc
-    name: prod
     namespace: default
   sourceHydrator:
     drySource:
