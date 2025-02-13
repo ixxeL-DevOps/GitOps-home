@@ -23,7 +23,7 @@ spec:
         githubAppID: "{{ .appid }}"
         githubAppInstallationID: "{{ .installid }}"
         githubAppPrivateKey: |-
-          "{{ .privatekey }}"
+          {{ .privatekey }}
   data:
   - secretKey: appid
     remoteRef:
