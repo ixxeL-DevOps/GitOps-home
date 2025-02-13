@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/arc-runner/*'
+        - path: 'talos/manifests/arc-runner/*'
           exclude: false
   template:
     metadata:

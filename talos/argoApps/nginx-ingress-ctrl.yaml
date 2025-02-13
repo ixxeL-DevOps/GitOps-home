@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/nginx-ingress-ctrl/*'
+        - path: 'talos/manifests/nginx-ingress-ctrl/*'
           exclude: false
   template:
     metadata:

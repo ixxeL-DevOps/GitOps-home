@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/loki/*'
+        - path: 'talos/manifests/loki/*'
           exclude: false
   template:
     metadata:

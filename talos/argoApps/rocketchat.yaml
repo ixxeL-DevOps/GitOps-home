@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/rocketchat/*'
+        - path: 'talos/manifests/rocketchat/*'
           exclude: false
   template:
     metadata:

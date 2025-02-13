@@ -11,7 +11,7 @@
 #       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
 #       revision: main
 #       directories:
-#         - path: 'talos/apps/kubechecks/*'
+#         - path: 'talos/manifests/kubechecks/*'
 #           exclude: false
 #   template:
 #     metadata:

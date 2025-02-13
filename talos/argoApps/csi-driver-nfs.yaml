@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/csi-driver-nfs/*'
+        - path: 'talos/manifests/csi-driver-nfs/*'
           exclude: false
   template:
     metadata:

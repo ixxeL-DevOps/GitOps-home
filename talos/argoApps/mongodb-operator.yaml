@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/mongodb-operator/*'
+        - path: 'talos/manifests/mongodb-operator/*'
           exclude: false
   template:
     metadata:

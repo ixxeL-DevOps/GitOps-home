@@ -11,7 +11,7 @@ spec:
       repoURL: 'https://github.com/ixxeL-DevOps/GitOps-home.git'
       revision: main
       directories:
-        - path: 'talos/apps/chartmuseum/*'
+        - path: 'talos/manifests/chartmuseum/*'
           exclude: false
   template:
     metadata:
