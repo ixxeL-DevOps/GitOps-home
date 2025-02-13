@@ -560,6 +560,9 @@ argo-cd:
     enabled: true
     name: redis
 
+  commitServer:
+    enabled: true
+
   repoServer:
     containerSecurityContext:
       readOnlyRootFilesystem: true
