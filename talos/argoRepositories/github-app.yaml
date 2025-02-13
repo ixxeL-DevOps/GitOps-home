@@ -22,7 +22,7 @@ spec:
         password: "{{ .token }}"
         url: https://github.com
         type: git
-        project: ephemeral
+        project: argocd
   data:
   - secretKey: token
     remoteRef:
