@@ -3,7 +3,6 @@ apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
   name: otel
-  namespace: opentelemetry
 spec:
   mode: daemonset
   config: |
