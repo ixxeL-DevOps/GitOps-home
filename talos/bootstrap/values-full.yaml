@@ -859,36 +859,36 @@ argo-cd:
                 argocd-vault-plugin generate . --verbose-sensitive-output --secret-name $AVP_SECRET_CONFIG
 
   extraObjects:
-  - apiVersion: external-secrets.io/v1beta1
-    kind: ExternalSecret
-    metadata:
-      name: repo-creds-github
-      namespace: argocd
-    spec:
-      secretStoreRef:
-        kind: ClusterSecretStore
-        name: admin
-      target:
-        name: repo-creds-github
-        creationPolicy: Owner
-        deletionPolicy: Retain
-        template:
-          engineVersion: v2
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: repo-creds
-          data:
-            username: ixxel
-            password: "{{ `{{ .token }}` }}"
-            url: https://github.com
-      data:
-      - secretKey: token
-        remoteRef:
-          key: github
-          property: DEVOPS_ORG_PAT
-          conversionStrategy: Default
-          decodingStrategy: None
-          metadataPolicy: None
+  # - apiVersion: external-secrets.io/v1beta1
+  #   kind: ExternalSecret
+  #   metadata:
+  #     name: repo-creds-github
+  #     namespace: argocd
+  #   spec:
+  #     secretStoreRef:
+  #       kind: ClusterSecretStore
+  #       name: admin
+  #     target:
+  #       name: repo-creds-github
+  #       creationPolicy: Owner
+  #       deletionPolicy: Retain
+  #       template:
+  #         engineVersion: v2
+  #         metadata:
+  #           labels:
+  #             argocd.argoproj.io/secret-type: repo-creds
+  #         data:
+  #           username: ixxel
+  #           password: "{{ `{{ .token }}` }}"
+  #           url: https://github.com
+  #     data:
+  #     - secretKey: token
+  #       remoteRef:
+  #         key: github
+  #         property: DEVOPS_ORG_PAT
+  #         conversionStrategy: Default
+  #         decodingStrategy: None
+  #         metadataPolicy: None
 
   - apiVersion: external-secrets.io/v1beta1
     kind: ExternalSecret
