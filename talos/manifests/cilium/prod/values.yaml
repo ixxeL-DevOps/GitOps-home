@@ -32,7 +32,7 @@ cilium:
   k8sServicePort: 7445
   hubble:
     ui:
-      enabled: true
+      enabled: false
       ingress:
         enabled: true
         annotations:
@@ -48,7 +48,7 @@ cilium:
     relay:
       enabled: true
   ingressController:
-    enabled: true
+    enabled: false
     loadbalancerMode: shared
     default: true
     enforceHttps: true
