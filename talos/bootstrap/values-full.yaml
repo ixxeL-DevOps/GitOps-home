@@ -744,7 +744,6 @@ argo-cd:
       server.rbac.log.enforce.enable: false
       exec.enabled: true
       admin.enabled: true
-      hydrator.enabled: "true"
       timeout.reconciliation: 180s
       timeout.hard.reconciliation: 0
       application.resourceTrackingMethod: annotation
@@ -800,6 +799,7 @@ argo-cd:
       # See : https://github.com/argoproj-labs/argocd-extension-metrics#install-ui-extension
     params:
       otlp.address: ''
+      hydrator.enabled: "true"
       controller.status.processors: 20
       controller.operation.processors: 10
       controller.self.heal.timeout.seconds: 5
