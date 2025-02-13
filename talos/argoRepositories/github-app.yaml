@@ -22,6 +22,7 @@ spec:
         password: "{{ .token }}"
         url: https://github.com
         type: git
+        project: ephemeral
   data:
   - secretKey: token
     remoteRef:
