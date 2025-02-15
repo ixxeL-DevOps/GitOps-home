@@ -47,6 +47,12 @@ argo-cd:
       annotations:
         cert-manager.io/cluster-issuer: vault-issuer
         cert-manager.io/common-name: argocd.k8s-infra.fredcorp.com
+        nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+        nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+        nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+        nginx.ingress.kubernetes.io/server-snippet: |
+          keepalive_timeout 300;
+          keepalive_requests 10000;
         # traefik.ingress.kubernetes.io/router.tls: true
       labels: {}
       ingressClassName: "nginx"
