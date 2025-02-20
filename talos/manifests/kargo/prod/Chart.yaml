@@ -3,5 +3,5 @@ name: kargo
 version: 1.0.0
 dependencies:
 - name: kargo
-  version: 1.2.2
+  version: 1.2.3
   repository: oci://ghcr.io/akuity/kargo-charts
