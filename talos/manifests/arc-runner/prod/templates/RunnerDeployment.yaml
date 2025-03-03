@@ -99,7 +99,7 @@ spec:
       # https://hub.docker.com/r/summerwind/actions-runner
       # You can also build your own and specify it like the below:
       # image: ixxel/arc-runner:v0
-      image: ixxel/toolbox:arc-v0.1.1
+      image: ixxel/toolbox:arc-v0.2.1
       imagePullPolicy: Always
       resources:
         limits:
@@ -140,8 +140,8 @@ spec:
       # Docker sidecar container image tweaks examples below, only applicable if dockerdWithinRunnerContainer = false
       dockerdContainerResources:
         limits:
-          cpu: "2"
-          memory: "4Gi"
+          cpu: "4"
+          memory: "8Gi"
         requests:
           cpu: "500m"
           memory: "1Gi"
