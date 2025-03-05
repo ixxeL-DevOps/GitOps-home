@@ -190,3 +190,23 @@ kube-prometheus-stack:
         - hosts:
             - grafana.k8s-infra.fredcorp.com
           secretName: grafana-tls-cert
+
+prometheus-blackbox-exporter:
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations:
+      cert-manager.io/cluster-issuer: vault-issuer
+      cert-manager.io/common-name: blackbox.k8s-infra.fredcorp.com
+    hosts:
+      - host: blackbox.k8s-infra.fredcorp.com
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls:
+      - hosts:
+          - blackbox.k8s-infra.fredcorp.com
+        secretName: blackbox-tls-cert
+
+
+
