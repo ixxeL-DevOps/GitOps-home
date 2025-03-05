@@ -22,15 +22,15 @@ kube-prometheus-stack:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: vault-issuer
-        cert-manager.io/common-name: prometheus.k8s-app.fredcorp.com
-      ingressClassName: cilium
+        cert-manager.io/common-name: prometheus.k8s-infra.fredcorp.com
+      ingressClassName: nginx
       pathType: Prefix
       hosts:
-        - prometheus.k8s-app.fredcorp.com
+        - prometheus.k8s-infra.fredcorp.com
       path: /
       tls:
         - hosts:
-            - prometheus.k8s-app.fredcorp.com
+            - prometheus.k8s-infra.fredcorp.com
           secretName: prometheus-tls-cert
   kubeApiServer:
     enabled: true
@@ -181,12 +181,12 @@ kube-prometheus-stack:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: vault-issuer
-        cert-manager.io/common-name: grafana.k8s-app.fredcorp.com
-      ingressClassName: cilium
+        cert-manager.io/common-name: grafana.k8s-infra.fredcorp.com
+      ingressClassName: nginx
       hosts:
-        - grafana.k8s-app.fredcorp.com
+        - grafana.k8s-infra.fredcorp.com
       path: /
       tls:
         - hosts:
-            - grafana.k8s-app.fredcorp.com
+            - grafana.k8s-infra.fredcorp.com
           secretName: grafana-tls-cert
