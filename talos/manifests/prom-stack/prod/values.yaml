@@ -92,7 +92,7 @@ kube-prometheus-stack:
   grafana:
     enabled: true
     adminPassword: password
-    defaultDashboardsEnabled: true
+    defaultDashboardsEnabled: false
     defaultDashboardsEditable: true
     defaultDashboardsTimezone: Europe/Paris
     persistence:
