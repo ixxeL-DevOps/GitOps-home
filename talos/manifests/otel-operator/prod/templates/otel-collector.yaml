@@ -1,61 +1,144 @@
----
-apiVersion: opentelemetry.io/v1alpha1
+apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
   name: otel
 spec:
-  mode: daemonset
-  config: |
-    presets:
-      clusterMetrics:
-        enabled: true
-      hostMetrics:
-        enabled: true
-      kubernetesEvents:
-        enabled: true
-      kubernetesAttributes:
-        enabled: true
-        extractAllPodLabels: true
-        extractAllPodAnnotations: true
-
+  mode: statefulset
+  targetAllocator:
+    enabled: true
+    serviceAccount: otel-collector-allocator
+    prometheusCR:
+      enabled: true
+      serviceMonitorSelector:
+        matchLabels:
+          release: prom-stack-prod
+  config:
     receivers:
-      otlp:
-        protocols:
-          grpc:
-            endpoint: 0.0.0.0:4317
-          http:
-            endpoint: 0.0.0.0:4318
       prometheus:
         config:
           scrape_configs:
-          - job_name: otel-collector
-            scrape_interval: 5s
+          - job_name: 'otel-collector'
+            scrape_interval: 10s
             static_configs:
-            - targets: [0.0.0.0:8888]
+            - targets: [ '0.0.0.0:8888' ]
 
     exporters:
-      debug:
-      otlp:
-        endpoint: 0.0.0.0:4319
-
-    processors:
-      memory_limiter:
-        check_interval: 1s
-        limit_percentage: 75
-        spike_limit_percentage: 15
-      batch:
-        send_batch_size: 10000
-        timeout: 10s
+      debug: {}
 
     service:
       pipelines:
         metrics:
-          receivers: [otlp]
-          processors: [memory_limiter, batch]
-          exporters: [otlp]
-        traces:
-          receivers: [otlp]
-          processors: [memory_limiter, batch]
-          exporters: [otlp]
+          receivers: [prometheus]
+          exporters: [debug]
 
+---
+# ---
+# apiVersion: opentelemetry.io/v1beta1
+# kind: OpenTelemetryCollector
+# metadata:
+#   name: otel
+# spec:
+#   mode: statefulset
+#   targetAllocator:
+#     enabled: true
+#     serviceAccount: otel-collector-allocator
+#     prometheusCR:
+#       enabled: true
+#       serviceMonitorSelector:
+#         matchLabels:
+#           release: prom-stack-prod
+#   config:
+#     receivers:
+#       prometheus:
+#         config:
+#           scrape_configs:
+#           - job_name: otel-collector
+#             scrape_interval: 5s
+#             static_configs:
+#             - targets: [0.0.0.0:8888]
+#         target_allocator:
+#           endpoint: http://otel-targetallocator
+#           interval: 30s
+#           collector_id: "${POD_NAME}"
 
+#     exporters:
+#       debug:
+#         verbosity: detailed
+#       prometheus:
+#         endpoint: "0.0.0.0:8889"
+#         send_timestamps: true
+#         metric_expiration: 180m
+
+#     service:
+#       pipelines:
+#         metrics:
+#           receivers:
+#           - prometheus
+#           processors: []
+#           exporters:
+#           - debug
+#           - prometheus
+#       telemetry:
+#         logs:
+#           level: "debug"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: otel-collector-allocator
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: opentelemetry-targetallocator-role
+rules:
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+      - podmonitors
+      - probes
+      - scrapeconfigs
+    verbs:
+      - '*'
+  - apiGroups: ['']
+    resources:
+      - namespaces
+    verbs: ['get', 'list', 'watch']
+  - apiGroups: ['']
+    resources:
+      - nodes
+      - nodes/metrics
+      - services
+      - endpoints
+      - pods
+    verbs: ['get', 'list', 'watch']
+  - apiGroups: ['']
+    resources:
+      - configmaps
+    verbs: ['get']
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs: ['get', 'list', 'watch']
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs: ['get', 'list', 'watch']
+  - nonResourceURLs: ['/metrics']
+    verbs: ['get']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: opentelemetry-targetallocator-rb
+subjects:
+  - kind: ServiceAccount
+    name: otel-collector-allocator
+    namespace: opentelemetry
+roleRef:
+  kind: ClusterRole
+  name: opentelemetry-targetallocator-role
+  apiGroup: rbac.authorization.k8s.io

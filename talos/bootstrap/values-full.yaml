@@ -114,7 +114,7 @@ argo-cd:
         enabled: true
         interval: 30s
         additionalLabels:
-          release: prom-stack-talos
+          release: prom-stack-prod
 
   controller:
     containerSecurityContext:
@@ -147,7 +147,7 @@ argo-cd:
         enabled: true
         interval: 30s
         additionalLabels:
-          release: prom-stack-talos
+          release: prom-stack-prod
 
   applicationSet:
     enabled: true
@@ -173,7 +173,7 @@ argo-cd:
         enabled: true
         interval: 30s
         additionalLabels:
-          release: prom-stack-talos
+          release: prom-stack-prod
     # volumeMounts:
     # - mountPath: /etc/ssl/certs/fredcorp.pem
     #   subPath: fredcorp.pem
@@ -219,7 +219,7 @@ argo-cd:
         enabled: true
         interval: 30s
         additionalLabels:
-          release: prom-stack-talos
+          release: prom-stack-prod
 
     argocdUrl: "https://argocd.k8s-app.fredcorp.com"
 
@@ -593,7 +593,7 @@ argo-cd:
         enabled: true
         interval: 30s
         additionalLabels:
-          release: prom-stack-talos
+          release: prom-stack-prod
     # extraContainers:
     #   - name: avp-helm
     #     command: [/var/run/argocd/argocd-cmp-server]
