@@ -192,6 +192,16 @@ kube-prometheus-stack:
           secretName: grafana-tls-cert
 
 prometheus-blackbox-exporter:
+  extraVolumes:
+    - name: fredcorp-pki-certs
+      configMap:
+        name: fredcorp-pki-certs
+  extraVolumeMounts:
+    - name: fredcorp-pki-certs
+      mountPath: /etc/ssl/certs/vault-pki-certs.pem
+      subPath: vault-pki-certs.pem
+      readOnly: true
+
   ingress:
     enabled: true
     className: "nginx"
@@ -227,4 +237,12 @@ prometheus-blackbox-exporter:
        module: http_2xx                                     # Module used for scraping. Overrides value set in `defaults`
        additionalMetricsRelabels: {}                        # Map of metric labels and values to add
        additionalRelabeling: []                             # List of metric relabeling actions to run
-
+     - name: adguard                                        # Human readable URL that will appear in Prometheus / AlertManager
+       url: https://adguard.k0s-fullstack.fredcorp.com 
+       hostname: adguard.k0s-fullstack.fredcorp.com 
+       labels: {}
+       interval: 60s
+       scrapeTimeout: 60s
+       module: http_2xx
+       additionalMetricsRelabels: {}
+       additionalRelabeling: [] 
