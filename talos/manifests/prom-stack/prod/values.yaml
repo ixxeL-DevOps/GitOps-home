@@ -208,5 +208,23 @@ prometheus-blackbox-exporter:
           - blackbox.k8s-infra.fredcorp.com
         secretName: blackbox-tls-cert
 
+  serviceMonitor:
+    enabled: true
+    # Default values that will be used for all ServiceMonitors created by `targets`
+    defaults:
+      additionalMetricsRelabels: {}
+      additionalRelabeling: []
+      labels:
+        release: prom-stack-prod
 
+    targets:
+     - name: traefik                                        # Human readable URL that will appear in Prometheus / AlertManager
+       url: https://traefik.k0s-fullstack.fredcorp.com      # The URL that blackbox will scrape
+       hostname: traefik.k0s-fullstack.fredcorp.com                                # HTTP probes can accept an additional `hostname` parameter that will set `Host` header and TLS SNI
+       labels: {}                                           # Map of labels for ServiceMonitor. Overrides value set in `defaults`
+       interval: 60s                                        # Scraping interval. Overrides value set in `defaults`
+       scrapeTimeout: 60s                                   # Scrape timeout. Overrides value set in `defaults`
+       module: http_2xx                                     # Module used for scraping. Overrides value set in `defaults`
+       additionalMetricsRelabels: {}                        # Map of metric labels and values to add
+       additionalRelabeling: []                             # List of metric relabeling actions to run
 
