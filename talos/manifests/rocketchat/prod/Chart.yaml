@@ -3,7 +3,7 @@ name: rocketchat
 version: 1.0.0
 dependencies:
 - name: rocketchat
-  version: 6.23.2
+  version: 7.0.0
   repository: https://rocketchat.github.io/helm-charts
 # - name: psmdb-db
 #   version: 1.19.0
